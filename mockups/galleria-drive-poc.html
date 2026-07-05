@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galleria — Proof of Concept Google Drive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Sora:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ============================================================
+   THEME — questo blocco è l'anteprima del futuro theme.css:
+   cambia questi valori e tutto il sito cambia aspetto.
+   ============================================================ */
+    :root {
+      --color-bg: #12100e;
+      /* fondo scuro: le foto risaltano */
+      --color-surface: #1c1917;
+      --color-text: #ece5da;
+      --color-text-dim: #8a8178;
+      --color-accent: #4f9e96;
+      /* verde-mare Adriatico */
+      --color-error: #c96f5a;
+
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'Sora', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+
+      --gap: 10px;
+      /* spazio tra le foto */
+      --radius: 4px;
+      --grid-min: 170px;
+      /* larghezza minima colonna griglia */
+    }
+
+    /* ============================================================
+   STRUTTURA — di norma non serve toccare da qui in giù
+   ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 40px 20px 26px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-size: clamp(1.9rem, 6vw, 3.2rem);
+      letter-spacing: 0.01em;
+      line-height: 1.05;
+    }
+
+    h1 em {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--color-accent);
+    }
+
+    /* etichetta stato connessione, stile "provino a contatto" */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-text-dim);
+      border: 1px solid #2e2a26;
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+
+    .status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-text-dim);
+    }
+
+    .status.demo .dot {
+      background: #d9a83e;
+    }
+
+    .status.live .dot {
+      background: var(----color-accent, #4f9e96);
+      background: var(--color-accent);
+    }
+
+    .status.error .dot {
+      background: var(--color-error);
+    }
+
+    .hint {
+      margin-top: 14px;
+      max-width: 560px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      color: var(--color-text-dim);
+    }
+
+    .hint code {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--color-accent);
+    }
+
+    /* messaggi di errore parlanti */
+    .notice {
+      margin: 10px 20px;
+      max-width: 1060px;
+      margin-inline: auto;
+      padding: 14px 16px;
+      border-left: 3px solid var(--color-error);
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    /* griglia */
+    main {
+      max-width: 1100px;
+      margin: 10px auto 60px;
+      padding: 0 14px;
+    }
+
+    .grid {
+      columns: 3 var(--grid-min);
+      column-gap: var(--gap);
+    }
+
+    .grid figure {
+      break-inside: avoid;
+      margin-bottom: var(--gap);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--color-surface);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .grid img {
+      display: block;
+      width: 100%;
+      height: auto;
+      opacity: 0;
+      transition: opacity 0.5s ease, transform 0.35s ease;
+    }
+
+    .grid img.loaded {
+      opacity: 1;
+    }
+
+    @media (hover: hover) {
+      .grid figure:hover img {
+        transform: scale(1.025);
+      }
+    }
+
+    .grid figcaption {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 18px 10px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: #fff;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .grid figure:hover figcaption {
+      opacity: 1;
+    }
+
+    /* skeleton di caricamento */
+    .skeleton {
+      height: 180px;
+      border-radius: var(--radius);
+      margin-bottom: var(--gap);
+      break-inside: avoid;
+      background: linear-gradient(100deg, var(--color-surface) 40%, #26221e 50%, var(--color-surface) 60%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+      to {
+        background-position: -200% 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton {
+        animation: none;
+      }
+
+      .grid img {
+        transition: none;
+      }
+    }
+
+    /* lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 9, 8, 0.96);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      touch-action: pan-y;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox img {
+      max-width: 94vw;
+      max-height: 88vh;
+      border-radius: var(--radius);
+    }
+
+    .lightbox .name {
+      position: fixed;
+      bottom: 18px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--color-text-dim);
+    }
+
+    .lightbox button {
+      position: fixed;
+      background: none;
+      border: none;
+      color: var(--color-text);
+      font-size: 1.9rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+      padding: 14px;
+      opacity: 0.7;
+    }
+
+    .lightbox button:hover,
+    .lightbox button:focus-visible {
+      opacity: 1;
+    }
+
+    .lightbox button:focus-visible {
+      outline: 2px solid var(--color-accent);
+      border-radius: var(--radius);
+    }
+
+    .lb-close {
+      top: 8px;
+      right: 10px;
+    }
+
+    .lb-prev {
+      left: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .lb-next {
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    footer {
+      text-align: center;
+      padding: 0 20px 40px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: var(--color-text-dim);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Le tue foto,<br>direttamente <em>da Drive</em>.</h1>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">…</span></div>
+    <p class="hint" id="hint"></p>
+  </header>
+
+  <main>
+    <div id="notice"></div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <footer>PROOF OF CONCEPT · FASE 2 · GOOGLE DRIVE API V3</footer>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-label="Foto a schermo intero">
+    <button class="lb-close" aria-label="Chiudi">×</button>
+    <button class="lb-prev" aria-label="Precedente">‹</button>
+    <img id="lbImg" alt="">
+    <button class="lb-next" aria-label="Successiva">›</button>
+    <div class="name" id="lbName"></div>
+  </div>
+
+  <script>
+    /* ============================================================
+       CONFIG — anteprima del futuro site.config.js.
+       Per collegare la TUA cartella Drive:
+       1. console.cloud.google.com → nuovo progetto → abilita "Google Drive API"
+          → Credenziali → Crea API key
+       2. Su Drive: crea una cartella, mettici delle foto, condividila
+          come "Chiunque abbia il link" (visualizzatore)
+       3. L'ID cartella è nella URL: drive.google.com/drive/folders/QUESTO_ID
+       4. Incolla i due valori qui sotto e ricarica la pagina.
+       Lasciando i campi vuoti, la pagina va in DEMO MODE con foto segnaposto.
+       ============================================================ */
+    const CONFIG = {
+      apiKey: "AIzaSyANNp-KW3LxzdGnBRxzDLZ1_GLKKQeOztc",        // ← la tua API key
+      folderId: "1PiQRO5frzFzc2UKyBa_4TIshGLomtf6U",      // ← l'ID della cartella Drive condivisa
+      pageSize: 100
+    };
+
+    /* ------------------------------------------------------------ */
+    const grid = document.getElementById("grid");
+    const notice = document.getElementById("notice");
+    const statusEl = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const hint = document.getElementById("hint");
+
+    let photos = [];   // { name, gridUrl, fullUrl }
+    let current = 0;
+
+    init();
+
+    async function init() {
+      showSkeletons(9);
+      if (!CONFIG.apiKey || !CONFIG.folderId) {
+        setStatus("demo", "Demo mode — foto segnaposto");
+        hint.innerHTML = "Per vedere le <strong>tue</strong> foto: apri il file con un editor di testo, cerca <code>CONFIG</code> e inserisci API key e ID cartella Drive (istruzioni nel commento).";
+        photos = demoPhotos(14);
+        render();
+        return;
+      }
+      try {
+        photos = await fetchDriveFolder();
+        if (photos.length === 0) {
+          setStatus("error", "Cartella vuota o non pubblica");
+          showNotice("La cartella non contiene immagini visibili. Verifica che dentro ci siano foto e che la condivisione sia impostata su <strong>«Chiunque abbia il link»</strong>.");
+          grid.innerHTML = "";
+          return;
+        }
+        setStatus("live", `Drive connesso — ${photos.length} foto`);
+        hint.textContent = "Aggiungi o rimuovi foto nella cartella Drive e ricarica: la pagina si aggiorna da sola.";
+        render();
+      } catch (err) {
+        setStatus("error", "Errore di connessione");
+        grid.innerHTML = "";
+        showNotice(explainError(err));
+      }
+    }
+
+    async function fetchDriveFolder() {
+      const items = [];
+      let pageToken = "";
+      do {
+        const q = encodeURIComponent(`'${CONFIG.folderId}' in parents and mimeType contains 'image/' and trashed = false`);
+        const fields = encodeURIComponent("nextPageToken, files(id, name, thumbnailLink)");
+        let url = `https://www.googleapis.com/drive/v3/files?q=${q}&key=${CONFIG.apiKey}` +
+          `&fields=${fields}&orderBy=name&pageSize=${CONFIG.pageSize}`;
+        if (pageToken) url += `&pageToken=${pageToken}`;
+
+        const res = await fetch(url);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          const e = new Error(body.error?.message || res.statusText);
+          e.status = res.status;
+          throw e;
+        }
+        const data = await res.json();
+        for (const f of (data.files || [])) {
+          if (!f.thumbnailLink) continue;
+          // il suffisso =sNNN controlla la dimensione servita da Google
+          const base = f.thumbnailLink.replace(/=s\d+.*$/, "");
+          items.push({
+            name: f.name,
+            gridUrl: base + "=s700",
+            fullUrl: base + "=s1900"
+          });
+        }
+        pageToken = data.nextPageToken || "";
+      } while (pageToken);
+      return items;
+    }
+
+    function explainError(err) {
+      if (err.status === 403) return "Errore <strong>403</strong>: la API key non è valida per questa richiesta. Controlla che la Drive API sia abilitata nel progetto Google Cloud e che le restrizioni della key non blocchino questa pagina. <em>Dettaglio: " + esc(err.message) + "</em>";
+      if (err.status === 404) return "Errore <strong>404</strong>: cartella non trovata. Controlla l'ID cartella in <code>CONFIG.folderId</code> e che la condivisione sia «Chiunque abbia il link».";
+      if (err.status === 400) return "Errore <strong>400</strong>: richiesta malformata, probabilmente un carattere di troppo nell'ID cartella o nella API key.";
+      return "Errore imprevisto: " + esc(err.message) + ". Controlla la connessione e riprova.";
+    }
+
+    /* --- rendering ------------------------------------------------ */
+    function showSkeletons(n) {
+      grid.innerHTML = "";
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement("div");
+        s.className = "skeleton";
+        s.style.height = (140 + (i * 53) % 120) + "px";
+        grid.appendChild(s);
+      }
+    }
+
+    function render() {
+      grid.innerHTML = "";
+      photos.forEach((p, i) => {
+        const fig = document.createElement("figure");
+        const img = document.createElement("img");
+        img.src = p.gridUrl;
+        img.alt = p.name;
+        img.loading = "lazy";
+        img.addEventListener("load", () => img.classList.add("loaded"));
+        img.addEventListener("error", () => fig.remove());
+        const cap = document.createElement("figcaption");
+        cap.textContent = p.name;
+        fig.append(img, cap);
+        fig.addEventListener("click", () => openLightbox(i));
+        grid.appendChild(fig);
+      });
+    }
+
+    function setStatus(kind, text) {
+      statusEl.className = "status " + kind;
+      statusText.textContent = text;
+    }
+    function showNotice(html) {
+      notice.innerHTML = `<div class="notice">${html}</div>`;
+    }
+    function esc(s) {
+      return String(s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+    }
+
+    /* --- demo mode ------------------------------------------------ */
+    function demoPhotos(n) {
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const seed = 100 + i * 7;
+        const h = [500, 700, 620, 820][i % 4];
+        out.push({
+          name: `demo_${String(i + 1).padStart(2, "0")}.jpg`,
+          gridUrl: `https://picsum.photos/seed/${seed}/600/${h}`,
+          fullUrl: `https://picsum.photos/seed/${seed}/1400/${Math.round(h * 2.2)}`
+        });
+      }
+      return out;
+    }
+
+    /* --- lightbox ------------------------------------------------- */
+    const lightbox = document.getElementById("lightbox");
+    const lbImg = document.getElementById("lbImg");
+    const lbName = document.getElementById("lbName");
+
+    function openLightbox(i) { current = i; updateLightbox(); lightbox.classList.add("open"); }
+    function closeLightbox() { lightbox.classList.remove("open"); lbImg.src = ""; }
+    function step(d) { current = (current + d + photos.length) % photos.length; updateLightbox(); }
+    function updateLightbox() {
+      lbImg.src = photos[current].fullUrl;
+      lbImg.alt = photos[current].name;
+      lbName.textContent = `${photos[current].name} · ${current + 1}/${photos.length}`;
+    }
+
+    lightbox.querySelector(".lb-close").addEventListener("click", closeLightbox);
+    lightbox.querySelector(".lb-prev").addEventListener("click", e => { e.stopPropagation(); step(-1); });
+    lightbox.querySelector(".lb-next").addEventListener("click", e => { e.stopPropagation(); step(1); });
+    lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
+
+    document.addEventListener("keydown", e => {
+      if (!lightbox.classList.contains("open")) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") step(-1);
+      if (e.key === "ArrowRight") step(1);
+    });
+
+    /* swipe su mobile */
+    let touchX = null;
+    lightbox.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
+    lightbox.addEventListener("touchend", e => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 45) step(dx > 0 ? -1 : 1);
+      touchX = null;
+    }, { passive: true });
+  </script>
+</body>
+
+</html>

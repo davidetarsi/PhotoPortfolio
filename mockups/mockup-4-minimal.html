@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stile 4 — Minimal fine-art</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ffffff; --ink:#1b1b1b; --soft:#9a9a94;
+  --serif:'Cormorant Garamond',serif; --sans:'Jost',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:300}
+
+header{text-align:center;padding:64px 20px 30px}
+header h1{font-family:var(--serif);font-weight:400;font-size:1.7rem;letter-spacing:.28em;
+  text-transform:uppercase}
+header .sub{margin-top:10px;font-size:.72rem;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--soft)}
+nav{text-align:center;padding-bottom:56px}
+nav a{color:var(--ink);text-decoration:none;font-size:.74rem;letter-spacing:.22em;
+  text-transform:uppercase;margin:0 14px;padding-bottom:4px}
+nav a.active{border-bottom:1px solid var(--ink)}
+
+.plate{max-width:760px;margin:0 auto 110px;padding:0 24px;text-align:center}
+.plate img{width:100%;display:block}
+.plate.small img{max-width:520px;margin:0 auto}
+.plate .cap{margin-top:16px;font-size:.7rem;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--soft)}
+.plate .cap em{font-family:var(--serif);font-style:italic;text-transform:none;
+  letter-spacing:.02em;font-size:1.05rem;color:var(--ink);display:block;margin-bottom:5px}
+
+.sep{width:36px;height:1px;background:var(--soft);margin:0 auto 110px;opacity:.5}
+
+footer{text-align:center;padding:20px 20px 90px;font-size:.68rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--soft)}
+footer a{color:var(--ink);display:inline-block;margin-top:10px;text-decoration:none;
+  border-bottom:1px solid var(--ink);padding-bottom:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Davide</h1>
+  <div class="sub">Fotografia · Sport &amp; Street</div>
+</header>
+
+<nav>
+  <a href="#" class="active">Selezione</a>
+  <a href="#">Album</a>
+  <a href="#">Contatti</a>
+</nav>
+
+<figure class="plate">
+  <img src="https://picsum.photos/seed/fine1/1200/800" alt="">
+  <figcaption class="cap"><em>Controluce, ultimo set</em>Sport — 2026 · I / XII</figcaption>
+</figure>
+
+<div class="sep"></div>
+
+<figure class="plate small">
+  <img src="https://picsum.photos/seed/fine2/800/1050" alt="">
+  <figcaption class="cap"><em>Rua da Prata, ore 14</em>Street — Lisbona 2025 · II / XII</figcaption>
+</figure>
+
+<div class="sep"></div>
+
+<figure class="plate">
+  <img src="https://picsum.photos/seed/fine3/1200/760" alt="">
+  <figcaption class="cap"><em>La curva vuota</em>Sport — 2025 · III / XII</figcaption>
+</figure>
+
+<footer>
+  Stile 4 / 4 — Minimal fine-art<br>
+  <a href="mockup-1-cinematic.html">← Torna allo stile 1 (Cinematic)</a>
+</footer>
+
+</body>
+</html>
