@@ -1,0 +1,14 @@
+@import '../../theme/tokens.css';
+@import '../../theme/typography.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
