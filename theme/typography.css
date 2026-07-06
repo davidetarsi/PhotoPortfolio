@@ -1,11 +1,11 @@
-/* Import font da Google Fonts — da aggiungere in M2.4 dopo la scelta del tema */
-
 body {
   font-family: var(--font-body);
+  font-weight: 300;
   line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
+  font-weight: 300;
   line-height: 1.2;
 }

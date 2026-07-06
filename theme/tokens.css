@@ -1,13 +1,15 @@
 :root {
-  /* Colors — valori definitivi scelti in M2.4 */
-  --color-bg: #ffffff;
-  --color-text: #111111;
-  --color-accent: #000000;
-  --color-muted: #666666;
+  /* Colors — Stile 1 Cinematic */
+  --color-bg: #101112;
+  --color-text: #ece7de;
+  --color-accent: #4f9e96;
+  --color-muted: #8b857b;
+  --color-surface: #191b1c;
 
-  /* Typography */
-  --font-body: sans-serif;
-  --font-heading: sans-serif;
+  /* Typography — Stile 1 Cinematic */
+  --font-body: 'Sora', sans-serif;
+  --font-heading: 'Fraunces', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 
   /* Spacing scale */
   --space-xs: 0.25rem;
@@ -20,4 +22,8 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 16px;
+
+  /* Layout */
+  --nav-height: 60px;
+  --container-max-width: 1200px;
 }

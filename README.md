@@ -44,3 +44,12 @@ public/          ← asset statici (favicon, cover locali)
 ## Roadmap
 
 Vedi [`roadmap-sito-portfolio.md`](roadmap-sito-portfolio.md) per la visione d'insieme e [`piano-implementazione.md`](piano-implementazione.md) per i task dettagliati.
+
+## Tema visivo
+
+Stile scelto: **Cinematic** (Stile 1 — `mockups/mockup-1-cinematic.html`).
+
+- Palette: sfondo `#101112` (scuro), testo caldo `#ece7de`, accento teal `#4f9e96`
+- Font: Fraunces (heading/display) + Sora (body, weight 300) + IBM Plex Mono (mono)
+
+Per cambiare tema: modifica `theme/tokens.css` e `theme/typography.css`. Se cambi i font, aggiorna anche i tag `<link>` in `index.html`, `album.html` e `contatti.html`.
