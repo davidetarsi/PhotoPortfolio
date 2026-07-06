@@ -56,4 +56,9 @@ describe('validateConfig', () => {
     expect(() => validateConfig(validSiteConfig, noFolder))
       .toThrow('[validateConfig] albums[0].driveFolderId è obbligatorio');
   });
+
+  it('lancia con messaggio prefissato se siteConfig è null', () => {
+    expect(() => validateConfig(null, validAlbums))
+      .toThrow('[validateConfig] siteConfig non valido');
+  });
 });

@@ -1,6 +1,9 @@
 const KNOWN_PROVIDERS = ['googleDrive'];
 
 export function validateConfig(siteConfig, albums) {
+  if (!siteConfig || typeof siteConfig !== 'object') {
+    throw new Error('[validateConfig] siteConfig non valido');
+  }
   if (!siteConfig.name?.trim()) {
     throw new Error('[validateConfig] siteConfig.name è obbligatorio');
   }
