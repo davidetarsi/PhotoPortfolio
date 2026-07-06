@@ -29,7 +29,7 @@ async function _fetchAll(folderId, apiKey) {
     );
     const fields = encodeURIComponent('nextPageToken, files(id, name, thumbnailLink)');
     let url =
-      `${BASE_URL}?q=${q}&key=${apiKey}` +
+      `${BASE_URL}?q=${q}&key=${encodeURIComponent(apiKey)}` +
       `&fields=${fields}&orderBy=name&pageSize=${PAGE_SIZE}`;
     if (pageToken) url += `&pageToken=${pageToken}`;
 

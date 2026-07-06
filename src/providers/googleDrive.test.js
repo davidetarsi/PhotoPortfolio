@@ -12,10 +12,11 @@ function makeFetchResponse(data, status = 200) {
 
 describe('listPhotos', () => {
   beforeEach(() => {
-    global.fetch = vi.fn()
+    vi.stubGlobal('fetch', vi.fn())
     sessionStorage.clear()
   })
   afterEach(() => {
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 
