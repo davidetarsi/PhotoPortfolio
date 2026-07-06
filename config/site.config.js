@@ -1,6 +1,7 @@
 export const siteConfig = {
   name: 'Nome Fotografo',
   bio: 'Una breve descrizione del fotografo.',
+  language: 'it',
   social: {
     // instagram: 'https://instagram.com/...',
   },
