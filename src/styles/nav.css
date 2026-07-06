@@ -1,0 +1,36 @@
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  background: var(--color-bg);
+  z-index: 100;
+}
+
+.site-nav__brand {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.site-nav__links a {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--color-text);
+  text-decoration: none;
+  margin-left: var(--space-lg);
+  opacity: 0.8;
+}
+
+.site-nav__links a:hover {
+  opacity: 1;
+}
