@@ -1,3 +1,5 @@
+import { DriveError, errorFromResponse } from './errors.js';
+
 const BASE_URL = 'https://www.googleapis.com/drive/v3/files';
 const PAGE_SIZE = 100;
 
@@ -5,6 +7,7 @@ const PAGE_SIZE = 100;
  * @param {string} folderId - ID della cartella Google Drive condivisa.
  * @param {string} apiKey - Google Drive API key.
  * @returns {Promise<Array<{name: string, gridUrl: string, fullUrl: string}>>}
+ * @throws {DriveError}
  */
 export async function listPhotos(folderId, apiKey) {
   return _fetchAll(folderId, apiKey);
@@ -24,13 +27,17 @@ async function _fetchAll(folderId, apiKey) {
       `&fields=${fields}&orderBy=name&pageSize=${PAGE_SIZE}`;
     if (pageToken) url += `&pageToken=${pageToken}`;
 
-    const res = await fetch(url);
+    let res;
+    try {
+      res = await fetch(url);
+    } catch (cause) {
+      throw new DriveError(`Errore di rete: ${cause.message}`, 'NETWORK');
+    }
+
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       const msg = body.error?.message ?? res.statusText;
-      const err = new Error(msg);
-      err.status = res.status;
-      throw err;
+      throw errorFromResponse(res.status, msg);
     }
 
     const data = await res.json();

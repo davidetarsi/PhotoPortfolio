@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { listPhotos } from './googleDrive.js'
+import { DriveError } from './errors.js'
 
 function makeFetchResponse(data, status = 200) {
   return {
@@ -67,18 +68,36 @@ describe('listPhotos', () => {
     expect(photos[0].name).toBe('01.jpg')
   })
 
-  it('lancia un errore se la risposta non è ok', async () => {
+  it('lancia DriveError con code INVALID_KEY su 403', async () => {
     global.fetch.mockResolvedValueOnce(makeFetchResponse(
-      { error: { message: 'API key not valid. Please pass a valid API key.' } },
+      { error: { message: 'API key not valid.' } },
       403,
     ))
 
-    await expect(listPhotos('folder123', 'badkey')).rejects.toThrow()
+    await expect(listPhotos('folder123', 'badkey')).rejects.toMatchObject({
+      name: 'DriveError',
+      code: 'INVALID_KEY',
+    })
   })
 
-  it('lancia un errore di rete se fetch rigetta', async () => {
+  it('lancia DriveError con code NOT_FOUND su 404', async () => {
+    global.fetch.mockResolvedValueOnce(makeFetchResponse(
+      { error: { message: 'Folder not found.' } },
+      404,
+    ))
+
+    await expect(listPhotos('folder123', 'apikey456')).rejects.toMatchObject({
+      name: 'DriveError',
+      code: 'NOT_FOUND',
+    })
+  })
+
+  it('lancia DriveError con code NETWORK se fetch rigetta', async () => {
     global.fetch.mockRejectedValueOnce(new TypeError('Failed to fetch'))
 
-    await expect(listPhotos('folder123', 'apikey456')).rejects.toThrow('Failed to fetch')
+    await expect(listPhotos('folder123', 'apikey456')).rejects.toMatchObject({
+      name: 'DriveError',
+      code: 'NETWORK',
+    })
   })
 })
