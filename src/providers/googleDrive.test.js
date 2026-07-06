@@ -100,4 +100,32 @@ describe('listPhotos', () => {
       code: 'NETWORK',
     })
   })
+
+  it('usa il cache e non chiama fetch alla seconda invocazione', async () => {
+    global.fetch.mockResolvedValueOnce(makeFetchResponse({
+      files: [{ id: 'a', name: '01.jpg', thumbnailLink: 'https://lh3.google.com/x=s220' }],
+    }))
+
+    await listPhotos('folder123', 'apikey456')
+    const second = await listPhotos('folder123', 'apikey456')
+
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+    expect(second).toHaveLength(1)
+  })
+
+  it('chiama fetch di nuovo dopo la scadenza della cache', async () => {
+    const expiredTs = Date.now() - 600001
+    sessionStorage.setItem(
+      'drive_cache_folder123',
+      JSON.stringify({ ts: expiredTs, data: [{ name: 'old.jpg', gridUrl: 'g', fullUrl: 'f' }] }),
+    )
+    global.fetch.mockResolvedValueOnce(makeFetchResponse({
+      files: [{ id: 'b', name: 'new.jpg', thumbnailLink: 'https://lh3.google.com/y=s220' }],
+    }))
+
+    const photos = await listPhotos('folder123', 'apikey456')
+
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+    expect(photos[0].name).toBe('new.jpg')
+  })
 })

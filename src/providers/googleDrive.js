@@ -1,4 +1,5 @@
 import { DriveError, errorFromResponse } from './errors.js';
+import { getCached, setCached } from './cache.js';
 
 const BASE_URL = 'https://www.googleapis.com/drive/v3/files';
 const PAGE_SIZE = 100;
@@ -10,7 +11,12 @@ const PAGE_SIZE = 100;
  * @throws {DriveError}
  */
 export async function listPhotos(folderId, apiKey) {
-  return _fetchAll(folderId, apiKey);
+  const cached = getCached(folderId);
+  if (cached) return cached;
+
+  const photos = await _fetchAll(folderId, apiKey);
+  setCached(folderId, photos);
+  return photos;
 }
 
 async function _fetchAll(folderId, apiKey) {
