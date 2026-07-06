@@ -4,6 +4,6 @@ export const siteConfig = {
   social: {
     // instagram: 'https://instagram.com/...',
   },
-  provider: 'googleDrive',
+  provider: import.meta.env.VITE_DRIVE_API_KEY,
   formEndpoint: '',
 };
