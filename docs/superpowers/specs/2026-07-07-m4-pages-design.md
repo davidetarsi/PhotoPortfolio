@@ -92,7 +92,7 @@ Skeleton (two variants):
 **With image** (`heroImageUrl` truthy):
 ```html
 <div class="hero__inner">
-  <img class="hero__bg" alt="">
+  <img class="hero__bg" alt="" fetchpriority="high" decoding="sync">
   <div class="hero__content">
     <h1 class="hero__title"></h1>
     <p class="hero__subtitle"></p>
@@ -305,7 +305,8 @@ form.addEventListener('submit', async e => {
     } else {
       feedbackEl.textContent = texts.contatti.form.errorMessage;
     }
-  } catch {
+  } catch (err) {
+    console.error('[ContactForm] submit error:', err);
     feedbackEl.textContent = texts.contatti.form.errorMessage;
   } finally {
     submitBtn.disabled = false;
