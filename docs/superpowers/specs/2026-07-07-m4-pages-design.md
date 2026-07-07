@@ -40,7 +40,7 @@ No new npm dependencies.
 
 ### Config change
 
-Add `heroImageUrl` to `config/site.config.js` as an optional string field (default: empty string `''`):
+Add `heroImageUrl` to `config/site.config.js` as an optional string field (default: empty string `''`). Also rename `formEndpoint` → `web3formsAccessKey` and read it from the environment (same pattern as `driveApiKey`):
 
 ```js
 export const siteConfig = {
@@ -51,9 +51,11 @@ export const siteConfig = {
   social: { },
   provider: 'googleDrive',
   driveApiKey: import.meta.env.VITE_DRIVE_API_KEY,
-  formEndpoint: '',
+  web3formsAccessKey: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY ?? '',  // ← renamed + env-backed
 };
 ```
+
+Also add `VITE_WEB3FORMS_ACCESS_KEY=` to `.env.example` (the template committed to git), mirroring the Drive key pattern from M1.
 
 ### HTML change (index.html)
 
@@ -267,7 +269,7 @@ The form POSTs to `https://api.web3forms.com/submit` via `fetch` (no page reload
 | Name | `<input type="text">` | `name` | `required` |
 | Email | `<input type="email">` | `email` | `required` |
 | Message | `<textarea>` | `message` | `required` |
-| Access key | `<input type="hidden">` | `access_key` | value = `siteConfig.formEndpoint` |
+| Access key | `<input type="hidden">` | `access_key` | value = `siteConfig.web3formsAccessKey` |
 | Honeypot | `<input type="checkbox">` | `botcheck` | hidden via CSS class `.contact-form__honeypot` |
 
 **Static skeleton (via innerHTML):**
@@ -283,7 +285,7 @@ The form POSTs to `https://api.web3forms.com/submit` via `fetch` (no page reload
 <p class="contact-form__feedback" aria-live="polite"></p>
 ```
 
-After innerHTML: set placeholders via `setAttribute('placeholder', ...)` and submit button text via `textContent`. Set `access_key` value via `setAttribute('value', siteConfig.formEndpoint)`.
+After innerHTML: set placeholders via `setAttribute('placeholder', ...)` and submit button text via `textContent`. Set `access_key` value via `setAttribute('value', siteConfig.web3formsAccessKey)`.
 
 **Submit handler:**
 
@@ -297,9 +299,12 @@ form.addEventListener('submit', async e => {
       body: new FormData(form),
     });
     const data = await res.json();
-    feedbackEl.textContent = data.success
-      ? texts.contatti.form.successMessage
-      : texts.contatti.form.errorMessage;
+    if (data.success) {
+      feedbackEl.textContent = texts.contatti.form.successMessage;
+      form.reset();
+    } else {
+      feedbackEl.textContent = texts.contatti.form.errorMessage;
+    }
   } catch {
     feedbackEl.textContent = texts.contatti.form.errorMessage;
   } finally {
@@ -308,7 +313,7 @@ form.addEventListener('submit', async e => {
 });
 ```
 
-**If `siteConfig.formEndpoint` is empty:** the form renders correctly (usable as boilerplate); on submit, Web3Forms will return an error which shows `errorMessage`.
+**If `siteConfig.web3formsAccessKey` is empty (env var not set):** the form renders correctly (usable as boilerplate); on submit, Web3Forms will return an error which shows `errorMessage`.
 
 ### CSS: `src/styles/contact-form.css`
 
@@ -400,13 +405,14 @@ document.getElementById('contatti-form').appendChild(createContactForm(siteConfi
 
 ### Tests: `src/components/__tests__/ContactForm.test.js`
 
-6 tests (use `vi.stubGlobal('fetch', ...)` to mock):
+7 tests (use `vi.stubGlobal('fetch', ...)` to mock):
 1. Form element has `action`-less structure; all named fields present (`name`, `email`, `message`, `access_key`, `botcheck`).
 2. Honeypot field is type `checkbox` with `name="botcheck"`.
-3. `access_key` hidden input has `value === siteConfig.formEndpoint`.
+3. `access_key` hidden input has `value === siteConfig.web3formsAccessKey`.
 4. Submit calls `fetch('https://api.web3forms.com/submit', ...)` with a `FormData` body.
 5. On `data.success === true` response: feedback element shows `texts.contatti.form.successMessage`.
-6. On `data.success === false` response: feedback element shows `texts.contatti.form.errorMessage`.
+6. On `data.success === true` response: `form.reset()` is called (fields are cleared).
+7. On `data.success === false` response: feedback element shows `texts.contatti.form.errorMessage`.
 
 ---
 
@@ -414,7 +420,8 @@ document.getElementById('contatti-form').appendChild(createContactForm(siteConfi
 
 | File | Action |
 |------|--------|
-| `config/site.config.js` | Add `heroImageUrl: ''` |
+| `config/site.config.js` | Add `heroImageUrl: ''`; rename `formEndpoint` → `web3formsAccessKey` (env-backed) |
+| `.env.example` | Add `VITE_WEB3FORMS_ACCESS_KEY=` |
 | `config/texts.config.js` | Add `texts.album.notFound`, `texts.album.notFoundLink`; add `texts.contatti.form.*` |
 | `src/components/Hero.js` | Create |
 | `src/styles/hero.css` | Create |
@@ -430,4 +437,4 @@ document.getElementById('contatti-form').appendChild(createContactForm(siteConfi
 | `index.html` | Add `<section id="hero">` |
 | `contatti.html` | Add `<div id="contatti-form">` |
 
-New test count: 13 (3 Hero + 4 findAlbumBySlug + 6 ContactForm). Total after M4: 73.
+New test count: 14 (3 Hero + 4 findAlbumBySlug + 7 ContactForm). Total after M4: 74.
