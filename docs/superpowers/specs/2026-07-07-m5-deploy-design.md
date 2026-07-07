@@ -86,6 +86,8 @@ Al termine del deploy, Cloudflare assegna un URL del tipo:
 
 Quando il sito gira su `*.pages.dev`, le chiamate all'API Google Drive partono da quel dominio. Se la chiave è vincolata solo a `localhost`, le richieste ricevono **403 Forbidden** e la griglia foto risulta vuota.
 
+Cloudflare Pages genera inoltre URL di preview per ogni branch/PR (es. `https://<branch>.<nome>.pages.dev`). Senza il wildcard sui sottodomini, tutte le preview ricevono 403 e non è possibile testare in staging prima del merge.
+
 ### Procedura
 
 1. Aprire **Google Cloud Console** → `console.cloud.google.com`
@@ -93,30 +95,50 @@ Quando il sito gira su `*.pages.dev`, le chiamate all'API Google Drive partono d
 3. Cliccare sulla chiave `VITE_DRIVE_API_KEY`
 4. In **Application restrictions**, selezionare **HTTP referrers (web sites)**
 5. In **Website restrictions**, aggiungere:
-   - `http://localhost:5173/*` (se non già presente — per lo sviluppo locale)
-   - `https://<nome>.pages.dev/*` (sostituire `<nome>` con il nome reale del progetto Pages)
+   - `http://localhost:5173/*` (sviluppo locale)
+   - `https://<nome>.pages.dev/*` (produzione)
+   - `https://*.<nome>.pages.dev/*` (wildcard per preview deployments di branch e PR)
 6. Cliccare **Save**
 
 Le modifiche ai referrer diventano attive in pochi minuti.
 
 ---
 
+## M5.4 — Allowed Domains Web3Forms
+
+La chiave `VITE_WEB3FORMS_ACCESS_KEY` è esposta lato client come la Drive key. Chiunque la estragga dal sorgente può chiamare l'endpoint Web3Forms da qualsiasi dominio, consumando le 250 submission/mese gratuite o inondando la casella di spam. Web3Forms supporta una lista di domini autorizzati per ogni access key.
+
+### Procedura
+
+1. Aprire `https://web3forms.com` e accedere al proprio account
+2. Navigare in **Dashboard → Access Keys**
+3. Cliccare sulla chiave in uso
+4. In **Allowed Domains**, aggiungere:
+   - `localhost` (sviluppo locale)
+   - `<nome>.pages.dev` (produzione)
+   - `*.<nome>.pages.dev` (preview deployments)
+5. Salvare
+
+Le submission provenienti da domini non in lista vengono rifiutate da Web3Forms.
+
+---
+
 ## Verifica finale
 
-Dopo aver completato M5.2 e M5.3, verificare manualmente i tre percorsi principali:
+Dopo aver completato M5.2, M5.3 e M5.4, verificare manualmente i tre percorsi principali:
 
 | URL | Verifica |
 |-----|---------|
 | `https://<nome>.pages.dev/` | Landing con hero e card album visibili |
 | `https://<nome>.pages.dev/album.html?album=<slug>` | Griglia foto caricata, lightbox funzionante |
-| `https://<nome>.pages.dev/contatti.html` | Form contatti visibile |
+| `https://<nome>.pages.dev/contatti.html` | Form contatti invia correttamente |
 
-Se la griglia foto è vuota, controllare prima la restrizione GCP referrer (M5.3).
+Se la griglia foto è vuota: controllare M5.3 (referrer GCP).
+Se il form non invia: controllare M5.4 (allowed domains Web3Forms) e la variabile `VITE_WEB3FORMS_ACCESS_KEY` in CF dashboard.
 
 ---
 
 ## Fuori scope (M6)
 
 - File `_headers` con Content Security Policy
-- Restrizione API key per referrer (M6 consolida la sicurezza dopo che il dominio è confermato)
 - Dominio custom (configurabile in seguito da Cloudflare Pages → Custom Domains)
