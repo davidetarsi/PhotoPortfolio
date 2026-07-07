@@ -34,7 +34,7 @@ describe('listPhotos', () => {
     expect(photos[0]).toEqual({
       name: '01_alba.jpg',
       gridUrl: 'https://lh3.google.com/abc=s400',
-      fullUrl: 'https://lh3.google.com/abc=s1900',
+      fullUrl: 'https://lh3.google.com/abc=s1200',
     })
     expect(photos[1].name).toBe('02_tramonto.jpg')
   })
