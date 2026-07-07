@@ -2,6 +2,7 @@ export const siteConfig = {
   name: 'Nome Fotografo',
   bio: 'Una breve descrizione del fotografo.',
   language: 'it',
+  heroImageUrl: '',
   social: {
     // instagram: 'https://instagram.com/...',
   },
