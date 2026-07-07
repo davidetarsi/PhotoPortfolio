@@ -98,4 +98,14 @@ describe('createContactForm', () => {
     expect(form.querySelector('.contact-form__feedback').textContent)
       .toBe(texts.contatti.form.errorMessage);
   });
+
+  it('inputs have aria-label attributes matching placeholders', () => {
+    const form = createContactForm(siteConfig, texts);
+    expect(form.querySelector('[name="name"]').getAttribute('aria-label'))
+      .toBe(texts.contatti.form.namePlaceholder);
+    expect(form.querySelector('[name="email"]').getAttribute('aria-label'))
+      .toBe(texts.contatti.form.emailPlaceholder);
+    expect(form.querySelector('[name="message"]').getAttribute('aria-label'))
+      .toBe(texts.contatti.form.messagePlaceholder);
+  });
 });

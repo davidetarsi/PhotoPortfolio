@@ -20,14 +20,18 @@ export function createContactForm(siteConfig, texts) {
   form.querySelector('[name="name"]').setAttribute('placeholder', texts.contatti.form.namePlaceholder);
   form.querySelector('[name="email"]').setAttribute('placeholder', texts.contatti.form.emailPlaceholder);
   form.querySelector('[name="message"]').setAttribute('placeholder', texts.contatti.form.messagePlaceholder);
-  form.querySelector('.contact-form__submit').textContent = texts.contatti.form.submitLabel;
+  form.querySelector('[name="name"]').setAttribute('aria-label', texts.contatti.form.namePlaceholder);
+  form.querySelector('[name="email"]').setAttribute('aria-label', texts.contatti.form.emailPlaceholder);
+  form.querySelector('[name="message"]').setAttribute('aria-label', texts.contatti.form.messagePlaceholder);
+  const submitBtn = form.querySelector('.contact-form__submit');
+  submitBtn.textContent = texts.contatti.form.submitLabel;
   form.querySelector('[name="access_key"]').setAttribute('value', siteConfig.web3formsAccessKey);
 
-  const submitBtn = form.querySelector('.contact-form__submit');
   const feedbackEl = form.querySelector('.contact-form__feedback');
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
+    feedbackEl.textContent = '';
     submitBtn.disabled = true;
     try {
       const res = await fetch(WEB3FORMS_URL, {
