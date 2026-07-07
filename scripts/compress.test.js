@@ -68,6 +68,7 @@ describe('processImage', () => {
     // 200×300 < 1900 su entrambi i lati: non deve essere ingrandita
     expect(meta.width).toBe(200);
     expect(meta.height).toBe(300);
+    expect(meta.exif).toBeUndefined();
   });
 });
 

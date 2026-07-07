@@ -44,7 +44,6 @@ export async function processImage(inPath, outPath) {
       kernel: 'lanczos3',
       withoutEnlargement: true,
     })
-    .withMetadata(false)
     .webp({ quality: WEBP_QUALITY })
     .toFile(outPath);
 }
