@@ -8,10 +8,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "compress": "node scripts/compress.js"
   },
   "devDependencies": {
     "jsdom": "^29.1.1",
+    "sharp": "^0.35.3",
     "vite": "^8.1.1",
     "vitest": "^4.1.10",
     "wrangler": "^4.107.0"
