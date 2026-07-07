@@ -4,6 +4,8 @@ export const texts = {
     albumsSectionHeading: 'Album',
   },
   album: {
+    notFound: 'Album non trovato.',
+    notFoundLink: 'Torna alla gallery',
     loading: 'Caricamento foto…',
     empty: 'Nessuna foto trovata in questo album.',
     error: {
