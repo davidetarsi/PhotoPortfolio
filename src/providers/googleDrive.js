@@ -50,7 +50,7 @@ async function _fetchAll(folderId, apiKey) {
     for (const f of (data.files ?? [])) {
       if (!f.thumbnailLink) continue;
       const base = f.thumbnailLink.replace(/=s\d+.*$/, '');
-      items.push({ name: f.name, gridUrl: `${base}=s400`, fullUrl: `${base}=s1200` });
+      items.push({ name: f.name, gridUrl: `${base}=s200`, fullUrl: `${base}=s900` });
     }
     pageToken = data.nextPageToken ?? '';
   } while (pageToken);
