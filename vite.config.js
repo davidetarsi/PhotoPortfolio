@@ -7,6 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
   },
   build: {
+    modulePreload: { polyfill: false },
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
