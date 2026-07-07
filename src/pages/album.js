@@ -7,6 +7,7 @@ import { listPhotos } from '../providers/googleDrive.js';
 import { renderNav } from '../components/Nav.js';
 import { renderFooter } from '../components/Footer.js';
 import { renderSkeletons, renderGrid } from '../components/PhotoGrid.js';
+import { createLightbox } from '../components/Lightbox.js';
 
 validateConfig(siteConfig, albums);
 
@@ -20,7 +21,8 @@ renderSkeletons(gridEl, 12);
 
 listPhotos(album.driveFolderId, siteConfig.driveApiKey)
   .then(photos => {
-    renderGrid(gridEl, photos, () => {});
+    const lb = createLightbox(photos);
+    renderGrid(gridEl, photos, i => lb.open(i));
   })
   .catch(err => {
     const code = err.code;
