@@ -92,8 +92,8 @@ npm test         # 86 test
 Passi numerati in ordine operativo:
 
 1. **Crea la cartella Google Drive** — condividi con "chiunque con il link può visualizzare"
-2. **Google Cloud Console** → abilita Drive API v3 → crea API key → imposta restrizione HTTP referrer sul dominio Cloudflare Pages (es. `https://nome.pages.dev/*` + `https://*.nome.pages.dev/*` per le preview)
-3. **Web3Forms** → crea account su web3forms.com → copia l'access key → in Dashboard → Access Keys aggiungi il dominio Cloudflare Pages in "Allowed Domains"
+2. **Google Cloud Console** → abilita Drive API v3 → crea API key → imposta restrizione HTTP referrer con tre voci: `http://localhost:5173/*` (sviluppo locale), `https://nome.pages.dev/*` (produzione), `https://*.nome.pages.dev/*` (preview deployments)
+3. **Web3Forms** → crea account su web3forms.com → copia l'access key → in Dashboard → Access Keys aggiungi in "Allowed Domains": `localhost` (sviluppo locale) e il dominio Cloudflare Pages (produzione + preview)
 4. **Variabili d'ambiente locali** → `cp .env.example .env` → compila `VITE_DRIVE_API_KEY` e `VITE_WEB3FORMS_ACCESS_KEY`
 5. **Identità del fotografo** → `config/site.config.js` → compila `name`, `bio`, `heroImageUrl`, `social`
 6. **Album** → `config/albums.config.js` → per ogni album: `driveFolderId` (ID cartella Drive), `cover` (URL immagine di copertina da Drive), `slug`, `title`, `description`
@@ -159,6 +159,13 @@ Guida per tipo di modifica, con percorsi esatti e valori di esempio.
 - `cover` — URL immagine di copertina (formato `https://lh3.googleusercontent.com/d/FILE_ID`)
 - Per aggiungere un album: aggiungere un oggetto all'array. Per rimuoverlo: eliminare l'oggetto.
 
+> **Il concetto "album" si adatta al dominio.** La struttura è la stessa — una cartella Drive con una copertina — ma il significato dipende dal contesto:
+> - Fotografo: `{ slug: 'matrimoni', title: 'Matrimoni', ... }`
+> - Casa vacanze a Roma: `{ slug: 'camere', title: 'Le nostre camere', ... }`, `{ slug: 'salone', title: 'Spazi comuni', ... }`, `{ slug: 'esterni', title: 'Esterni e terrazza', ... }`
+> - Artista visivo: `{ slug: 'acquerelli-2024', title: 'Acquerelli 2024', ... }`
+>
+> Il frontend non sa nulla del dominio — mostra titolo, descrizione e foto. Solo `config/albums.config.js` cambia.
+
 **Testi UI (`config/texts.config.js`)**
 - `landing.heroSubtitle` — sottotitolo sotto il nome nella landing
 - `contatti.heading` / `contatti.body` — titolo e testo della pagina contatti
@@ -184,7 +191,7 @@ npm run compress -- --input /percorso/cartella
 - Build command: `npm test && npm run build`
 - Build output: `dist`
 - Env vars (produzione + preview): `VITE_DRIVE_API_KEY`, `VITE_WEB3FORMS_ACCESS_KEY`, `NODE_VERSION=22`
-- Dopo il primo deploy: aggiungere il dominio `*.pages.dev` in Allowed Domains su Web3Forms e nella restrizione referrer dell'API key GCP
+- Dopo il primo deploy: verificare che `localhost` e il dominio `*.pages.dev` siano già presenti in Allowed Domains su Web3Forms e nella restrizione referrer dell'API key GCP (configurati al punto 2 e 3)
 
 ---
 
