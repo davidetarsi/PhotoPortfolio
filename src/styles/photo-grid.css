@@ -21,7 +21,7 @@
   transition: opacity 0.5s ease;
 }
 
-.photo-grid__img--loaded {
+.photo-grid__item img.photo-grid__img--loaded {
   opacity: 1;
 }
 
