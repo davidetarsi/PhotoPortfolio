@@ -11,7 +11,8 @@
 ## Global Constraints
 
 - `public/_headers` usa la sintassi Cloudflare Pages: pattern su riga singola, header indentati con due spazi.
-- Il CSP completo (verbatim dalla spec): `default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests`
+- Il CSP completo (verbatim dalla spec): `default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests`
+- `X-XSS-Protection: 0` — disabilita esplicitamente il vecchio filtro XSS dei browser legacy (IE, vecchio Safari); con una CSP robusta il filtro legacy è un rischio in più (può essere abusato per cross-site leaking), non una protezione
 - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
 - I test esistenti devono continuare a passare (86 test, 13 file).
 - Nessuna modifica a provider, componenti, HTML delle pagine, o altri file.
@@ -72,9 +73,10 @@ Creare il file `public/_headers` con il contenuto seguente (attenzione: ogni hea
 
 ```
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY
+  X-XSS-Protection: 0
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
@@ -97,9 +99,10 @@ cat dist/_headers
 Expected output (identico a `public/_headers`):
 ```
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY
+  X-XSS-Protection: 0
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
@@ -137,6 +140,7 @@ Dopo il push e il deploy automatico su Cloudflare Pages, aprire il sito in un br
 | `content-security-policy` | (stringa CSP completa) |
 | `strict-transport-security` | `max-age=31536000; includeSubDomains` |
 | `x-frame-options` | `DENY` |
+| `x-xss-protection` | `0` |
 | `x-content-type-options` | `nosniff` |
 | `referrer-policy` | `strict-origin-when-cross-origin` |
 | `permissions-policy` | `geolocation=(), microphone=(), camera=()` |

@@ -30,9 +30,10 @@ Cloudflare Pages legge questo file dalla cartella `dist/` (Vite lo copia automat
 
 ```
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com; connect-src https://www.googleapis.com https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY
+  X-XSS-Protection: 0
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
@@ -48,7 +49,8 @@ Cloudflare Pages legge questo file dalla cartella `dist/` (Vite lo copia automat
 | `font-src https://fonts.gstatic.com` | Ammette solo i file woff2 di Google Fonts |
 | `img-src 'self' data: https://lh3.googleusercontent.com https://lh3.google.com` | Ammette il CDN Google Drive (thumbnailLink) + `data:` per eventuali SVG inline |
 | `connect-src https://www.googleapis.com https://api.web3forms.com` | Ammette solo le fetch verso Drive API e Web3Forms |
-| `form-action https://api.web3forms.com` | Limita le destinazioni dei submit HTML nativi a Web3Forms. `connect-src` copre solo `fetch`/XHR — senza `form-action`, un XSS o un'estensione malevola che modificasse l'attributo `action` del form potrebbe esfiltrare i dati verso qualsiasi server esterno, anche con JS attivo |
+| `form-action 'self' https://api.web3forms.com` | Limita le destinazioni dei submit HTML nativi a Web3Forms e alla propria origin. `connect-src` copre solo `fetch`/XHR — senza `form-action`, un XSS o un'estensione malevola che modificasse l'attributo `action` del form potrebbe esfiltrare i dati verso qualsiasi server esterno. `'self'` garantisce che form futuri che puntano allo stesso dominio (es. ricerca, booking) non vengano bloccati |
+| `X-XSS-Protection: 0` | Disabilita esplicitamente il vecchio filtro XSS dei browser legacy (IE, vecchio Safari). Con una CSP robusta il filtro legacy è un vettore di attacco (cross-site leaking), non una protezione — raccomandazione OWASP |
 | `frame-ancestors 'none'` | Impedisce che il sito sia embeddato in iframe (clickjacking) |
 | `object-src 'none'` | Blocca Flash e plugin obsoleti |
 | `base-uri 'self'` | Impedisce attacchi via `<base href="...">` esterno |
