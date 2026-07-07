@@ -89,7 +89,8 @@ git commit -m "chore: install sharp, add compress npm script"
 **Interfaces prodotte:**
 - `parseArgs(argv: string[]): { input: string | null, help: boolean }`
 - `isSupportedFile(filename: string): boolean`
-- `processDir(originaliDir: string, optimizedDir: string): Promise<{ ok: number, errors: number }>`
+- `processImage(inPath: string, outPath: string): Promise<void>`
+- `processDir(originaliDir: string, optimizedDir: string): Promise<{ ok: number, errors: number, elapsed: number }>`
 
 ---
 
@@ -105,7 +106,7 @@ import { mkdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { existsSync } from 'fs';
-import { parseArgs, isSupportedFile, processDir } from './compress.js';
+import { parseArgs, isSupportedFile, processImage, processDir } from './compress.js';
 
 describe('parseArgs', () => {
   it('estrae --input', () => {
@@ -143,18 +144,46 @@ describe('isSupportedFile', () => {
   });
 });
 
+describe('processImage', () => {
+  let testRoot;
+
+  beforeAll(async () => {
+    testRoot = join(tmpdir(), `compress-img-test-${Date.now()}`);
+    await mkdir(testRoot, { recursive: true });
+    await sharp({
+      create: { width: 200, height: 300, channels: 3, background: { r: 180, g: 100, b: 50 } },
+    })
+      .jpeg()
+      .toFile(join(testRoot, 'input.jpg'));
+  });
+
+  afterAll(async () => {
+    await rm(testRoot, { recursive: true, force: true });
+  });
+
+  it('converte JPEG in WebP e rispetta withoutEnlargement', async () => {
+    const outPath = join(testRoot, 'output.webp');
+    await processImage(join(testRoot, 'input.jpg'), outPath);
+    const meta = await sharp(outPath).metadata();
+    expect(meta.format).toBe('webp');
+    // 200×300 < 1900 su entrambi i lati: non deve essere ingrandita
+    expect(meta.width).toBe(200);
+    expect(meta.height).toBe(300);
+  });
+});
+
 describe('processDir', () => {
   let testRoot;
   let originaliDir;
   let optimizedDir;
 
   beforeAll(async () => {
-    testRoot = join(tmpdir(), `compress-test-${Date.now()}`);
+    testRoot = join(tmpdir(), `compress-dir-test-${Date.now()}`);
     originaliDir = join(testRoot, 'originali');
     optimizedDir = join(testRoot, 'optimized');
     await mkdir(originaliDir, { recursive: true });
 
-    // Immagine 200×300 JPEG (lato lungo 300 < 1900 → non deve essere ingrandita)
+    // Immagine 200×300 JPEG
     await sharp({
       create: { width: 200, height: 300, channels: 3, background: { r: 180, g: 100, b: 50 } },
     })
@@ -166,7 +195,7 @@ describe('processDir', () => {
       create: { width: 50, height: 50, channels: 3, background: { r: 0, g: 0, b: 0 } },
     })
       .png()
-      .toFile(join(originaliDir, 'thumbs.db')); // estensione non supportata, ignorata
+      .toFile(join(originaliDir, 'thumbs.db'));
   });
 
   afterAll(async () => {
@@ -175,7 +204,6 @@ describe('processDir', () => {
 
   it('genera test.webp nella cartella optimized/', async () => {
     const result = await processDir(originaliDir, optimizedDir);
-
     expect(result.ok).toBe(1);
     expect(result.errors).toBe(0);
     expect(existsSync(join(optimizedDir, 'test.webp'))).toBe(true);
@@ -195,7 +223,6 @@ describe('processDir', () => {
   });
 
   it('una seconda esecuzione svuota e rigenera optimized/', async () => {
-    // Aggiunge un file spurio in optimized/ per simulare stato precedente
     await sharp({
       create: { width: 10, height: 10, channels: 3, background: { r: 0, g: 0, b: 0 } },
     })
@@ -232,7 +259,12 @@ import { fileURLToPath } from 'url';
 const SUPPORTED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.heic', '.tif', '.tiff', '.webp']);
 const MAX_DIMENSION = 1900;
 const WEBP_QUALITY = 85;
+const CONCURRENCY = 4;
 
+/**
+ * @param {string[]} argv - Array di argomenti CLI (es. process.argv.slice(2)).
+ * @returns {{ input: string | null, help: boolean }}
+ */
 export function parseArgs(argv) {
   const result = { input: null, help: false };
   for (let i = 0; i < argv.length; i++) {
@@ -242,43 +274,67 @@ export function parseArgs(argv) {
   return result;
 }
 
+/**
+ * @param {string} filename - Nome del file con estensione.
+ * @returns {boolean}
+ */
 export function isSupportedFile(filename) {
   return SUPPORTED_EXTS.has(extname(filename).toLowerCase());
 }
 
+/**
+ * @param {string} inPath - Percorso assoluto del file sorgente.
+ * @param {string} outPath - Percorso assoluto del file di output (.webp).
+ * @returns {Promise<void>}
+ */
+export async function processImage(inPath, outPath) {
+  await sharp(inPath)
+    .resize({
+      width: MAX_DIMENSION,
+      height: MAX_DIMENSION,
+      fit: 'inside',
+      kernel: 'lanczos3',
+      withoutEnlargement: true,
+    })
+    .withMetadata(false)
+    .webp({ quality: WEBP_QUALITY })
+    .toFile(outPath);
+}
+
+/**
+ * @param {string} originaliDir - Percorso assoluto della cartella sorgente.
+ * @param {string} optimizedDir - Percorso assoluto della cartella di output.
+ * @returns {Promise<{ ok: number, errors: number, elapsed: number }>}
+ */
 export async function processDir(originaliDir, optimizedDir) {
   const files = (await readdir(originaliDir)).filter(isSupportedFile);
 
   await rm(optimizedDir, { recursive: true, force: true });
   await mkdir(optimizedDir, { recursive: true });
 
-  let errors = 0;
+  let totalErrors = 0;
   const start = Date.now();
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const outName = basename(file, extname(file)) + '.webp';
-    process.stdout.write(`⚙  [${i + 1}/${files.length}] ${file} → ${outName}\n`);
-
-    try {
-      await sharp(join(originaliDir, file))
-        .resize({
-          width: MAX_DIMENSION,
-          height: MAX_DIMENSION,
-          fit: 'inside',
-          kernel: 'lanczos3',
-          withoutEnlargement: true,
-        })
-        .withMetadata(false)
-        .webp({ quality: WEBP_QUALITY })
-        .toFile(join(optimizedDir, outName));
-    } catch (err) {
-      process.stderr.write(`  ✗ Errore su ${file}: ${err.message}\n`);
-      errors++;
-    }
+  for (let i = 0; i < files.length; i += CONCURRENCY) {
+    const chunk = files.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(
+      chunk.map(async (file, j) => {
+        const idx = i + j + 1;
+        const outName = basename(file, extname(file)) + '.webp';
+        process.stdout.write(`⚙  [${idx}/${files.length}] ${file} → ${outName}\n`);
+        try {
+          await processImage(join(originaliDir, file), join(optimizedDir, outName));
+          return true;
+        } catch (err) {
+          process.stderr.write(`  ✗ Errore su ${file}: ${err.message}\n`);
+          return false;
+        }
+      })
+    );
+    totalErrors += results.filter(r => !r).length;
   }
 
-  return { ok: files.length - errors, errors, elapsed: Date.now() - start };
+  return { ok: files.length - totalErrors, errors: totalErrors, elapsed: Date.now() - start };
 }
 
 async function main() {
@@ -339,18 +395,15 @@ npm test
 Expected:
 ```
 Test Files  13 passed (13)
-     Tests  88 passed (88)
+     Tests  86 passed (86)
 ```
 
-(75 test esistenti + 13 nuovi di compress.test.js)
+(75 test esistenti + 11 nuovi di compress.test.js)
 
 - [ ] **Step 5: Test manuale dello script**
 
-Creare una cartella di test temporanea con almeno un JPEG dentro `originali/`:
-
 ```bash
 mkdir -p /tmp/portfolio-test/originali
-# Copia una foto qualsiasi:
 cp ~/Desktop/qualsiasi-foto.jpg /tmp/portfolio-test/originali/
 
 npm run compress -- --input /tmp/portfolio-test
@@ -370,7 +423,7 @@ Verificare che `/tmp/portfolio-test/optimized/qualsiasi-foto.webp` esista e sia 
 
 ```bash
 git add scripts/compress.js scripts/compress.test.js
-git commit -m "feat: add compress script — WebP 1900px quality 85 via Sharp"
+git commit -m "feat: add compress script — WebP 1900px q85, concurrent batches of 4"
 ```
 
 ---
@@ -379,7 +432,7 @@ git commit -m "feat: add compress script — WebP 1900px quality 85 via Sharp"
 
 ```bash
 npm test
-# Expected: 13 test files, 88 tests passed
+# Expected: 13 test files, 86 tests passed
 
 npm run compress -- --help
 # Expected: stampa usage e termina
