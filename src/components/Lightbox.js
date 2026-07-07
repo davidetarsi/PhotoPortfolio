@@ -17,6 +17,7 @@ export function createLightbox(photos) {
   document.body.appendChild(el);
 
   let current = 0;
+  let _triggerEl = null;
   const imgEl = el.querySelector('.lightbox__img');
   const capEl = el.querySelector('.lightbox__caption');
   const closeBtn = el.querySelector('.lightbox__close');
@@ -29,7 +30,8 @@ export function createLightbox(photos) {
     capEl.textContent = `${photos[current].name} · ${current + 1}/${photos.length}`;
   }
 
-  function open(index) {
+  function open(index, triggerEl) {
+    _triggerEl = triggerEl ?? null;
     current = index;
     update();
     el.classList.add('lightbox--open');
@@ -41,6 +43,7 @@ export function createLightbox(photos) {
     el.classList.remove('lightbox--open');
     el.setAttribute('aria-hidden', 'true');
     imgEl.src = '';
+    if (_triggerEl) { _triggerEl.focus(); _triggerEl = null; }
   }
 
   function step(d) {

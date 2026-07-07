@@ -56,4 +56,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .album-card__img { transition: none; }
+  .album-card:hover .album-card__img { transform: none; }
 }

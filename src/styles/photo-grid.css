@@ -71,6 +71,7 @@
 @media (prefers-reduced-motion: reduce) {
   .photo-grid__skeleton { animation: none; }
   .photo-grid__item img { transition: none; }
+  .photo-grid__item:hover img { transform: none; }
 }
 
 .photo-grid__error {

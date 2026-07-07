@@ -22,7 +22,7 @@ renderSkeletons(gridEl, 12);
 listPhotos(album.driveFolderId, siteConfig.driveApiKey)
   .then(photos => {
     const lb = createLightbox(photos);
-    renderGrid(gridEl, photos, i => lb.open(i));
+    renderGrid(gridEl, photos, (i, triggerEl) => lb.open(i, triggerEl));
   })
   .catch(err => {
     const code = err.code;

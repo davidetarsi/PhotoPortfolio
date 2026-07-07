@@ -5,13 +5,8 @@ export function createAlbumCard({ slug, title, description, cover }) {
   a.className = 'album-card';
   a.href = `/album.html?album=${encodeURIComponent(slug)}`;
 
-  const imgHtml = cover
-    ? `<img class="album-card__img" src="${cover}" alt="" loading="lazy">`
-    : '';
-
-  const descHtml = description
-    ? `<p class="album-card__desc"></p>`
-    : '';
+  const imgHtml = cover ? `<img class="album-card__img" alt="" loading="lazy">` : '';
+  const descHtml = description ? `<p class="album-card__desc"></p>` : '';
 
   a.innerHTML = `
     <div class="album-card__cover">${imgHtml}</div>
@@ -21,6 +16,7 @@ export function createAlbumCard({ slug, title, description, cover }) {
     </div>
   `;
 
+  if (cover) a.querySelector('.album-card__img').setAttribute('src', cover);
   a.querySelector('.album-card__title').textContent = title;
   if (description) a.querySelector('.album-card__desc').textContent = description;
 

@@ -27,8 +27,12 @@ export function renderGrid(container, photos, onPhotoClick) {
     cap.className = 'photo-grid__caption';
     cap.textContent = photo.name;
 
+    fig.tabIndex = 0;
     fig.append(img, cap);
-    fig.addEventListener('click', () => onPhotoClick(i));
+    fig.addEventListener('click', () => onPhotoClick(i, fig));
+    fig.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPhotoClick(i, fig); }
+    });
     container.appendChild(fig);
   });
 }
