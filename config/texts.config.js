@@ -18,6 +18,14 @@ export const texts = {
   contatti: {
     heading: 'Contatti',
     body: 'Scrivimi per informazioni su lavori e collaborazioni.',
+    form: {
+      namePlaceholder: 'Nome',
+      emailPlaceholder: 'Email',
+      messagePlaceholder: 'Messaggio',
+      submitLabel: 'Invia',
+      successMessage: 'Messaggio inviato. Ti risponderò presto.',
+      errorMessage: "Errore durante l'invio. Riprova più tardi.",
+    },
   },
   footer: {
     copyright: `© ${new Date().getFullYear()}`,

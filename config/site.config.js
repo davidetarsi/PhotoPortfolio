@@ -8,5 +8,5 @@ export const siteConfig = {
   },
   provider: 'googleDrive',
   driveApiKey: import.meta.env.VITE_DRIVE_API_KEY,
-  formEndpoint: '',
+  web3formsAccessKey: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY ?? '',
 };
