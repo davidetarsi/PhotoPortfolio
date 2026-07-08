@@ -1,0 +1,8 @@
+.site-footer {
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: var(--color-muted);
+}

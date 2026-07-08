@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stile 1 — Cinematic (hero + card + mosaico)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,400&family=Sora:wght@300;400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101112; --surface:#191b1c; --text:#ece7de; --dim:#8b857b;
+  --accent:#4f9e96;
+  --display:'Fraunces',serif; --body:'Sora',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-weight:300}
+.tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+
+/* HERO full-bleed */
+.hero{position:relative;height:92vh;overflow:hidden;display:flex;align-items:flex-end}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.72)}
+.hero-inner{position:relative;padding:28px 22px 46px;width:100%;
+  background:linear-gradient(transparent,rgba(16,17,18,.88))}
+.hero h1{font-family:var(--display);font-weight:300;font-size:clamp(2.4rem,9vw,4.6rem);line-height:1.02}
+.hero h1 em{font-style:italic;font-weight:400;color:var(--accent)}
+.hero p{margin-top:12px;max-width:420px;color:var(--dim);font-size:.9rem;line-height:1.6}
+nav{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+  padding:18px 22px;z-index:2}
+nav .brand{font-family:var(--mono);font-size:.75rem;letter-spacing:.2em}
+nav a{color:var(--text);text-decoration:none;font-size:.8rem;margin-left:18px;opacity:.85}
+
+/* CARD ALBUM */
+section{max-width:1080px;margin:0 auto;padding:64px 18px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:26px}
+.sec-head h2{font-family:var(--display);font-weight:300;font-size:1.9rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:4/5;background:var(--surface)}
+.card img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.card:hover img{transform:scale(1.04)}
+.card .info{position:absolute;inset:auto 0 0 0;padding:34px 14px 14px;
+  background:linear-gradient(transparent,rgba(0,0,0,.75))}
+.card h3{font-family:var(--display);font-weight:500;font-size:1.25rem}
+.card .tag{color:#cfc9bf;margin-top:2px;display:block}
+
+/* MOSAICO */
+.mosaic{columns:3 160px;column-gap:10px}
+.mosaic img{width:100%;border-radius:5px;margin-bottom:10px;display:block;break-inside:avoid}
+
+footer{padding:40px 22px 60px;text-align:center}
+footer .tag{display:block;margin-bottom:8px}
+footer a{color:var(--accent);text-decoration:none;font-size:.85rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">DAVIDE — FOTOGRAFIA</span>
+  <span><a href="#">Album</a><a href="#">Contatti</a></span>
+</nav>
+
+<div class="hero">
+  <img src="https://picsum.photos/seed/action12/1600/1100" alt="">
+  <div class="hero-inner">
+    <span class="tag">Sport · Street · Viaggio</span>
+    <h1>Il movimento,<br><em>fermato</em>.</h1>
+    <p>Reportage sportivi e strade del mondo. Ogni album è un racconto per immagini.</p>
+  </div>
+</div>
+
+<section>
+  <div class="sec-head"><h2>Album</h2><span class="tag">04 raccolte</span></div>
+  <div class="cards">
+    <div class="card"><img src="https://picsum.photos/seed/sport31/700/900" alt="">
+      <div class="info"><h3>Match Day</h3><span class="tag">Sport · 2026</span></div></div>
+    <div class="card"><img src="https://picsum.photos/seed/street44/700/900" alt="">
+      <div class="info"><h3>Strade di Lisbona</h3><span class="tag">Street · 2025</span></div></div>
+    <div class="card"><img src="https://picsum.photos/seed/travel58/700/900" alt="">
+      <div class="info"><h3>Andalusia</h3><span class="tag">Viaggio · 2025</span></div></div>
+    <div class="card"><img src="https://picsum.photos/seed/night77/700/900" alt="">
+      <div class="info"><h3>Notturni</h3><span class="tag">Street · 2024</span></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>Dentro un album</h2><span class="tag">anteprima mosaico</span></div>
+  <div class="mosaic">
+    <img src="https://picsum.photos/seed/m1/500/700" alt="">
+    <img src="https://picsum.photos/seed/m2/500/420" alt="">
+    <img src="https://picsum.photos/seed/m3/500/560" alt="">
+    <img src="https://picsum.photos/seed/m4/500/640" alt="">
+    <img src="https://picsum.photos/seed/m5/500/460" alt="">
+    <img src="https://picsum.photos/seed/m6/500/720" alt="">
+    <img src="https://picsum.photos/seed/m7/500/500" alt="">
+    <img src="https://picsum.photos/seed/m8/500/620" alt="">
+    <img src="https://picsum.photos/seed/m9/500/440" alt="">
+  </div>
+</section>
+
+<footer>
+  <span class="tag">Stile 1 / 4 — Cinematic: hero + card album + mosaico</span>
+  <a href="mockup-2-split.html">Vedi lo stile 2 (Split-screen) →</a>
+</footer>
+
+</body>
+</html>

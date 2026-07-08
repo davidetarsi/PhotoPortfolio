@@ -1,0 +1,33 @@
+@import '../../theme/tokens.css';
+@import '../../theme/typography.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.page-main {
+  padding-top: var(--nav-height);
+  padding-bottom: var(--space-xl);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.section-heading {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: 1.9rem;
+  margin: var(--space-xl) 0 var(--space-lg);
+}
