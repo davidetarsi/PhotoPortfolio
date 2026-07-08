@@ -127,30 +127,30 @@ Lo script genera WebP a 1900px (lato lungo) con qualità 85. La cartella `optimi
 
 ---
 
-## Deploy su Cloudflare Pages
+## Deploy su Cloudflare Workers
 
 ### Primo deploy
 
 1. GitHub → nuovo repo privato da questo template
-2. Cloudflare Pages → Workers & Pages → Create → Pages → Connect to Git
+2. Cloudflare dashboard → Workers & Pages → Create → **Import a repository**
 3. Seleziona il repo, imposta:
    - Build command: `npm test && npm run build`
-   - Build output directory: `dist`
-4. Environment Variables (produzione **e** preview):
+   - Deploy command: `npx wrangler deploy` (la directory `dist` è già configurata in `wrangler.jsonc`)
+4. Build variables:
    - `VITE_DRIVE_API_KEY` = la tua API key Google Drive
    - `VITE_WEB3FORMS_ACCESS_KEY` = la tua access key Web3Forms
    - `NODE_VERSION` = `22`
-5. Save and Deploy
+5. Deploy — il sito esce su `https://<nome-progetto>.<tuo-subdominio>.workers.dev`; ogni push su main rideploya in automatico (se i test falliscono, il deploy si blocca)
 
 ### Whitelist domini (obbligatorio)
 
 **Google Cloud Console** → APIs & Services → Credentials → la tua API key → HTTP referrers:
 - `http://localhost:5173/*`
-- `https://nome.pages.dev/*`
-- `https://*.nome.pages.dev/*`
+- `https://<nome-progetto>.<tuo-subdominio>.workers.dev/*`
+- `https://*.<tuo-subdominio>.workers.dev/*` (preview deployments)
 
 **Web3Forms** → Dashboard → Access Keys → Allowed Domains:
 - `localhost`
-- `nome.pages.dev`
+- `<nome-progetto>.<tuo-subdominio>.workers.dev`
 
 Senza queste whitelist: 403 in locale e form non funzionante in produzione.

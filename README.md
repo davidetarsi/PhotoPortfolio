@@ -1,6 +1,6 @@
 # Photo Portfolio — Boilerplate
 
-Sito portfolio fotografico statico multipagina. Le foto vengono lette da cartelle Google Drive condivise via Drive API v3 — nessun backend, nessun database. Personalizza `config/` e `theme/`, poi deploya su Cloudflare Pages.
+Sito portfolio fotografico statico multipagina. Le foto vengono lette da cartelle Google Drive condivise via Drive API v3 — nessun backend, nessun database. Personalizza `config/` e `theme/`, poi deploya su Cloudflare Workers.
 
 ## Quick start
 
@@ -18,19 +18,19 @@ npm test         # 86 test
 1. **Crea la cartella Google Drive** — condividi con "chiunque con il link può visualizzare"
 2. **Google Cloud Console** → abilita Drive API v3 → crea API key → imposta restrizione HTTP referrer con tre voci:
    - `http://localhost:5173/*` (sviluppo locale)
-   - `https://nome.pages.dev/*` (produzione — sostituisci `nome` con il nome del tuo progetto CF)
-   - `https://*.nome.pages.dev/*` (preview deployments)
-3. **Web3Forms** → crea account su web3forms.com → copia l'access key → in Dashboard → Access Keys aggiungi in "Allowed Domains": `localhost` (sviluppo locale) e il dominio Cloudflare Pages (es. `nome.pages.dev`)
+   - `https://nome-progetto.tuo-subdominio.workers.dev/*` (produzione — il dominio esatto lo vedi dopo il primo deploy)
+   - `https://*.tuo-subdominio.workers.dev/*` (preview deployments)
+3. **Web3Forms** → crea account su web3forms.com → copia l'access key → in Dashboard → Access Keys aggiungi in "Allowed Domains": `localhost` (sviluppo locale) e il dominio Cloudflare (es. `nome-progetto.tuo-subdominio.workers.dev`)
 4. **Variabili d'ambiente locali** → `cp .env.example .env` → compila `VITE_DRIVE_API_KEY` e `VITE_WEB3FORMS_ACCESS_KEY`
 5. **Identità** → `config/site.config.js` → compila `name`, `bio`, `heroImageUrl`, `social`
 6. **Album** → `config/albums.config.js` → per ogni album: `driveFolderId` (ID cartella Drive), `cover` (URL copertina), `slug`, `title`, `description`
 7. *(Opzionale)* **Testi UI** → `config/texts.config.js` → subtitle landing, testi form, messaggi errore
 8. *(Opzionale)* **Tema visivo** → `theme/tokens.css` per colori e variabili font → `theme/typography.css` per scala tipografica → aggiorna i `<link>` Google Fonts in `index.html`, `album.html`, `contatti.html` se cambi font
-9. **Deploy Cloudflare Pages** → nuovo progetto → collega il repo GitHub → imposta:
+9. **Deploy Cloudflare Workers** → Workers & Pages → Create → Import a repository → seleziona il repo GitHub → imposta:
    - Build command: `npm test && npm run build`
-   - Build output directory: `dist`
-   - Env vars (produzione **e** preview): `VITE_DRIVE_API_KEY`, `VITE_WEB3FORMS_ACCESS_KEY`, `NODE_VERSION=22`
-   - Verifica che `localhost` e `*.pages.dev` siano già presenti nelle whitelist GCP e Web3Forms configurate ai punti 2 e 3
+   - Deploy command: `npx wrangler deploy` (la directory `dist` è già configurata in `wrangler.jsonc`)
+   - Build variables: `VITE_DRIVE_API_KEY`, `VITE_WEB3FORMS_ACCESS_KEY`, `NODE_VERSION=22`
+   - Dopo il primo deploy, aggiorna le whitelist GCP e Web3Forms (punti 2 e 3) con il dominio `workers.dev` assegnato
 
 ## Mappa dei file
 
@@ -62,7 +62,7 @@ scripts/         ← strumenti di sviluppo (compress.js)
 - **Meta tag / Open Graph:** iniettati a build time da `site.config.js` (plugin `site-meta` in `vite.config.js`) — i crawler social non eseguono JS, quindi i tag devono stare nell'HTML statico; i link ai singoli album condividono l'anteprima generica del sito
 - **Framework:** nessuno — vanilla JS/HTML/CSS
 - **Provider:** interfaccia astratta in `src/providers/provider.js`; `googleDrive.js` è sostituibile senza modificare le pagine
-- **Deploy:** Cloudflare Pages — CDN, build automatica, dominio gratuito `*.pages.dev`
+- **Deploy:** Cloudflare Workers (static assets, config in `wrangler.jsonc`) — CDN, build automatica su ogni push via Workers Builds, dominio gratuito `*.workers.dev`
 - **Compressione foto:** `npm run compress -- --input <percorso>` (Sharp, WebP 1900px q85)
 
 ## GitHub Template
