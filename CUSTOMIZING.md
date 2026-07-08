@@ -61,6 +61,15 @@ Per **riordinare** gli album: riordinare gli oggetti nell'array.
 | `nav.contattiLabel` | Etichetta link contatti in navigazione |
 | `footer.copyright` | Testo copyright nel footer (anno calcolato automaticamente) |
 
+Testi aggiuntivi della pagina album (opzionali):
+
+| Campo | Descrizione |
+|---|---|
+| `album.loading` | Testo mostrato mentre le foto si caricano |
+| `album.empty` | Testo mostrato se la cartella Drive è vuota |
+| `album.notFound` | Testo mostrato se lo slug non corrisponde a nessun album |
+| `album.notFoundLink` | Testo del link "torna alla home" nella pagina not found |
+
 I messaggi di errore Drive (`album.error.*`) sono tecnici — modificarli solo se vuoi testi personalizzati per cartella non pubblica, errori di rete, ecc.
 
 ---

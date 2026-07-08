@@ -7,6 +7,7 @@ Sito portfolio fotografico statico multipagina. Le foto vengono lette da cartell
 ```bash
 node --version   # richiede v20+
 npm install
+cp .env.example .env  # compila VITE_DRIVE_API_KEY e VITE_WEB3FORMS_ACCESS_KEY
 npm run dev      # → http://localhost:5173/
 npm run build    # output in dist/
 npm test         # 86 test
