@@ -59,6 +59,7 @@ scripts/         ← strumenti di sviluppo (compress.js)
 
 - **Storage:** Google Drive (non Google Foto — Library API ristretta da marzo 2025)
 - **Bundler:** Vite 8.x multipagina — entry point in `vite.config.js → rollupOptions.input`
+- **Meta tag / Open Graph:** iniettati a build time da `site.config.js` (plugin `site-meta` in `vite.config.js`) — i crawler social non eseguono JS, quindi i tag devono stare nell'HTML statico; i link ai singoli album condividono l'anteprima generica del sito
 - **Framework:** nessuno — vanilla JS/HTML/CSS
 - **Provider:** interfaccia astratta in `src/providers/provider.js`; `googleDrive.js` è sostituibile senza modificare le pagine
 - **Deploy:** Cloudflare Pages — CDN, build automatica, dominio gratuito `*.pages.dev`

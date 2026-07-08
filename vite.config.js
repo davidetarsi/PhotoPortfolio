@@ -1,8 +1,20 @@
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
+import { siteConfig } from './config/site.config.js'
+import { injectSiteMeta } from './src/utils/injectSiteMeta.js'
+
+// Sostituisce i placeholder {{SITE_*}} negli HTML a build time (e in dev),
+// così titolo e Open Graph sono nell'HTML statico visibile ai crawler social.
+const siteMetaPlugin = () => ({
+  name: 'site-meta',
+  transformIndexHtml: {
+    order: 'pre',
+    handler: html => injectSiteMeta(html, siteConfig),
+  },
+})
 
 export default defineConfig({
-  plugins: [],
+  plugins: [siteMetaPlugin()],
   test: {
     environment: 'jsdom',
   },

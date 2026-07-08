@@ -8,13 +8,20 @@ Questo boilerplate è progettato per essere riutilizzato su contesti diversi: po
 
 | Campo | Descrizione | Esempio |
 |---|---|---|
-| `name` | Nome visualizzato in nav e footer | `'Mario Rossi Fotografia'` |
-| `bio` | Testo nella sezione hero della landing | `'Fotografo di matrimoni a Milano.'` |
-| `heroImageUrl` | Immagine hero — usa il formato Drive diretto | `'https://lh3.googleusercontent.com/d/FILE_ID'` |
+| `name` | Nome visualizzato in nav, footer, `<title>` e anteprime social | `'Mario Rossi Fotografia'` |
+| `bio` | Testo nella sezione hero, meta description e anteprime social | `'Fotografo di matrimoni a Milano.'` |
+| `heroImageUrl` | Immagine hero e immagine delle anteprime social — usa il formato Drive diretto | `'https://lh3.googleusercontent.com/d/FILE_ID'` |
 | `social.instagram` | Link Instagram (rimuovere il commento per attivarlo) | `'https://instagram.com/mariorossi'` |
 | `language` | Lingua del sito (usata per `<html lang="">`) | `'it'` |
 
 `driveApiKey` e `web3formsAccessKey` vengono letti da `.env` — non modificarli qui.
+
+### Anteprime social (Open Graph)
+
+Titolo, descrizione e immagine delle anteprime (WhatsApp, Instagram DM, LinkedIn, iMessage…) vengono iniettati nell'HTML **a build time** dai valori qui sopra: non serve toccare i file HTML. Due limiti da conoscere:
+
+- `heroImageUrl` deve essere un URL assoluto (`https://…`), altrimenti i crawler social ignorano l'immagine. Se è vuoto, l'anteprima esce senza immagine.
+- Qualsiasi link del sito venga condiviso — inclusi i link ai singoli album — mostra sempre l'anteprima generica del sito. I crawler social non eseguono JavaScript, quindi non possono conoscere il contenuto dell'album dietro `album.html?album=<slug>`. È un limite dell'hosting statico puro, accettato per scelta.
 
 ---
 

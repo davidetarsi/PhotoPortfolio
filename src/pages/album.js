@@ -30,6 +30,7 @@ if (!album) {
   link.textContent = texts.album.notFoundLink;
   gridEl.replaceChildren(p, link);
 } else {
+  document.title = `${album.title} — ${siteConfig.name}`;
   document.getElementById('album-title').textContent = album.title;
   renderSkeletons(gridEl, 12);
   listPhotos(album.driveFolderId, siteConfig.driveApiKey)
