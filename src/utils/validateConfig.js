@@ -1,4 +1,4 @@
-const KNOWN_PROVIDERS = ['googleDrive'];
+const KNOWN_PROVIDERS = ['googleDrive', 'r2'];
 
 export function validateConfig(siteConfig, albums) {
   if (!siteConfig || typeof siteConfig !== 'object') {
@@ -15,6 +15,11 @@ export function validateConfig(siteConfig, albums) {
   if (siteConfig.provider === 'googleDrive' && !siteConfig.driveApiKey?.trim()) {
     throw new Error(
       '[validateConfig] siteConfig.driveApiKey è obbligatorio quando provider è "googleDrive". Controlla il file .env.'
+    );
+  }
+  if (siteConfig.provider === 'r2' && !siteConfig.r2PublicUrl?.trim()) {
+    throw new Error(
+      '[validateConfig] siteConfig.r2PublicUrl è obbligatorio quando provider è "r2". Controlla VITE_R2_PUBLIC_URL nel file .env.'
     );
   }
   if (!Array.isArray(albums) || albums.length === 0) {
@@ -36,9 +41,6 @@ export function validateConfig(siteConfig, albums) {
       throw new Error(`[validateConfig] slug duplicato: "${a.slug}"`);
     }
     slugs.add(a.slug);
-    if (!a.driveFolderId?.trim()) {
-      throw new Error(`[validateConfig] albums[${i}].driveFolderId è obbligatorio`);
-    }
     if (!a.title?.trim()) {
       throw new Error(`[validateConfig] albums[${i}].title è obbligatorio`);
     }

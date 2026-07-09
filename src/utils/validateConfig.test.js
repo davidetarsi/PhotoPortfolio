@@ -8,11 +8,11 @@ const validSiteConfig = {
 };
 
 const validAlbums = [
-  { slug: 'paesaggi', title: 'Paesaggi', driveFolderId: 'abc123', cover: null },
+  { slug: 'paesaggi', title: 'Paesaggi' },
 ];
 
 describe('validateConfig', () => {
-  it('non lancia con config valida', () => {
+  it('non lancia con config valida (googleDrive)', () => {
     expect(() => validateConfig(validSiteConfig, validAlbums)).not.toThrow();
   });
 
@@ -38,27 +38,35 @@ describe('validateConfig', () => {
 
   it('lancia su slug duplicati', () => {
     const dupes = [
-      { slug: 'test', title: 'Test', driveFolderId: 'abc', cover: null },
-      { slug: 'test', title: 'Test 2', driveFolderId: 'def', cover: null },
+      { slug: 'test', title: 'Test' },
+      { slug: 'test', title: 'Test 2' },
     ];
     expect(() => validateConfig(validSiteConfig, dupes))
       .toThrow('[validateConfig] slug duplicato: "test"');
   });
 
   it('lancia se slug non valido (spazi o maiuscole)', () => {
-    const badSlug = [{ slug: 'Test Album', title: 'T', driveFolderId: 'abc', cover: null }];
+    const badSlug = [{ slug: 'Test Album', title: 'T' }];
     expect(() => validateConfig(validSiteConfig, badSlug))
       .toThrow('[validateConfig] albums[0].slug "Test Album" non valido');
-  });
-
-  it('lancia se albums[0].driveFolderId è vuoto', () => {
-    const noFolder = [{ slug: 'test', title: 'Test', driveFolderId: '', cover: null }];
-    expect(() => validateConfig(validSiteConfig, noFolder))
-      .toThrow('[validateConfig] albums[0].driveFolderId è obbligatorio');
   });
 
   it('lancia con messaggio prefissato se siteConfig è null', () => {
     expect(() => validateConfig(null, validAlbums))
       .toThrow('[validateConfig] siteConfig non valido');
+  });
+
+  it('lancia errore se provider è "r2" e r2PublicUrl manca', () => {
+    expect(() => validateConfig(
+      { name: 'Test', provider: 'r2', r2PublicUrl: '' },
+      [{ slug: 'album-1', title: 'A' }]
+    )).toThrow('r2PublicUrl è obbligatorio');
+  });
+
+  it('non lancia errore per configurazione r2 valida', () => {
+    expect(() => validateConfig(
+      { name: 'Test', provider: 'r2', r2PublicUrl: 'https://pub-abc.r2.dev' },
+      [{ slug: 'album-1', title: 'A' }]
+    )).not.toThrow();
   });
 });
