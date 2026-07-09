@@ -69,7 +69,10 @@ export async function uploadAlbum(albumSlug, optimizedDir) {
     const key = `${albumSlug}/${filename}`
     const filePath = join(optimizedDir, filename)
     const body = await readFile(filePath)
-    const contentType = filename.endsWith('.webp') ? 'image/webp' : 'image/jpeg'
+    const extLower = extname(filename).toLowerCase()
+    const contentType = extLower === '.webp' ? 'image/webp'
+      : extLower === '.png' ? 'image/png'
+      : 'image/jpeg'
     process.stdout.write(`  [${i + 1}/${files.length}] ${key}\n`)
     await putObject(client, bucket, key, body, contentType)
   }

@@ -10,7 +10,8 @@ export async function listPhotos(albumSlug, r2PublicUrl) {
   const cached = getCached(cacheKey)
   if (cached) return cached
 
-  const manifestUrl = `${r2PublicUrl}/${albumSlug}/manifest.json`
+  const base = r2PublicUrl.replace(/\/$/, '')
+  const manifestUrl = `${base}/${albumSlug}/manifest.json`
 
   let res
   try {
@@ -34,11 +35,12 @@ export async function listPhotos(albumSlug, r2PublicUrl) {
   }
 
   const filenames = await res.json()
-  const base = `${r2PublicUrl}/${albumSlug}`
+  const photoBase = `${base}/${albumSlug}`
+  // R2 non ha image transforms nativi — grid e lightbox ricevono la stessa immagine full-res.
   const photos = filenames.map(name => ({
     name,
-    gridUrl: `${base}/${name}`,
-    fullUrl: `${base}/${name}`,
+    gridUrl: `${photoBase}/${name}`,
+    fullUrl: `${photoBase}/${name}`,
   }))
 
   setCached(cacheKey, photos)
