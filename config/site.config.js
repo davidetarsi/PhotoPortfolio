@@ -1,8 +1,8 @@
 export const siteConfig = {
-  name: 'Nome Fotografo',
-  bio: 'Una breve descrizione del fotografo.',
+  name: 'Davide Tarsi',
+  bio: 'Fotografo sportivo e di viaggio.',
   language: 'it',
-  heroImageUrl: '',
+  heroImageUrl: 'https://drive.google.com/file/d/1Ydo2WFwk0ncwo5-vkCYcZqFw6i3Ep61K',
   social: {
     // instagram: 'https://instagram.com/...',
   },

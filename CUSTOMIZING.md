@@ -120,8 +120,10 @@ Prima di caricare le foto su Google Drive, usa lo script di compressione locale 
 # /percorso/cartella/originali/   ← foto originali (JPEG, PNG, HEIC, TIFF, WebP)
 # /percorso/cartella/optimized/   ← generato dallo script → da caricare su Drive
 
-npm run compress -- --input /percorso/cartella
+npm run compress -- --input "/percorso/cartella"
 ```
+
+> ⚠️ Se il percorso contiene spazi, le virgolette sono obbligatorie.
 
 Lo script genera WebP a 1900px (lato lungo) con qualità 85. La cartella `optimized/` viene svuotata e rigenerata ad ogni run. Caricare su Drive solo `optimized/`.
 
