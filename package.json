@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "compress": "node scripts/compress.js"
+    "compress": "node scripts/compress.js",
+    "upload": "node --env-file=.env scripts/upload.js"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1083.0",
