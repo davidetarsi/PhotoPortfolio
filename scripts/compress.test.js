@@ -102,11 +102,13 @@ describe('processDir', () => {
     await rm(testRoot, { recursive: true, force: true });
   });
 
-  it('genera test.webp nella cartella optimized/', async () => {
+  it('genera test.webp nella cartella optimized/ e il manifest.json', async () => {
     const result = await processDir(originaliDir, optimizedDir);
     expect(result.ok).toBe(1);
     expect(result.errors).toBe(0);
+    expect(result.manifest).toEqual(['test.webp']);
     expect(existsSync(join(optimizedDir, 'test.webp'))).toBe(true);
+    expect(existsSync(join(optimizedDir, 'manifest.json'))).toBe(true);
   });
 
   it('output è WebP con dimensioni ≤ 1900px su ogni lato', async () => {

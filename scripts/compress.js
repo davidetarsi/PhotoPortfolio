@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { readdir, rm, mkdir } from 'fs/promises';
+import { readdir, rm, mkdir, writeFile } from 'fs/promises';
 import { join, extname, basename } from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -51,7 +51,7 @@ export async function processImage(inPath, outPath) {
 /**
  * @param {string} originaliDir - Percorso assoluto della cartella sorgente.
  * @param {string} optimizedDir - Percorso assoluto della cartella di output.
- * @returns {Promise<{ ok: number, errors: number, elapsed: number }>}
+ * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: string[] }>}
  */
 export async function processDir(originaliDir, optimizedDir) {
   const files = (await readdir(originaliDir)).filter(isSupportedFile);
@@ -61,6 +61,7 @@ export async function processDir(originaliDir, optimizedDir) {
 
   let totalErrors = 0;
   const start = Date.now();
+  const produced = [];
 
   for (let i = 0; i < files.length; i += CONCURRENCY) {
     const chunk = files.slice(i, i + CONCURRENCY);
@@ -71,17 +72,23 @@ export async function processDir(originaliDir, optimizedDir) {
         process.stdout.write(`⚙  [${idx}/${files.length}] ${file} → ${outName}\n`);
         try {
           await processImage(join(originaliDir, file), join(optimizedDir, outName));
-          return true;
+          return outName;
         } catch (err) {
           process.stderr.write(`  ✗ Errore su ${file}: ${err.message}\n`);
-          return false;
+          return null;
         }
       })
     );
-    totalErrors += results.filter(r => !r).length;
+    for (const name of results) {
+      if (name) produced.push(name);
+      else totalErrors++;
+    }
   }
 
-  return { ok: files.length - totalErrors, errors: totalErrors, elapsed: Date.now() - start };
+  const manifest = produced.sort();
+  await writeFile(join(optimizedDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+
+  return { ok: manifest.length, errors: totalErrors, elapsed: Date.now() - start, manifest };
 }
 
 async function main() {
@@ -126,6 +133,7 @@ Uso: npm run compress -- --input <percorso>
   process.stdout.write(
     `✅ Completato: ${ok} foto ottimizzate${errors > 0 ? `, ${errors} errori` : ''} in ${secs}s\n`
   );
+  process.stdout.write(`📋 manifest.json generato (${ok} file)\n`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
