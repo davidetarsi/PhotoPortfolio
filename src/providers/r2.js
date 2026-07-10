@@ -3,7 +3,7 @@ import { getCached, setCached } from './cache.js'
 /**
  * @param {string} albumSlug - Slug dell'album (es. 'sport-album').
  * @param {string} r2PublicUrl - URL pubblico base del bucket R2 (es. 'https://pub-xxx.r2.dev').
- * @returns {Promise<Array<{name: string, gridUrl: string, fullUrl: string}>>}
+ * @returns {Promise<Array<{name: string, gridUrl: string, fullUrl: string, width: number, height: number}>>}
  */
 export async function listPhotos(albumSlug, r2PublicUrl) {
   const cacheKey = `r2_${albumSlug}`
@@ -34,11 +34,13 @@ export async function listPhotos(albumSlug, r2PublicUrl) {
     throw err
   }
 
-  const filenames = await res.json()
+  const entries = await res.json()
   const photoBase = `${base}/${albumSlug}`
   // R2 non ha image transforms nativi — grid e lightbox ricevono la stessa immagine full-res.
-  const photos = filenames.map(name => ({
+  const photos = entries.map(({ name, width, height }) => ({
     name,
+    width,
+    height,
     gridUrl: `${photoBase}/${name}`,
     fullUrl: `${photoBase}/${name}`,
   }))

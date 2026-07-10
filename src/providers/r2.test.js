@@ -22,7 +22,10 @@ describe('r2 listPhotos', () => {
   })
 
   it('fetcha il manifest e costruisce gli URL corretti', async () => {
-    global.fetch.mockResolvedValueOnce(makeFetchResponse(['01_alba.webp', '02_tramonto.webp']))
+    global.fetch.mockResolvedValueOnce(makeFetchResponse([
+      { name: '01_alba.webp', width: 800, height: 600 },
+      { name: '02_tramonto.webp', width: 600, height: 900 },
+    ]))
 
     const photos = await listPhotos('sport-album', BASE)
 
@@ -32,16 +35,20 @@ describe('r2 listPhotos', () => {
       name: '01_alba.webp',
       gridUrl: `${BASE}/sport-album/01_alba.webp`,
       fullUrl: `${BASE}/sport-album/01_alba.webp`,
+      width: 800,
+      height: 600,
     })
     expect(photos[1]).toEqual({
       name: '02_tramonto.webp',
       gridUrl: `${BASE}/sport-album/02_tramonto.webp`,
       fullUrl: `${BASE}/sport-album/02_tramonto.webp`,
+      width: 600,
+      height: 900,
     })
   })
 
   it('usa la cache e non chiama fetch alla seconda invocazione', async () => {
-    global.fetch.mockResolvedValueOnce(makeFetchResponse(['foto.webp']))
+    global.fetch.mockResolvedValueOnce(makeFetchResponse([{ name: 'foto.webp', width: 800, height: 600 }]))
 
     await listPhotos('sport-album', BASE)
     const second = await listPhotos('sport-album', BASE)
