@@ -50,3 +50,24 @@ export function makeFakeAssets() {
     },
   };
 }
+
+const te = new TextEncoder();
+const bytesToB64url = bytes =>
+  btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+/** Genera una coppia RSA reale e firma JWT validi per i test. */
+export async function makeJwtTestKit({ kid = 'test-key-1' } = {}) {
+  const { publicKey, privateKey } = await crypto.subtle.generateKey(
+    { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    true,
+    ['sign', 'verify'],
+  );
+  const jwk = { ...(await crypto.subtle.exportKey('jwk', publicKey)), kid, alg: 'RS256', use: 'sig' };
+  async function signToken(payload, { kidOverride = kid } = {}) {
+    const h = bytesToB64url(te.encode(JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: kidOverride })));
+    const p = bytesToB64url(te.encode(JSON.stringify(payload)));
+    const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privateKey, te.encode(`${h}.${p}`));
+    return `${h}.${p}.${bytesToB64url(sig)}`;
+  }
+  return { jwk, signToken, fetchJwks: async () => ({ keys: [jwk] }) };
+}
