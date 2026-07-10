@@ -24,6 +24,8 @@ describe('renderSkeletons', () => {
   it('renderizza esattamente count skeleton (fino a max 12)', () => {
     renderSkeletons(container, 6);
     expect(container.querySelectorAll('.photo-grid__skeleton').length).toBe(6);
+    renderSkeletons(container, 20);
+    expect(container.querySelectorAll('.photo-grid__skeleton').length).toBe(12);
   });
 });
 
