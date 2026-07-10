@@ -2,7 +2,7 @@ export const siteConfig = {
   name: 'Davide Tarsi',
   bio: 'Fotografo sportivo e di viaggio.',
   language: 'it',
-  heroImageUrl: 'https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev/sport-album/4x5-crop-7302.webp',
+  heroImageUrl: 'https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev/sport/4x5-crop-7302.webp',
   social: {
     // instagram: 'https://instagram.com/...',
   },
