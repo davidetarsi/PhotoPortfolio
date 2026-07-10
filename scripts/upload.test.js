@@ -42,22 +42,32 @@ describe('parseUploadArgs', () => {
 })
 
 describe('uploadAlbum', () => {
+  const fakeManifest = [
+    { name: '01_alba.webp', width: 800, height: 600 },
+    { name: '02_foto.webp', width: 600, height: 800 },
+  ]
+
   beforeEach(() => {
     mockReaddir.mockReset()
     mockReadFile.mockReset()
-    mockReadFile.mockResolvedValue(Buffer.from('fake'))
+    mockReadFile.mockImplementation((filePath) => {
+      if (String(filePath).endsWith('manifest.json')) {
+        return Promise.resolve(Buffer.from(JSON.stringify(fakeManifest)))
+      }
+      return Promise.resolve(Buffer.from('fake'))
+    })
     process.env.R2_ACCOUNT_ID = 'acc'
     process.env.R2_ACCESS_KEY_ID = 'key'
     process.env.R2_SECRET_ACCESS_KEY = 'secret'
     process.env.R2_BUCKET_NAME = 'bucket'
   })
 
-  it('carica i file .webp e genera il manifest', async () => {
+  it('carica i file .webp e legge il manifest da disco', async () => {
     mockReaddir.mockResolvedValue(['02_foto.webp', '01_alba.webp', 'non-supportato.txt'])
 
     const result = await uploadAlbum('sport-album', '/fake/dir')
 
     expect(result.uploaded).toBe(2)
-    expect(result.manifest).toEqual(['01_alba.webp', '02_foto.webp']) // ordinato alfabeticamente
+    expect(result.manifest).toEqual(fakeManifest)
   })
 })

@@ -51,7 +51,7 @@ async function putObject(client, bucket, key, body, contentType) {
  * e carica anche il manifest.json.
  * @param {string} albumSlug
  * @param {string} optimizedDir - percorso assoluto della cartella con i .webp
- * @returns {Promise<{ uploaded: number, manifest: string[] }>}
+ * @returns {Promise<{ uploaded: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
 export async function uploadAlbum(albumSlug, optimizedDir) {
   const bucket = process.env.R2_BUCKET_NAME
@@ -77,14 +77,14 @@ export async function uploadAlbum(albumSlug, optimizedDir) {
     await putObject(client, bucket, key, body, contentType)
   }
 
-  const manifest = files
+  const manifestPath = join(optimizedDir, 'manifest.json')
+  const manifestBody = await readFile(manifestPath)
   const manifestKey = `${albumSlug}/manifest.json`
-  const manifestBody = Buffer.from(JSON.stringify(manifest, null, 2))
   process.stdout.write(`Uploading manifest: ${manifestKey}\n`)
   await putObject(client, bucket, manifestKey, manifestBody, 'application/json')
 
   process.stdout.write(`Upload complete: ${files.length} photos + manifest.json\n`)
-  return { uploaded: files.length, manifest }
+  return { uploaded: files.length, manifest: JSON.parse(manifestBody.toString()) }
 }
 
 async function main() {

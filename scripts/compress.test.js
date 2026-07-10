@@ -106,7 +106,10 @@ describe('processDir', () => {
     const result = await processDir(originaliDir, optimizedDir);
     expect(result.ok).toBe(1);
     expect(result.errors).toBe(0);
-    expect(result.manifest).toEqual(['test.webp']);
+    expect(result.manifest).toHaveLength(1);
+    expect(result.manifest[0].name).toBe('test.webp');
+    expect(result.manifest[0].width).toBeGreaterThan(0);
+    expect(result.manifest[0].height).toBeGreaterThan(0);
     expect(existsSync(join(optimizedDir, 'test.webp'))).toBe(true);
     expect(existsSync(join(optimizedDir, 'manifest.json'))).toBe(true);
   });

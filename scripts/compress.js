@@ -33,10 +33,10 @@ export function isSupportedFile(filename) {
 /**
  * @param {string} inPath - Percorso assoluto del file sorgente.
  * @param {string} outPath - Percorso assoluto del file di output (.webp).
- * @returns {Promise<void>}
+ * @returns {Promise<{width: number, height: number, format: string, ...}>}
  */
 export async function processImage(inPath, outPath) {
-  await sharp(inPath)
+  return sharp(inPath)
     .resize({
       width: MAX_DIMENSION,
       height: MAX_DIMENSION,
@@ -51,7 +51,7 @@ export async function processImage(inPath, outPath) {
 /**
  * @param {string} originaliDir - Percorso assoluto della cartella sorgente.
  * @param {string} optimizedDir - Percorso assoluto della cartella di output.
- * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: string[] }>}
+ * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
 export async function processDir(originaliDir, optimizedDir) {
   const files = (await readdir(originaliDir)).filter(isSupportedFile);
@@ -71,21 +71,21 @@ export async function processDir(originaliDir, optimizedDir) {
         const outName = basename(file, extname(file)) + '.webp';
         process.stdout.write(`⚙  [${idx}/${files.length}] ${file} → ${outName}\n`);
         try {
-          await processImage(join(originaliDir, file), join(optimizedDir, outName));
-          return outName;
+          const info = await processImage(join(originaliDir, file), join(optimizedDir, outName));
+          return { name: outName, width: info.width, height: info.height };
         } catch (err) {
           process.stderr.write(`  ✗ Errore su ${file}: ${err.message}\n`);
           return null;
         }
       })
     );
-    for (const name of results) {
-      if (name) produced.push(name);
+    for (const result of results) {
+      if (result) produced.push(result);
       else totalErrors++;
     }
   }
 
-  const manifest = produced.sort();
+  const manifest = produced.sort((a, b) => a.name.localeCompare(b.name));
   await writeFile(join(optimizedDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
   return { ok: manifest.length, errors: totalErrors, elapsed: Date.now() - start, manifest };
@@ -133,7 +133,7 @@ Uso: npm run compress -- --input <percorso>
   process.stdout.write(
     `✅ Completato: ${ok} foto ottimizzate${errors > 0 ? `, ${errors} errori` : ''} in ${secs}s\n`
   );
-  process.stdout.write(`📋 manifest.json generato (${ok} file)\n`);
+  process.stdout.write(`📋 manifest.json generato (${ok} file con dimensioni)\n`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
