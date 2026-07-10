@@ -12,7 +12,6 @@
 .photo-grid__item {
   break-inside: avoid;
   margin-bottom: 1px;
-  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-surface);
   cursor: pointer;
