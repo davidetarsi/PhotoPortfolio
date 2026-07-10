@@ -11,12 +11,13 @@ const CONCURRENCY = 4;
 
 /**
  * @param {string[]} argv - Array di argomenti CLI (es. process.argv.slice(2)).
- * @returns {{ input: string | null, help: boolean }}
+ * @returns {{ input: string | null, help: boolean, manifestOnly: boolean }}
  */
 export function parseArgs(argv) {
-  const result = { input: null, help: false };
+  const result = { input: null, help: false, manifestOnly: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--help') result.help = true;
+    if (argv[i] === '--manifest-only') result.manifestOnly = true;
     if (argv[i] === '--input' && argv[i + 1]) result.input = argv[++i];
   }
   return result;
@@ -46,6 +47,44 @@ export async function processImage(inPath, outPath) {
     })
     .webp({ quality: WEBP_QUALITY })
     .toFile(outPath);
+}
+
+/**
+ * Legge i .webp già presenti in optimizedDir e (ri)scrive manifest.json con dimensioni.
+ * Non tocca i file immagine — utile quando le foto sono già in formato webp.
+ * @param {string} optimizedDir - Percorso assoluto della cartella contenente i .webp.
+ * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: Array<{name: string, width: number, height: number}> }>}
+ */
+export async function buildManifest(optimizedDir) {
+  const files = (await readdir(optimizedDir)).filter(f => extname(f).toLowerCase() === '.webp');
+  const start = Date.now();
+  let totalErrors = 0;
+  const produced = [];
+
+  for (let i = 0; i < files.length; i += CONCURRENCY) {
+    const chunk = files.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(
+      chunk.map(async (file, j) => {
+        const idx = i + j + 1;
+        process.stdout.write(`🔍 [${idx}/${files.length}] ${file}\n`);
+        try {
+          const meta = await sharp(join(optimizedDir, file)).metadata();
+          return { name: file, width: meta.width, height: meta.height };
+        } catch (err) {
+          process.stderr.write(`  ✗ Errore su ${file}: ${err.message}\n`);
+          return null;
+        }
+      })
+    );
+    for (const result of results) {
+      if (result) produced.push(result);
+      else totalErrors++;
+    }
+  }
+
+  const manifest = produced.sort((a, b) => a.name.localeCompare(b.name));
+  await writeFile(join(optimizedDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+  return { ok: manifest.length, errors: totalErrors, elapsed: Date.now() - start, manifest };
 }
 
 /**
@@ -96,9 +135,10 @@ async function main() {
 
   if (args.help) {
     process.stdout.write(`
-Uso: npm run compress -- --input <percorso>
+Uso: npm run compress -- --input <percorso> [--manifest-only]
 
-  --input <percorso>   Cartella root contenente originali/
+  --input <percorso>   Cartella root contenente originali/ (e optimized/)
+  --manifest-only      Legge le dimensioni dai .webp già in optimized/ senza ricomprimere
   --help               Mostra questo messaggio
 \n`);
     process.exit(0);
@@ -110,13 +150,30 @@ Uso: npm run compress -- --input <percorso>
   }
 
   const inputRoot = args.input;
-  const originaliDir = join(inputRoot, 'originali');
   const optimizedDir = join(inputRoot, 'optimized');
 
   if (!existsSync(inputRoot)) {
     process.stderr.write(`Errore: la cartella "${inputRoot}" non esiste.\n`);
     process.exit(1);
   }
+
+  if (args.manifestOnly) {
+    if (!existsSync(optimizedDir)) {
+      process.stderr.write(`Errore: la cartella "optimized/" non esiste in "${inputRoot}".\n`);
+      process.exit(1);
+    }
+    const allFiles = (await readdir(optimizedDir)).filter(f => extname(f).toLowerCase() === '.webp');
+    process.stdout.write(`📁 Input: ${optimizedDir}  (${allFiles.length} .webp)\n`);
+    const { ok, errors, elapsed } = await buildManifest(optimizedDir);
+    const secs = (elapsed / 1000).toFixed(1);
+    process.stdout.write(
+      `✅ Completato: ${ok} file indicizzati${errors > 0 ? `, ${errors} errori` : ''} in ${secs}s\n`
+    );
+    process.stdout.write(`📋 manifest.json generato (${ok} file con dimensioni)\n`);
+    return;
+  }
+
+  const originaliDir = join(inputRoot, 'originali');
 
   if (!existsSync(originaliDir)) {
     process.stderr.write(`Errore: la cartella "originali/" non esiste in "${inputRoot}".\n`);
