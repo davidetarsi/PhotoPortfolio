@@ -5,7 +5,6 @@ export function renderSkeletons(container, count = 9) {
   for (let i = 0; i < count; i++) {
     const div = document.createElement('div');
     div.className = 'photo-grid__skeleton';
-    div.style.height = (140 + (i * 53) % 120) + 'px';
     container.appendChild(div);
   }
 }

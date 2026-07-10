@@ -20,6 +20,13 @@ describe('renderSkeletons', () => {
     renderSkeletons(container, 3);
     expect(container.querySelector('p')).toBeNull();
   });
+
+  it('non imposta inline height sugli skeleton (gestita dal CSS)', () => {
+    renderSkeletons(container, 3);
+    [...container.querySelectorAll('.photo-grid__skeleton')].forEach(el => {
+      expect(el.style.height).toBe('');
+    });
+  });
 });
 
 describe('renderGrid', () => {
