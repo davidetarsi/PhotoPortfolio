@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderSkeletons, renderGrid, layoutMasonry } from './PhotoGrid.js';
 
 const photos = [
-  { name: '01.jpg', gridUrl: 'https://example.com/g1.jpg', fullUrl: 'https://example.com/f1.jpg' },
-  { name: '02.jpg', gridUrl: 'https://example.com/g2.jpg', fullUrl: 'https://example.com/f2.jpg' },
+  { name: '01.jpg', gridUrl: 'https://example.com/g1.jpg', fullUrl: 'https://example.com/f1.jpg', width: 800, height: 600 },
+  { name: '02.jpg', gridUrl: 'https://example.com/g2.jpg', fullUrl: 'https://example.com/f2.jpg', width: 600, height: 800 },
 ];
 
 describe('renderSkeletons', () => {
@@ -21,11 +21,9 @@ describe('renderSkeletons', () => {
     expect(container.querySelector('p')).toBeNull();
   });
 
-  it('non imposta inline height sugli skeleton (gestita dal CSS)', () => {
-    renderSkeletons(container, 3);
-    [...container.querySelectorAll('.photo-grid__skeleton')].forEach(el => {
-      expect(el.style.height).toBe('');
-    });
+  it('renderizza esattamente count skeleton (fino a max 12)', () => {
+    renderSkeletons(container, 6);
+    expect(container.querySelectorAll('.photo-grid__skeleton').length).toBe(6);
   });
 });
 

@@ -1,27 +1,24 @@
 .photo-grid {
-  columns: 2;
-  column-gap: 1px;
-}
-
-@media (max-width: 640px) {
-  .photo-grid {
-    columns: 1;
-  }
+  position: relative;
+  /* height impostata da JS in base al layout masonry */
 }
 
 .photo-grid__item {
-  break-inside: avoid;
-  margin-bottom: 1px;
+  position: absolute; /* left/top/width/height settati inline da JS */
   overflow: hidden;
   background: var(--color-surface);
   cursor: pointer;
-  position: relative;
+}
+
+.photo-grid--resizing .photo-grid__item {
+  transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease;
 }
 
 .photo-grid__item img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   opacity: 0;
   transition: opacity 0.5s ease;
 }
@@ -32,8 +29,8 @@
 
 @media (hover: hover) {
   .photo-grid__item:hover img {
-    transform: scale(1.03);
-    transition: opacity 0.5s ease, transform 0.35s ease;
+    transform: scale(1.02);
+    transition: opacity 0.5s ease, transform 0.3s ease;
   }
 }
 
@@ -56,8 +53,7 @@
 }
 
 .photo-grid__skeleton {
-  border-radius: var(--radius-md);
-  aspect-ratio: 3 / 2;
+  position: absolute; /* left/top/width/height settati inline da JS */
   background: linear-gradient(
     100deg,
     var(--color-surface) 40%,
