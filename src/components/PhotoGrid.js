@@ -1,5 +1,21 @@
 import '../styles/photo-grid.css';
 
+const GAP = 1 // px — distanza uniforme tra le foto
+
+export function layoutMasonry(items, containerWidth, numCols = 2) {
+  if (containerWidth <= 0 || items.length === 0) return []
+  const colWidth = (containerWidth - GAP * (numCols - 1)) / numCols
+  const colY = new Array(numCols).fill(0)
+  return items.map(item => {
+    const col = colY.indexOf(Math.min(...colY))
+    const x = col * (colWidth + GAP)
+    const y = colY[col]
+    const h = (item.height / item.width) * colWidth
+    colY[col] += h + GAP
+    return { ...item, x, y, w: colWidth, h }
+  })
+}
+
 export function renderSkeletons(container, count = 9) {
   container.innerHTML = '';
   for (let i = 0; i < count; i++) {
