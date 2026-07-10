@@ -129,6 +129,19 @@ describe('layoutMasonry', () => {
     expect(placed[1].y).toBeGreaterThan(placed[0].h);
   });
 
+  it('non crasha con width/height undefined o NaN — fallback a square', () => {
+    const items = [
+      { name: 'a.webp', width: undefined, height: undefined },
+      { name: 'b.webp', width: 4, height: 3 },
+    ];
+    expect(() => layoutMasonry(items, W)).not.toThrow();
+    const placed = layoutMasonry(items, W);
+    expect(placed).toHaveLength(2);
+    expect(Number.isFinite(placed[0].h)).toBe(true); // fallback a square (colWidth)
+    expect(placed[0].h).toBeCloseTo(50, 5);           // colWidth = 50
+    expect(placed[1].h).toBeCloseTo(37.5, 5);         // 3/4 * 50
+  });
+
   it('propaga le proprietà originali dell\'item nel risultato', () => {
     const item = { name: 'foto.webp', gridUrl: 'http://x/foto.webp', fullUrl: 'http://x/foto.webp', width: 4, height: 3 };
     const [p] = layoutMasonry([item], W);

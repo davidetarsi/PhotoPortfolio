@@ -26,7 +26,9 @@ export function layoutMasonry(items, containerWidth, numCols = 2) {
     const col = colY.indexOf(Math.min(...colY))
     const x = col * (colWidth + GAP)
     const y = colY[col]
-    const h = (item.height / item.width) * colWidth
+    const h = Number.isFinite(item.height) && Number.isFinite(item.width) && item.width > 0
+      ? (item.height / item.width) * colWidth
+      : colWidth
     colY[col] += h + GAP
     return { ...item, x, y, w: colWidth, h }
   })

@@ -6,6 +6,7 @@
 .photo-grid__item {
   position: absolute; /* left/top/width/height settati inline da JS */
   overflow: hidden;
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   cursor: pointer;
 }
@@ -54,6 +55,7 @@
 
 .photo-grid__skeleton {
   position: absolute; /* left/top/width/height settati inline da JS */
+  border-radius: var(--radius-md);
   background: linear-gradient(
     100deg,
     var(--color-surface) 40%,
