@@ -5,7 +5,7 @@ export function renderNav(container, siteConfig, texts) {
     <nav class="site-nav">
       <a href="/" class="site-nav__brand"></a>
       <div class="site-nav__links">
-        <a href="/contatti.html"></a>
+        <a href="/contatti"></a>
       </div>
     </nav>
   `;

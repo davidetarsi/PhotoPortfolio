@@ -14,9 +14,9 @@ describe('createAlbumCard', () => {
     expect(el.tagName).toBe('A');
   });
 
-  it('href links to the album page with encoded slug', () => {
-    const el = createAlbumCard(album);
-    expect(el.getAttribute('href')).toBe('/album.html?album=paesaggi');
+  it('genera un link con href /<slug>', () => {
+    const card = createAlbumCard({ slug: 'sport', title: 'Sport', coverUrl: '' });
+    expect(card.getAttribute('href')).toBe('/sport');
   });
 
   it('renders the album title', () => {
