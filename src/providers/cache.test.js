@@ -17,7 +17,7 @@ describe('getCached', () => {
   it('ritorna null dopo la scadenza del TTL (600000 ms)', () => {
     const expiredTs = Date.now() - 600001
     sessionStorage.setItem(
-      'drive_cache_folder1',
+      'cache_folder1',
       JSON.stringify({ ts: expiredTs, data: [{ name: 'old.jpg' }] }),
     )
     expect(getCached('folder1')).toBeNull()
@@ -26,14 +26,14 @@ describe('getCached', () => {
   it('ritorna i dati se il timestamp è esattamente al limite (599999 ms fa)', () => {
     const almostExpiredTs = Date.now() - 599999
     sessionStorage.setItem(
-      'drive_cache_folder1',
+      'cache_folder1',
       JSON.stringify({ ts: almostExpiredTs, data: [{ name: 'fresh.jpg' }] }),
     )
     expect(getCached('folder1')).not.toBeNull()
   })
 
   it('ritorna null e non lancia se il valore in sessionStorage è JSON invalido', () => {
-    sessionStorage.setItem('drive_cache_folder1', 'not-json{{{')
+    sessionStorage.setItem('cache_folder1', 'not-json{{{')
     expect(() => getCached('folder1')).not.toThrow()
     expect(getCached('folder1')).toBeNull()
   })

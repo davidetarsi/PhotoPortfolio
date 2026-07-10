@@ -1,4 +1,4 @@
-const KNOWN_PROVIDERS = ['googleDrive', 'r2'];
+const KNOWN_PROVIDERS = ['r2'];
 
 export function validateConfig(siteConfig, albums) {
   if (!siteConfig || typeof siteConfig !== 'object') {
@@ -10,11 +10,6 @@ export function validateConfig(siteConfig, albums) {
   if (!KNOWN_PROVIDERS.includes(siteConfig.provider)) {
     throw new Error(
       `[validateConfig] siteConfig.provider "${siteConfig.provider}" non riconosciuto. Valori validi: ${KNOWN_PROVIDERS.join(', ')}`
-    );
-  }
-  if (siteConfig.provider === 'googleDrive' && !siteConfig.driveApiKey?.trim()) {
-    throw new Error(
-      '[validateConfig] siteConfig.driveApiKey è obbligatorio quando provider è "googleDrive". Controlla il file .env.'
     );
   }
   if (siteConfig.provider === 'r2' && !siteConfig.r2PublicUrl?.trim()) {

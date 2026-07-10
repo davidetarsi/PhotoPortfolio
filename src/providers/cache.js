@@ -1,5 +1,5 @@
 const TTL_MS = 600_000;
-const PREFIX = 'drive_cache_';
+const PREFIX = 'cache_';
 
 /**
  * @param {string} folderId

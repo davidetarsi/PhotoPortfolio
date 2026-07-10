@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { validateConfig } from './validateConfig.js';
 
 const validSiteConfig = {
-  name: 'Fotografo',
-  provider: 'googleDrive',
-  driveApiKey: 'AIzaSy123',
+  name: 'Test Site',
+  provider: 'r2',
+  r2PublicUrl: 'https://pub-abc.r2.dev',
 };
 
 const validAlbums = [
@@ -12,7 +12,7 @@ const validAlbums = [
 ];
 
 describe('validateConfig', () => {
-  it('non lancia con config valida (googleDrive)', () => {
+  it('non lancia con config valida (r2)', () => {
     expect(() => validateConfig(validSiteConfig, validAlbums)).not.toThrow();
   });
 
@@ -24,11 +24,6 @@ describe('validateConfig', () => {
   it('lancia se provider non riconosciuto', () => {
     expect(() => validateConfig({ ...validSiteConfig, provider: 'unknown' }, validAlbums))
       .toThrow('[validateConfig] siteConfig.provider "unknown" non riconosciuto');
-  });
-
-  it('lancia se driveApiKey mancante con provider googleDrive', () => {
-    expect(() => validateConfig({ ...validSiteConfig, driveApiKey: '' }, validAlbums))
-      .toThrow('[validateConfig] siteConfig.driveApiKey è obbligatorio');
   });
 
   it('lancia se albums è array vuoto', () => {
