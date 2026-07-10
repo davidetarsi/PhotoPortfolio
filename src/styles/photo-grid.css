@@ -1,17 +1,17 @@
 .photo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2px;
-  align-items: start;
+  columns: 2;
+  column-gap: 1px;
 }
 
 @media (max-width: 640px) {
   .photo-grid {
-    grid-template-columns: 1fr;
+    columns: 1;
   }
 }
 
 .photo-grid__item {
+  break-inside: avoid;
+  margin-bottom: 1px;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-surface);
