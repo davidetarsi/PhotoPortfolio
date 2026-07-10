@@ -1,25 +1,36 @@
+/*
+ * Layout a muro di foto via CSS multi-column.
+ * - 1 colonna su mobile, 2 su desktop (breakpoint 640px)
+ * - Il browser gestisce larghezze, gap e resize: nessun calcolo di pixel in JS,
+ *   quindi niente crop né margini asimmetrici.
+ * - `--grid-gap` è l'unico valore da toccare per stringere/allargare la spaziatura.
+ */
 .photo-grid {
-  position: relative;
-  overflow: hidden; /* evita sfondamento laterale degli item assoluti */
+  --grid-gap: 6px;
+  column-count: 1;
+  column-gap: var(--grid-gap);
+}
+
+@media (min-width: 640px) {
+  .photo-grid {
+    column-count: 2;
+  }
 }
 
 .photo-grid__item {
-  position: absolute; /* left/top/width/height settati inline da JS */
+  break-inside: avoid; /* una foto non si spezza mai fra due colonne */
+  margin: 0 0 var(--grid-gap);
+  position: relative;
   overflow: hidden;
   border-radius: var(--radius-md);
   background: var(--color-surface);
   cursor: pointer;
 }
 
-.photo-grid--resizing .photo-grid__item {
-  transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease;
-}
-
 .photo-grid__item img {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto; /* mantiene l'aspect ratio: la foto non viene mai croppata */
   opacity: 0;
   transition: opacity 0.5s ease;
 }
@@ -49,12 +60,16 @@
   pointer-events: none;
 }
 
-.photo-grid__item:hover .photo-grid__caption {
-  opacity: 1;
+/* La caption compare solo su device con hover reale: su mobile non spunta il filename. */
+@media (hover: hover) {
+  .photo-grid__item:hover .photo-grid__caption {
+    opacity: 1;
+  }
 }
 
 .photo-grid__skeleton {
-  position: absolute; /* left/top/width/height settati inline da JS */
+  break-inside: avoid;
+  margin: 0 0 var(--grid-gap);
   border-radius: var(--radius-md);
   background: linear-gradient(
     100deg,

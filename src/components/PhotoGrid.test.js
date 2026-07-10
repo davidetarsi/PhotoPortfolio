@@ -1,10 +1,23 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { renderSkeletons, renderGrid, layoutMasonry } from './PhotoGrid.js';
+import { renderSkeletons, renderGrid, aspectRatio } from './PhotoGrid.js';
 
 const photos = [
   { name: '01.jpg', gridUrl: 'https://example.com/g1.jpg', fullUrl: 'https://example.com/f1.jpg', width: 800, height: 600 },
   { name: '02.jpg', gridUrl: 'https://example.com/g2.jpg', fullUrl: 'https://example.com/f2.jpg', width: 600, height: 800 },
 ];
+
+describe('aspectRatio', () => {
+  it('formatta width/height validi come stringa CSS', () => {
+    expect(aspectRatio(800, 600)).toBe('800 / 600');
+  });
+
+  it('fallback a 1/1 con dimensioni non valide', () => {
+    expect(aspectRatio(undefined, undefined)).toBe('1 / 1');
+    expect(aspectRatio(NaN, 600)).toBe('1 / 1');
+    expect(aspectRatio(0, 600)).toBe('1 / 1');
+    expect(aspectRatio(-4, 3)).toBe('1 / 1');
+  });
+});
 
 describe('renderSkeletons', () => {
   let container;
@@ -26,6 +39,13 @@ describe('renderSkeletons', () => {
     expect(container.querySelectorAll('.photo-grid__skeleton').length).toBe(6);
     renderSkeletons(container, 20);
     expect(container.querySelectorAll('.photo-grid__skeleton').length).toBe(12);
+  });
+
+  it('imposta aspect-ratio inline su ogni skeleton', () => {
+    renderSkeletons(container, 3);
+    [...container.querySelectorAll('.photo-grid__skeleton')].forEach(div =>
+      expect(div.style.aspectRatio).not.toBe('')
+    );
   });
 });
 
@@ -52,6 +72,13 @@ describe('renderGrid', () => {
     );
   });
 
+  it('imposta aspect-ratio inline da width/height della foto', () => {
+    renderGrid(container, photos, () => {});
+    const imgs = container.querySelectorAll('img');
+    expect(imgs[0].style.aspectRatio).toBe('800 / 600');
+    expect(imgs[1].style.aspectRatio).toBe('600 / 800');
+  });
+
   it('calls onPhotoClick with the correct index on figure click', () => {
     const clicks = [];
     renderGrid(container, photos, i => clicks.push(i));
@@ -63,89 +90,5 @@ describe('renderGrid', () => {
     container.innerHTML = '<p>old</p>';
     renderGrid(container, photos, () => {});
     expect(container.querySelector('p')).toBeNull();
-  });
-});
-
-describe('layoutMasonry', () => {
-  // Container di 101px → colWidth = (101 - 1) / 2 = 50px, gap = 1px, col1.x = 51px
-  const W = 101;
-
-  it('restituisce [] se containerWidth <= 0', () => {
-    expect(layoutMasonry([{ width: 4, height: 3 }], 0)).toEqual([]);
-    expect(layoutMasonry([{ width: 4, height: 3 }], -10)).toEqual([]);
-  });
-
-  it('restituisce [] se items è vuoto', () => {
-    expect(layoutMasonry([], W)).toEqual([]);
-  });
-
-  it('il primo item va sempre a colonna 0 (x=0)', () => {
-    const [p] = layoutMasonry([{ width: 4, height: 3 }], W);
-    expect(p.x).toBe(0);
-    expect(p.y).toBe(0);
-  });
-
-  it('il secondo item va a colonna 1 (x = colWidth + gap)', () => {
-    const [, p1] = layoutMasonry([
-      { width: 4, height: 3 },
-      { width: 4, height: 3 },
-    ], W);
-    expect(p1.x).toBeCloseTo(51, 5); // 50 + 1
-    expect(p1.y).toBe(0);
-  });
-
-  it('il terzo item va alla colonna più corta (greedy)', () => {
-    // item0: portrait 1:2 → h = 100px → colonna 0, colY[0] = 101
-    // item1: portrait 1:2 → h = 100px → colonna 1, colY[1] = 101
-    // item2: → entrambe uguali → va a colonna 0 (indexOf restituisce prima occorrenza del min)
-    const items = [
-      { width: 1, height: 2 }, // h = 2/1 * 50 = 100
-      { width: 1, height: 2 }, // h = 100
-      { width: 4, height: 3 }, // h = 3/4 * 50 = 37.5
-    ];
-    const placed = layoutMasonry(items, W);
-    expect(placed[2].x).toBe(0); // colonna 0
-    expect(placed[2].y).toBeCloseTo(101, 5); // 100 + 1
-  });
-
-  it('calcola h correttamente dall\'aspect ratio', () => {
-    // colWidth = 50, item portrait 2:3 → h = (3/2) * 50 = 75
-    const [p] = layoutMasonry([{ width: 2, height: 3 }], W);
-    expect(p.h).toBeCloseTo(75, 5);
-    expect(p.w).toBeCloseTo(50, 5);
-  });
-
-  it('numCols=1 impila tutti in una colonna', () => {
-    const items = [
-      { width: 4, height: 3 },
-      { width: 4, height: 3 },
-    ];
-    const placed = layoutMasonry(items, W, 1);
-    expect(placed[0].x).toBe(0);
-    expect(placed[1].x).toBe(0);
-    // w = containerWidth intero
-    expect(placed[0].w).toBeCloseTo(W, 5);
-    // il secondo item è sotto il primo
-    expect(placed[1].y).toBeGreaterThan(placed[0].h);
-  });
-
-  it('non crasha con width/height undefined o NaN — fallback a square', () => {
-    const items = [
-      { name: 'a.webp', width: undefined, height: undefined },
-      { name: 'b.webp', width: 4, height: 3 },
-    ];
-    expect(() => layoutMasonry(items, W)).not.toThrow();
-    const placed = layoutMasonry(items, W);
-    expect(placed).toHaveLength(2);
-    expect(Number.isFinite(placed[0].h)).toBe(true); // fallback a square (colWidth)
-    expect(placed[0].h).toBeCloseTo(50, 5);           // colWidth = 50
-    expect(placed[1].h).toBeCloseTo(37.5, 5);         // 3/4 * 50
-  });
-
-  it('propaga le proprietà originali dell\'item nel risultato', () => {
-    const item = { name: 'foto.webp', gridUrl: 'http://x/foto.webp', fullUrl: 'http://x/foto.webp', width: 4, height: 3 };
-    const [p] = layoutMasonry([item], W);
-    expect(p.name).toBe('foto.webp');
-    expect(p.gridUrl).toBe('http://x/foto.webp');
   });
 });

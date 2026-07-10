@@ -1,8 +1,8 @@
-import '../styles/photo-grid.css';
+import '../styles/photo-grid.css'
 
-const GAP = 1 // px — distanza uniforme tra le foto
+const MAX_SKELETONS = 12
 
-// Aspect ratio hardcodate per gli skeleton — variano intenzionalmente per simulare foto reali
+// Aspect ratio hardcodate per gli skeleton — variano per simulare un muro di foto reale.
 const SKELETON_SPECS = [
   { width: 4, height: 5 },
   { width: 3, height: 2 },
@@ -18,84 +18,40 @@ const SKELETON_SPECS = [
   { width: 4, height: 3 },
 ]
 
-export function layoutMasonry(items, containerWidth, numCols = 2) {
-  if (containerWidth <= 0 || items.length === 0) return []
-  const colWidth = (containerWidth - GAP * (numCols - 1)) / numCols
-  const colY = new Array(numCols).fill(0)
-  return items.map(item => {
-    const col = colY.indexOf(Math.min(...colY))
-    const x = col * (colWidth + GAP)
-    const y = colY[col]
-    const h = Number.isFinite(item.height) && Number.isFinite(item.width) && item.width > 0
-      ? (item.height / item.width) * colWidth
-      : colWidth
-    colY[col] += h + GAP
-    return { ...item, x, y, w: colWidth, h }
-  })
+/**
+ * Restituisce un valore CSS `aspect-ratio` sicuro; fallback a 1/1 se le dimensioni
+ * non sono numeri finiti positivi (manifest vecchio/malformato).
+ * @returns {string}
+ */
+export function aspectRatio(width, height) {
+  return Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0
+    ? `${width} / ${height}`
+    : '1 / 1'
 }
 
-function getWidth(container) {
-  return Math.round(container.getBoundingClientRect().width)
-}
-
-function numCols(container) {
-  return getWidth(container) < 640 ? 1 : 2
-}
-
-function applyPositions(container, placed) {
-  if (placed.length === 0) {
-    container.style.height = '0px'
-    return
-  }
-  const totalH = Math.max(...placed.map(p => p.y + p.h))
-  container.style.height = `${totalH.toFixed(2)}px`
-  for (let i = 0; i < placed.length; i++) {
-    const el = container.children[i]
-    if (!el) break
-    const p = placed[i]
-    el.style.left   = `${p.x.toFixed(2)}px`
-    el.style.top    = `${p.y.toFixed(2)}px`
-    el.style.width  = `${p.w.toFixed(2)}px`
-    el.style.height = `${p.h.toFixed(2)}px`
-  }
-}
-
-let _observer = null
-
-function watchResize(container, getItems) {
-  if (_observer) _observer.disconnect()
-  if (typeof ResizeObserver === 'undefined') return
-  _observer = new ResizeObserver(() => {
-    container.classList.add('photo-grid--resizing')
-    const placed = layoutMasonry(getItems(), getWidth(container), numCols(container))
-    applyPositions(container, placed)
-  })
-  _observer.observe(container)
-}
-
-export function renderSkeletons(container, count = 12) {
-  container.classList.remove('photo-grid--resizing')
+/**
+ * Riempie il container con placeholder shimmer. Il layout (1 o 2 colonne) è gestito
+ * interamente dal CSS multi-column — qui creiamo solo i box con l'aspect-ratio giusto.
+ */
+export function renderSkeletons(container, count = MAX_SKELETONS) {
   container.innerHTML = ''
-  const specs = SKELETON_SPECS.slice(0, count)
-  for (const _ of specs) {
+  const specs = SKELETON_SPECS.slice(0, Math.min(count, MAX_SKELETONS))
+  for (const spec of specs) {
     const div = document.createElement('div')
     div.className = 'photo-grid__skeleton'
+    div.style.aspectRatio = aspectRatio(spec.width, spec.height)
     container.appendChild(div)
   }
-  const place = () => {
-    const placed = layoutMasonry(specs, getWidth(container), numCols(container))
-    applyPositions(container, placed)
-  }
-  place()
-  watchResize(container, () => specs)
 }
 
+/**
+ * Renderizza le foto nel container. Nessun calcolo di posizione: il CSS multi-column
+ * distribuisce gli item in 1 colonna (mobile) o 2 (desktop) e gestisce il resize.
+ * L'aspect-ratio inline riserva lo spazio prima del caricamento (no layout shift).
+ */
 export function renderGrid(container, photos, onPhotoClick) {
-  if (_observer) { _observer.disconnect(); _observer = null }
-  container.classList.remove('photo-grid--resizing')
   container.innerHTML = ''
-  for (let i = 0; i < photos.length; i++) {
-    const photo = photos[i]
+  photos.forEach((photo, i) => {
     const fig = document.createElement('figure')
     fig.className = 'photo-grid__item'
 
@@ -103,8 +59,9 @@ export function renderGrid(container, photos, onPhotoClick) {
     img.src = photo.gridUrl
     img.alt = photo.name
     img.loading = 'lazy'
+    img.style.aspectRatio = aspectRatio(photo.width, photo.height)
     img.addEventListener('load', () => img.classList.add('photo-grid__img--loaded'))
-    img.addEventListener('error', () => { fig.style.visibility = 'hidden' })
+    img.addEventListener('error', () => { fig.style.display = 'none' })
 
     const cap = document.createElement('figcaption')
     cap.className = 'photo-grid__caption'
@@ -117,11 +74,5 @@ export function renderGrid(container, photos, onPhotoClick) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPhotoClick(i, fig) }
     })
     container.appendChild(fig)
-  }
-  const place = () => {
-    const placed = layoutMasonry(photos, getWidth(container), numCols(container))
-    applyPositions(container, placed)
-  }
-  place()
-  watchResize(container, () => photos)
+  })
 }
