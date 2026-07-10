@@ -17,8 +17,7 @@ const gridEl = document.getElementById('photo-grid');
 renderNav(document.getElementById('site-nav'), siteConfig, texts);
 renderFooter(document.getElementById('site-footer'), texts);
 
-const params = new URLSearchParams(window.location.search);
-const slug = params.get('album');
+const slug = window.location.pathname.replace(/^\/|\/$/g, '');
 const album = findAlbumBySlug(albums, slug);
 
 if (!album) {
