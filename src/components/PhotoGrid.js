@@ -34,8 +34,12 @@ export function layoutMasonry(items, containerWidth, numCols = 2) {
   })
 }
 
+function getWidth(container) {
+  return Math.round(container.getBoundingClientRect().width)
+}
+
 function numCols(container) {
-  return container.clientWidth < 640 ? 1 : 2
+  return getWidth(container) < 640 ? 1 : 2
 }
 
 function applyPositions(container, placed) {
@@ -63,7 +67,7 @@ function watchResize(container, getItems) {
   if (typeof ResizeObserver === 'undefined') return
   _observer = new ResizeObserver(() => {
     container.classList.add('photo-grid--resizing')
-    const placed = layoutMasonry(getItems(), container.clientWidth, numCols(container))
+    const placed = layoutMasonry(getItems(), getWidth(container), numCols(container))
     applyPositions(container, placed)
   })
   _observer.observe(container)
@@ -79,7 +83,7 @@ export function renderSkeletons(container, count = 12) {
     container.appendChild(div)
   }
   const place = () => {
-    const placed = layoutMasonry(specs, container.clientWidth, numCols(container))
+    const placed = layoutMasonry(specs, getWidth(container), numCols(container))
     applyPositions(container, placed)
   }
   place()
@@ -115,7 +119,7 @@ export function renderGrid(container, photos, onPhotoClick) {
     container.appendChild(fig)
   }
   const place = () => {
-    const placed = layoutMasonry(photos, container.clientWidth, numCols(container))
+    const placed = layoutMasonry(photos, getWidth(container), numCols(container))
     applyPositions(container, placed)
   }
   place()

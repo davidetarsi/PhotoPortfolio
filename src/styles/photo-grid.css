@@ -1,6 +1,6 @@
 .photo-grid {
   position: relative;
-  /* height impostata da JS in base al layout masonry */
+  overflow: hidden; /* evita sfondamento laterale degli item assoluti */
 }
 
 .photo-grid__item {
