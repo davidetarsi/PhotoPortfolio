@@ -46,3 +46,44 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
 .admin-dropzone { border: 2px dashed #2e3235; border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
 .admin-dropzone--over { border-color: var(--color-accent); }
 .admin-progress { list-style: none; padding: 0; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-muted); }
+
+/* Header fisso + contenuto scrollabile separati: se hero+footer sono più
+   alti del viewport, chi scorre per vedere il footer non deve perdere di
+   vista il tasto Chiudi — niente overflow su .admin-preview stesso. */
+.admin-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-preview__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg);
+  flex-shrink: 0;
+}
+
+.admin-preview__header h2 {
+  margin: 0;
+  font-weight: 400;
+}
+
+.admin-preview__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-lg) var(--space-lg);
+}
+
+.admin-preview__close {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid #2e3235;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
