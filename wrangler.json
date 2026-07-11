@@ -7,7 +7,7 @@
     "binding": "ASSETS"
   },
   "r2_buckets": [
-    { "binding": "BUCKET", "bucket_name": "R2_BUCKET_NAME" }
+    { "binding": "BUCKET", "bucket_name": "<INSERISCI_QUI_IL_NOME_DEL_TUO_BUCKET_R2>" }
   ],
   "vars": {
     "ACCESS_TEAM_DOMAIN": "",

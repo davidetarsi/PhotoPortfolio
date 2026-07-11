@@ -3167,6 +3167,8 @@ Nessun TDD: checklist operativa. I passi marcati **[UMANO]** richiedono il panne
 
 - [ ] **Step 1: Deploy del codice**
 
+**[UMANO — prerequisito]**: `wrangler.json` ha `bucket_name: "<INSERISCI_QUI_IL_NOME_DEL_TUO_BUCKET_R2>"` — un placeholder deliberato (nessun `.env` con credenziali reali era disponibile durante l'esecuzione automatica del piano). Prima di pushare, sostituiscilo col nome reale del bucket R2 (lo stesso valore che hai in `.env` come `R2_BUCKET_NAME`, usato da `scripts/upload.js`). Se lo lasci com'è, il deploy fallisce con un errore di binding R2 non trovato.
+
 ```bash
 git push   # Workers Builds builda e deploya
 ```
