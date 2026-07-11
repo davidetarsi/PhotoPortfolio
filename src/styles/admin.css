@@ -1,0 +1,37 @@
+@import '../../theme/tokens.css';
+@import '../../theme/typography.css';
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); }
+
+.admin-root { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
+.admin-panel { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
+.admin-panel h2 { margin: 0 0 var(--space-md); font-weight: 400; }
+.admin-panel label { display: block; margin-bottom: var(--space-md); font-size: 0.9rem; }
+.admin-panel input, .admin-panel textarea, .admin-panel select {
+  width: 100%; margin-top: var(--space-xs); padding: var(--space-sm);
+  background: var(--color-bg); color: var(--color-text);
+  border: 1px solid #2e3235; border-radius: var(--radius-sm); font: inherit;
+}
+.admin-panel button {
+  padding: var(--space-sm) var(--space-md); border: 0; border-radius: var(--radius-sm);
+  background: var(--color-accent); color: var(--color-bg); font: inherit; cursor: pointer;
+}
+.admin-status { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-muted); min-height: 1.2em; }
+
+.admin-hero { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; margin-bottom: var(--space-md); }
+.admin-hero__thumb { width: 72px; height: 48px; object-fit: cover; border-radius: var(--radius-sm); }
+.admin-hero__picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: var(--space-xs); width: 100%; }
+.admin-hero__choice { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; }
+.admin-hero__choice:hover { outline: 2px solid var(--color-accent); }
+
+.admin-album-row {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: var(--space-sm); border-radius: var(--radius-sm); background: var(--color-bg);
+  margin-bottom: var(--space-xs); cursor: grab;
+}
+.admin-album-row__handle { color: var(--color-muted); }
+.admin-album-row__title { color: var(--color-text); text-decoration: none; flex: 1; }
+.admin-delete-album { background: transparent; color: var(--color-muted); border: 1px solid #2e3235; }
+.admin-new-album { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
+.admin-new-album input { flex: 1; margin-top: 0; }
