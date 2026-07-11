@@ -1,4 +1,5 @@
 import { handleDataRequest } from './worker/data-routes.js'
+import { handleAdminRequest } from './worker/admin-routes.js'
 
 const STATIC_PAGES = {
   '/contatti': '/contatti.html',
@@ -15,6 +16,10 @@ export default {
     // API prima di tutto: non devono mai cadere nella regex degli album.
     if (pathname.startsWith('/api/data/')) {
       return handleDataRequest(request, env)
+    }
+
+    if (pathname.startsWith('/api/admin/')) {
+      return handleAdminRequest(request, env)
     }
 
     if (STATIC_PAGES[pathname]) {
