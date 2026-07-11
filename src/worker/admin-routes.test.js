@@ -60,6 +60,13 @@ describe('PUT /api/admin/site', () => {
     expect((await call(env, 'PUT', '/api/admin/site', '{non-json')).status).toBe(400);
     expect(env.BUCKET.store.has('_site/site.json')).toBe(false);
   });
+  it('errore di scrittura R2 → 500 con JSON pulito, non un unhandled rejection', async () => {
+    const env = makeEnv();
+    env.BUCKET.put = async () => { throw new Error('R2 down'); };
+    const res = await call(env, 'PUT', '/api/admin/site', SITE);
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'STORAGE_ERROR' });
+  });
 });
 
 describe('PUT /api/admin/albums', () => {
@@ -80,6 +87,11 @@ describe('PUT /api/admin/albums/:slug/manifest', () => {
     expect(JSON.parse(env.BUCKET.store.get('sport/manifest.json').text)).toEqual(manifest);
     expect((await call(env, 'PUT', '/api/admin/albums/sport/manifest', [{ name: 'a.jpg', width: 1, height: 1 }])).status).toBe(400);
     expect((await call(env, 'PUT', '/api/admin/albums/NO SLUG/manifest', manifest)).status).toBe(404);
+  });
+  it('404 su slug riservato (es. "admin") anche se passa SLUG_RE', async () => {
+    const env = makeEnv();
+    const manifest = [{ name: 'a.webp', width: 10, height: 20 }];
+    expect((await call(env, 'PUT', '/api/admin/albums/admin/manifest', manifest)).status).toBe(404);
   });
 });
 

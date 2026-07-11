@@ -3,7 +3,7 @@
 import { jsonResponse } from './http.js';
 import { verifyAccessJwt } from './access-jwt.js';
 import {
-  SLUG_RE, validateSiteShape, validateAlbumsShape, validateManifestShape,
+  SLUG_RE, RESERVED_SLUGS, validateSiteShape, validateAlbumsShape, validateManifestShape,
 } from '../shared/content-rules.js';
 
 const MANIFEST_RE = /^\/api\/admin\/albums\/([a-z0-9][a-z0-9-]*)\/manifest$/;
@@ -18,7 +18,11 @@ async function putValidatedJson(request, env, key, validate) {
   if (!body.ok) return jsonResponse({ error: 'JSON malformato' }, 400);
   const check = validate(body.data);
   if (!check.ok) return jsonResponse({ error: check.error }, 400);
-  await env.BUCKET.put(key, JSON.stringify(body.data), { httpMetadata: { contentType: 'application/json' } });
+  try {
+    await env.BUCKET.put(key, JSON.stringify(body.data), { httpMetadata: { contentType: 'application/json' } });
+  } catch {
+    return jsonResponse({ error: 'STORAGE_ERROR' }, 500);
+  }
   return jsonResponse({ ok: true });
 }
 
@@ -43,7 +47,7 @@ export async function handleAdminRequest(request, env, deps = {}) {
   if (manifest) {
     if (method !== 'PUT') return jsonResponse({ error: 'METHOD_NOT_ALLOWED' }, 405);
     const slug = manifest[1];
-    if (!SLUG_RE.test(slug)) return jsonResponse({ error: 'NOT_FOUND' }, 404);
+    if (!SLUG_RE.test(slug) || RESERVED_SLUGS.includes(slug)) return jsonResponse({ error: 'NOT_FOUND' }, 404);
     return putValidatedJson(request, env, `${slug}/manifest.json`, validateManifestShape);
   }
 
