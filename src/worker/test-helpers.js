@@ -27,11 +27,16 @@ export function makeFakeBucket(initial = {}) {
       for (const k of Array.isArray(keys) ? keys : [keys]) store.delete(k);
     },
     async list({ prefix = '', cursor, limit = 1000 } = {}) {
+      // Cursor = ultima chiave della pagina precedente (come R2/S3 reali), non un offset
+      // numerico: deve restare valido anche se il chiamante cancella le chiavi già viste
+      // tra una list() e la successiva (è esattamente il pattern list→delete→list di
+      // admin-routes.js per la cancellazione album paginata).
       const all = [...store.keys()].filter(k => k.startsWith(prefix)).sort();
-      const start = cursor ? Number(cursor) : 0;
-      const page = all.slice(start, start + limit);
-      const truncated = start + limit < all.length;
-      return { objects: page.map(key => ({ key })), truncated, ...(truncated ? { cursor: String(start + limit) } : {}) };
+      const startIdx = cursor ? all.findIndex(k => k > cursor) : 0;
+      const from = startIdx === -1 ? all.length : startIdx;
+      const page = all.slice(from, from + limit);
+      const truncated = from + page.length < all.length;
+      return { objects: page.map(key => ({ key })), truncated, ...(truncated ? { cursor: page[page.length - 1] } : {}) };
     },
   };
 }
