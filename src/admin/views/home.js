@@ -2,6 +2,15 @@ import { photoUrl } from '../../providers/r2.js';
 import { slugifyTitle, SLUG_RE, RESERVED_SLUGS } from '../../shared/content-rules.js';
 import { moveItem } from '../sortable.js';
 
+export function buildPendingSite({ name, bio, instagram }, currentSite) {
+  return {
+    name: name.trim(),
+    bio,
+    hero: currentSite.hero,
+    social: { ...currentSite.social, instagram: instagram.trim() },
+  };
+}
+
 export function renderAdminHome(container, ctx) {
   const { site, albums, r2PublicUrl, api, navigate, deps } = ctx;
   const heroSrc = site.hero ? photoUrl(r2PublicUrl, site.hero.album, site.hero.name) : null;
@@ -43,12 +52,11 @@ export function renderAdminHome(container, ctx) {
   if (heroSrc) q('.admin-hero__thumb').setAttribute('src', heroSrc);
 
   q('.admin-save-site').addEventListener('click', () => run(async () => {
-    const updated = {
-      name: q('[name="site-name"]').value.trim(),
+    const updated = buildPendingSite({
+      name: q('[name="site-name"]').value,
       bio: q('[name="site-bio"]').value,
-      hero: site.hero,
-      social: { ...site.social, instagram: q('[name="site-instagram"]').value.trim() },
-    };
+      instagram: q('[name="site-instagram"]').value,
+    }, site);
     await api.putSite(updated);
     ctx.site = updated;
     say('Sito salvato.');

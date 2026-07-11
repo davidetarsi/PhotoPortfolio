@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderAdminHome } from './home.js';
+import { renderAdminHome, buildPendingSite } from './home.js';
 
 const SITE = { name: 'Davide', bio: 'Bio', hero: null, social: { instagram: '' } };
 const ALBUMS = [
@@ -25,6 +25,27 @@ function makeCtx(over = {}) {
     ...over,
   };
 }
+
+describe('buildPendingSite', () => {
+  const currentSite = { name: 'Vecchio', bio: 'Vecchia bio', hero: { album: 'sport', name: 'a.webp' }, social: { instagram: 'https://old', twitter: 'https://x' } };
+
+  it('costruisce l\'oggetto con i nuovi valori, trimma name e instagram ma non bio', () => {
+    const result = buildPendingSite({ name: '  Nuovo  ', bio: '  Bio con spazi  ', instagram: '  https://new  ' }, currentSite);
+    expect(result.name).toBe('Nuovo');
+    expect(result.bio).toBe('  Bio con spazi  ');
+    expect(result.social.instagram).toBe('https://new');
+  });
+
+  it('la hero passa invariata da currentSite, non fa parte dei valori nuovi', () => {
+    const result = buildPendingSite({ name: 'X', bio: '', instagram: '' }, currentSite);
+    expect(result.hero).toEqual({ album: 'sport', name: 'a.webp' });
+  });
+
+  it('social preserva le altre chiavi oltre instagram', () => {
+    const result = buildPendingSite({ name: 'X', bio: '', instagram: 'https://new' }, currentSite);
+    expect(result.social).toEqual({ instagram: 'https://new', twitter: 'https://x' });
+  });
+});
 
 describe('renderAdminHome', () => {
   let container;
