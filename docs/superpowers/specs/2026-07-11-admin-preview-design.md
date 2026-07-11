@@ -68,9 +68,10 @@ showPreview(previewEl, { name: pending.name, bio: pending.bio, heroUrl: heroSrc,
 ```
 
 Dentro, `showPreview` popola il contenitore overlay (già presente nell'HTML di `home.js`, nascosto di default) con:
-- Un header con titolo "Anteprima" e tasto "Chiudi"
-- Un contenitore interno dove viene chiamato `renderHero(innerContainer, { name, bio, heroUrl }, texts)`
-- Un contenitore interno dove viene chiamato `renderFooter(innerContainer, texts, social)`
+- Un **header fisso** (`admin-preview__header`, mai scrollabile) con titolo "Anteprima" e tasto "Chiudi" — sempre raggiungibile indipendentemente da quanto si scorre sotto
+- Un **contenitore scrollabile** (`admin-preview__content`, `overflow-y: auto`) separato dall'header, dentro cui vengono chiamati `renderHero(innerContainer, { name, bio, heroUrl }, texts)` e `renderFooter(innerContainer, texts, social)`
+
+Separare header fisso e contenuto scrollabile (invece di un unico contenitore con `overflow-y: auto` su tutto, incluso l'header) evita che il tasto "Chiudi" scorra fuori dallo schermo quando il contenuto (hero + footer) è più alto del viewport.
 
 Poi rimuove l'attributo `hidden` dal contenitore overlay e sposta il focus sul tasto "Chiudi". `hidePreview` fa l'inverso (rimette `hidden`, svuota il contenuto, restituisce il focus al tasto "Anteprima" che ha aperto l'overlay).
 
@@ -78,7 +79,7 @@ Il CSS di `hero.css` e `footer.css` arriva automaticamente nel bundle admin, dat
 
 **Focus trap e tasto Escape — stesso pattern già usato da `Lightbox.js`** (non nuovo per questo progetto): un listener `keydown` su `document`, agganciato **una sola volta** quando `preview.js` viene inizializzato (non ad ogni `showPreview`, altrimenti si accumula come i listener di `attachSortable` che ho corretto nella review finale — stesso identico bug, evitato da subito qui). L'handler controlla se l'overlay è attualmente visibile prima di agire:
 - `Escape` → `hidePreview`
-- `Tab` / `Shift+Tab` quando il focus è sull'ultimo/primo elemento interattivo dell'overlay → `e.preventDefault()` + focus ciclico dentro l'overlay (stesso codice di `Lightbox.js` righe 59-71, adattato: qui gli elementi interattivi sono solo il tasto "Chiudi", quindi il ciclo lo tiene semplicemente lì)
+- `Tab` / `Shift+Tab`: **anello vero tra primo e ultimo elemento focusabile**, non uno snap-back forzato sul tasto Chiudi. Quando ci sono link social nel footer (il caso normale — è esattamente ciò che l'anteprima serve a verificare), sono elementi focusabili a pieno titolo: l'utente deve poterci arrivare con Tab, non solo vedere il tasto Chiudi rimbalzare. La lista dei focusabili viene interrogata di volta in volta (`el.querySelectorAll('button, a[href]')`, ricalcolata ad ogni pressione — cambia in base a quanti link social sono presenti in quel momento), e l'intervento scatta solo ai bordi: `Tab` sull'ultimo elemento → torna al primo; `Shift+Tab` sul primo → va all'ultimo. Nel mezzo, Tab si muove liberamente come da comportamento nativo del browser. Stesso codice di `Lightbox.js` righe 59-71.
 
 ### Modifiche a `views/home.js`
 
