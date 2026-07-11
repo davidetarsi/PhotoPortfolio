@@ -1,6 +1,7 @@
 import { photoUrl } from '../../providers/r2.js';
 import { slugifyTitle, SLUG_RE, RESERVED_SLUGS } from '../../shared/content-rules.js';
 import { moveItem } from '../sortable.js';
+import { texts } from '../../../config/texts.config.js';
 
 export function buildPendingSite({ name, bio, instagram }, currentSite) {
   return {
@@ -27,9 +28,11 @@ export function renderAdminHome(container, ctx) {
         <select name="hero-album"><option value="">Scegli album…</option></select>
         <div class="admin-hero__picker"></div>
       </div>
+      <button class="admin-preview-btn" type="button">Anteprima</button>
       <button class="admin-save-site">Salva sito</button>
       <p class="admin-status" role="status"></p>
     </section>
+    <div class="admin-preview" hidden></div>
     <section class="admin-panel">
       <h2>Album</h2>
       <div class="admin-album-list"></div>
@@ -61,6 +64,15 @@ export function renderAdminHome(container, ctx) {
     ctx.site = updated;
     say('Sito salvato.');
   }));
+
+  q('.admin-preview-btn').addEventListener('click', () => {
+    const pending = buildPendingSite({
+      name: q('[name="site-name"]').value,
+      bio: q('[name="site-bio"]').value,
+      instagram: q('[name="site-instagram"]').value,
+    }, site);
+    deps.showPreview(q('.admin-preview'), { name: pending.name, bio: pending.bio, heroUrl: heroSrc, social: pending.social }, texts);
+  });
 
   // --- hero picker: scegli album → thumbs → click imposta hero ---
   const heroSelect = q('[name="hero-album"]');

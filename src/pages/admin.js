@@ -10,6 +10,7 @@ import { renderAdminAlbum } from '../admin/views/album.js';
 import { runBatch } from '../admin/upload-manager.js';
 import { processFile } from '../admin/pipeline.js';
 import { makeProcessDeps } from '../admin/encoder.js';
+import { showPreview } from '../admin/preview.js';
 
 validateSiteConfig(siteConfig);
 const root = document.getElementById('admin-root');
@@ -31,6 +32,7 @@ const ctx = {
     fetchManifest,
     prompt: window.prompt.bind(window),
     confirm: window.confirm.bind(window),
+    showPreview,
     runBatch,
     makeProcessFile: async () => {
       const deps = await makeProcessDeps();

@@ -21,6 +21,7 @@ function makeCtx(over = {}) {
       attachSortable: vi.fn(), // cattura onMove
       fetchManifest: vi.fn(async () => ({ ok: true, data: [] })),
       prompt: vi.fn(() => null),
+      showPreview: vi.fn(),
     },
     ...over,
   };
@@ -65,6 +66,21 @@ describe('renderAdminHome', () => {
     await vi.waitFor(() => expect(ctx.api.putSite).toHaveBeenCalled());
     expect(ctx.api.putSite.mock.calls[0][0].name).toBe('Nuovo Nome');
     expect(ctx.api.putSite.mock.calls[0][0].hero).toBeNull(); // hero preservato
+  });
+
+  it('tasto Anteprima chiama deps.showPreview con i valori correnti del form, senza toccare l\'API', () => {
+    const ctx = makeCtx();
+    renderAdminHome(container, ctx);
+    container.querySelector('[name="site-name"]').value = 'Nome Bozza';
+    container.querySelector('[name="site-bio"]').value = 'Bio bozza';
+    container.querySelector('[name="site-instagram"]').value = 'https://instagram.com/bozza';
+    container.querySelector('.admin-preview-btn').click();
+
+    expect(ctx.deps.showPreview).toHaveBeenCalledTimes(1);
+    const [previewEl, data] = ctx.deps.showPreview.mock.calls[0];
+    expect(previewEl.className).toBe('admin-preview');
+    expect(data).toEqual({ name: 'Nome Bozza', bio: 'Bio bozza', heroUrl: null, social: { instagram: 'https://instagram.com/bozza' } });
+    expect(ctx.api.putSite).not.toHaveBeenCalled();
   });
 
   it('crea un album: slugify, putAlbums e navigate', async () => {
