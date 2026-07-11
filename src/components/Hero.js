@@ -1,8 +1,7 @@
 import '../styles/hero.css';
 
-export function renderHero(container, siteConfig, texts) {
-  const hasImg = Boolean(siteConfig.heroImageUrl);
-  const imgHtml = hasImg ? `<img class="hero__bg" alt="" fetchpriority="high" decoding="sync">` : '';
+export function renderHero(container, { name, heroUrl }, texts) {
+  const imgHtml = heroUrl ? `<img class="hero__bg" alt="" fetchpriority="high" decoding="sync">` : '';
   container.innerHTML = `
     <div class="hero__inner">
       ${imgHtml}
@@ -12,9 +11,9 @@ export function renderHero(container, siteConfig, texts) {
       </div>
     </div>
   `;
-  if (hasImg) {
-    container.querySelector('.hero__bg').setAttribute('src', siteConfig.heroImageUrl);
+  if (heroUrl) {
+    container.querySelector('.hero__bg').setAttribute('src', heroUrl);
   }
-  container.querySelector('.hero__title').textContent = siteConfig.name;
+  container.querySelector('.hero__title').textContent = name;
   container.querySelector('.hero__subtitle').textContent = texts.landing.heroSubtitle;
 }
