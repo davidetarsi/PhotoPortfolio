@@ -12,5 +12,17 @@
   "vars": {
     "ACCESS_TEAM_DOMAIN": "",
     "ACCESS_AUD": ""
+  },
+  "env": {
+    "staging": {
+      "name": "photo-portfolio-staging",
+      "r2_buckets": [
+        { "binding": "BUCKET", "bucket_name": "<INSERISCI_QUI_IL_NOME_DEL_TUO_BUCKET_R2>-staging" }
+      ],
+      "vars": {
+        "ACCESS_TEAM_DOMAIN": "",
+        "ACCESS_AUD": ""
+      }
+    }
   }
 }
