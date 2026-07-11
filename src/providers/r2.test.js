@@ -1,83 +1,22 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { listPhotos } from './r2.js'
+import { describe, it, expect } from 'vitest';
+import { photoUrl, photosFromManifest } from './r2.js';
 
-function makeFetchResponse(data, status = 200) {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => data,
-  }
-}
+describe('photoUrl', () => {
+  it('costruisce l\'URL e tollera lo slash finale nella base', () => {
+    expect(photoUrl('https://pub.r2.dev', 'sport', 'a.webp')).toBe('https://pub.r2.dev/sport/a.webp');
+    expect(photoUrl('https://pub.r2.dev/', 'sport', 'a.webp')).toBe('https://pub.r2.dev/sport/a.webp');
+  });
+});
 
-const BASE = 'https://pub-abc123.r2.dev'
-
-describe('r2 listPhotos', () => {
-  beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn())
-    sessionStorage.clear()
-  })
-  afterEach(() => {
-    vi.unstubAllGlobals()
-    vi.restoreAllMocks()
-  })
-
-  it('fetcha il manifest e costruisce gli URL corretti', async () => {
-    global.fetch.mockResolvedValueOnce(makeFetchResponse([
-      { name: '01_alba.webp', width: 800, height: 600 },
-      { name: '02_tramonto.webp', width: 600, height: 900 },
-    ]))
-
-    const photos = await listPhotos('sport-album', BASE)
-
-    expect(global.fetch).toHaveBeenCalledWith(`${BASE}/sport-album/manifest.json`)
-    expect(photos).toHaveLength(2)
-    expect(photos[0]).toEqual({
-      name: '01_alba.webp',
-      gridUrl: `${BASE}/sport-album/01_alba.webp`,
-      fullUrl: `${BASE}/sport-album/01_alba.webp`,
-      width: 800,
-      height: 600,
-    })
-    expect(photos[1]).toEqual({
-      name: '02_tramonto.webp',
-      gridUrl: `${BASE}/sport-album/02_tramonto.webp`,
-      fullUrl: `${BASE}/sport-album/02_tramonto.webp`,
-      width: 600,
-      height: 900,
-    })
-  })
-
-  it('usa la cache e non chiama fetch alla seconda invocazione', async () => {
-    global.fetch.mockResolvedValueOnce(makeFetchResponse([{ name: 'foto.webp', width: 800, height: 600 }]))
-
-    await listPhotos('sport-album', BASE)
-    const second = await listPhotos('sport-album', BASE)
-
-    expect(global.fetch).toHaveBeenCalledTimes(1)
-    expect(second).toHaveLength(1)
-  })
-
-  it('lancia Error con code NETWORK se fetch rigetta', async () => {
-    global.fetch.mockRejectedValueOnce(new TypeError('Failed to fetch'))
-
-    await expect(listPhotos('sport-album', BASE)).rejects.toMatchObject({
-      code: 'NETWORK',
-    })
-  })
-
-  it('lancia Error con code NOT_FOUND se manifest risponde 404', async () => {
-    global.fetch.mockResolvedValueOnce(makeFetchResponse({}, 404))
-
-    await expect(listPhotos('sport-album', BASE)).rejects.toMatchObject({
-      code: 'NOT_FOUND',
-    })
-  })
-
-  it('lancia Error con code UNKNOWN per altri status HTTP', async () => {
-    global.fetch.mockResolvedValueOnce(makeFetchResponse({}, 500))
-
-    await expect(listPhotos('sport-album', BASE)).rejects.toMatchObject({
-      code: 'UNKNOWN',
-    })
-  })
-})
+describe('photosFromManifest', () => {
+  it('mappa entries in photos con gridUrl/fullUrl', () => {
+    const photos = photosFromManifest([{ name: 'a.webp', width: 10, height: 20 }], 'sport', 'https://pub.r2.dev');
+    expect(photos).toEqual([{
+      name: 'a.webp', width: 10, height: 20,
+      gridUrl: 'https://pub.r2.dev/sport/a.webp', fullUrl: 'https://pub.r2.dev/sport/a.webp',
+    }]);
+  });
+  it('array vuoto → array vuoto', () => {
+    expect(photosFromManifest([], 'sport', 'https://pub.r2.dev')).toEqual([]);
+  });
+});
