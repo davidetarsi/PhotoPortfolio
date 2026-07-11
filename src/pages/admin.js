@@ -41,7 +41,7 @@ const ctx = {
 
 function renderRoute() {
   const route = parseAdminHash(window.location.hash);
-  if (route.view === 'album') renderAdminAlbum(root, { ...ctx, slug: route.slug });
+  if (route.view === 'album') renderAdminAlbum(root, Object.assign(ctx, { slug: route.slug }));
   else renderAdminHome(root, ctx);
 }
 window.addEventListener('hashchange', renderRoute);

@@ -55,12 +55,6 @@ export function renderAdminAlbum(container, ctx) {
       }));
       grid.appendChild(cell);
     });
-    deps.attachSortable(grid, (from, to) => run(async () => {
-      const reordered = moveItem(manifest, from, to);
-      await api.putManifest(slug, reordered);
-      manifest = reordered;
-      renderPhotos();
-    }));
   }
 
   async function startUpload(files) {
@@ -92,6 +86,17 @@ export function renderAdminAlbum(container, ctx) {
         : `Caricate ${result.uploaded.length}, fallite ${result.failed.length}: riprova trascinandole di nuovo.`);
     });
   }
+
+  // Attaccato una sola volta: il nodo .admin-photo-grid è creato una volta
+  // sola dal template sopra, renderPhotos() ne pulisce solo i figli. Farlo
+  // dentro renderPhotos() accumulerebbe listener ad ogni render (ogni drag
+  // ne farebbe scattare N, ognuno con la propria putManifest + re-render).
+  deps.attachSortable(q('.admin-photo-grid'), (from, to) => run(async () => {
+    const reordered = moveItem(manifest, from, to);
+    await api.putManifest(slug, reordered);
+    manifest = reordered;
+    renderPhotos();
+  }));
 
   const dropzone = q('.admin-dropzone');
   const fileInput = dropzone.querySelector('input[type="file"]');

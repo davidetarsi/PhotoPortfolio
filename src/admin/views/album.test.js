@@ -80,6 +80,17 @@ describe('renderAdminAlbum', () => {
     expect(container.querySelectorAll('.admin-photo')).toHaveLength(1);
   });
 
+  it('attachSortable è chiamato una sola volta, non ad ogni renderPhotos()', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(ctx.deps.attachSortable).toHaveBeenCalledTimes(1);
+    // elimina una foto → renderPhotos() rigira di nuovo: NON deve riattaccare
+    container.querySelectorAll('.admin-photo__delete')[0].click();
+    await vi.waitFor(() => expect(ctx.api.deletePhoto).toHaveBeenCalled());
+    expect(ctx.deps.attachSortable).toHaveBeenCalledTimes(1);
+  });
+
   it('selezione file → runBatch cablato su api e manifest corrente', async () => {
     const ctx = makeCtx();
     renderAdminAlbum(container, ctx);

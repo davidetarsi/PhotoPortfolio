@@ -1,9 +1,0 @@
-{
-  "name": "photo-portfolio",
-  "compatibility_date": "2026-07-07",
-  "main": "src/worker.js",
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS"
-  }
-}
