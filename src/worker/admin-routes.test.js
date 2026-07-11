@@ -102,3 +102,90 @@ describe('rotte sconosciute', () => {
     expect((await call(env, 'GET', '/api/admin/site')).status).toBe(405);
   });
 });
+
+describe('PUT /api/admin/albums/:slug/photos/:name', () => {
+  const put = (env, path, body, ct = 'image/webp') =>
+    handleAdminRequest(new Request(`https://x.dev${path}`, {
+      method: 'PUT', body, headers: { 'Cf-Access-Jwt-Assertion': token, 'Content-Type': ct },
+    }), env, deps);
+
+  it('salva il body come oggetto webp', async () => {
+    const env = makeEnv();
+    const res = await put(env, '/api/admin/albums/sport/photos/nuova.webp', new Uint8Array([1, 2, 3]));
+    expect(res.status).toBe(200);
+    expect(env.BUCKET.store.has('sport/nuova.webp')).toBe(true);
+    expect(env.BUCKET.store.get('sport/nuova.webp').contentType).toBe('image/webp');
+  });
+
+  it('accetta nomi legacy con maiuscole', async () => {
+    const env = makeEnv();
+    expect((await put(env, '/api/admin/albums/sport/photos/4x5-IMG_8689-.webp', new Uint8Array([1]))).status).toBe(200);
+  });
+
+  it('rifiuta content-type sbagliato (415), nome invalido (400), body oltre 10MB (413)', async () => {
+    const env = makeEnv();
+    expect((await put(env, '/api/admin/albums/sport/photos/a.webp', new Uint8Array([1]), 'image/jpeg')).status).toBe(415);
+    expect((await put(env, '/api/admin/albums/sport/photos/a.jpg', new Uint8Array([1]))).status).toBe(400);
+    const big = new Uint8Array(10 * 1024 * 1024 + 1);
+    expect((await put(env, '/api/admin/albums/sport/photos/a.webp', big)).status).toBe(413);
+  });
+
+  it('PUT: errore R2 → 500 con JSON pulito', async () => {
+    const env = makeEnv();
+    env.BUCKET.put = async () => { throw new Error('R2 down'); };
+    const res = await put(env, '/api/admin/albums/sport/photos/a.webp', new Uint8Array([1]));
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'STORAGE_ERROR' });
+  });
+});
+
+describe('DELETE /api/admin/albums/:slug/photos/:name', () => {
+  it('elimina oggetto e entry dal manifest; idempotente se manifest assente', async () => {
+    const env = makeEnv({
+      'sport/a.webp': 'BIN', 'sport/b.webp': 'BIN',
+      'sport/manifest.json': [{ name: 'a.webp', width: 1, height: 1 }, { name: 'b.webp', width: 1, height: 1 }],
+    });
+    const res = await call(env, 'DELETE', '/api/admin/albums/sport/photos/a.webp');
+    expect(res.status).toBe(200);
+    expect(env.BUCKET.store.has('sport/a.webp')).toBe(false);
+    expect(JSON.parse(env.BUCKET.store.get('sport/manifest.json').text)).toEqual([{ name: 'b.webp', width: 1, height: 1 }]);
+    // senza manifest: nessun errore
+    const env2 = makeEnv({ 'sport/c.webp': 'BIN' });
+    expect((await call(env2, 'DELETE', '/api/admin/albums/sport/photos/c.webp')).status).toBe(200);
+  });
+
+  it('DELETE: errore R2 → 500 con JSON pulito', async () => {
+    const env = makeEnv({ 'sport/a.webp': 'BIN' });
+    env.BUCKET.delete = async () => { throw new Error('R2 down'); };
+    const res = await call(env, 'DELETE', '/api/admin/albums/sport/photos/a.webp');
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'STORAGE_ERROR' });
+  });
+});
+
+describe('DELETE /api/admin/albums/:slug', () => {
+  it('cancella >1000 oggetti con paginazione e rimuove la voce da albums.json', async () => {
+    const initial = { '_data/albums.json': ALBUMS };
+    for (let i = 0; i < 1203; i++) initial[`sport/foto-${String(i).padStart(4, '0')}.webp`] = 'BIN';
+    initial['sport/manifest.json'] = [];
+    initial['around/x.webp'] = 'BIN'; // altro album: non deve essere toccato
+    const env = makeEnv(initial);
+    const res = await call(env, 'DELETE', '/api/admin/albums/sport');
+    expect(res.status).toBe(200);
+    expect([...env.BUCKET.store.keys()].filter(k => k.startsWith('sport/'))).toEqual([]);
+    expect(env.BUCKET.store.has('around/x.webp')).toBe(true);
+    expect(JSON.parse(env.BUCKET.store.get('_data/albums.json').text)).toEqual({ albums: [] });
+  });
+
+  it('idempotente: cancellare un album inesistente risponde 200', async () => {
+    expect((await call(makeEnv(), 'DELETE', '/api/admin/albums/fantasma')).status).toBe(200);
+  });
+
+  it('DELETE album: errore R2 durante list → 500 con JSON pulito', async () => {
+    const env = makeEnv({ 'sport/a.webp': 'BIN' });
+    env.BUCKET.list = async () => { throw new Error('R2 down'); };
+    const res = await call(env, 'DELETE', '/api/admin/albums/sport');
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'STORAGE_ERROR' });
+  });
+});
