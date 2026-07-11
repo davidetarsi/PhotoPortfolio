@@ -35,3 +35,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
 .admin-delete-album { background: transparent; color: var(--color-muted); border: 1px solid #2e3235; }
 .admin-new-album { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
 .admin-new-album input { flex: 1; margin-top: 0; }
+
+.admin-back { color: var(--color-muted); text-decoration: none; font-family: var(--font-mono); font-size: 0.8rem; }
+.admin-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
+.admin-photo { position: relative; margin: 0; cursor: grab; }
+.admin-photo__img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); display: block; }
+.admin-photo__actions { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; padding: var(--space-xs); }
+.admin-photo__actions button { font-size: 0.7rem; padding: 2px 6px; }
+.admin-photo__delete { background: rgba(0,0,0,0.6); color: var(--color-text); }
+.admin-dropzone { border: 2px dashed #2e3235; border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.admin-dropzone--over { border-color: var(--color-accent); }
+.admin-progress { list-style: none; padding: 0; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-muted); }
