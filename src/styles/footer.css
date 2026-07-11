@@ -6,3 +6,19 @@
   letter-spacing: 0.14em;
   color: var(--color-muted);
 }
+
+.site-footer__links {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+.site-footer__link {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.site-footer__link:hover {
+  color: var(--color-text);
+}

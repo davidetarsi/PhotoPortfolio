@@ -11,7 +11,6 @@ import { createAlbumCard } from '../components/AlbumCard.js';
 
 validateSiteConfig(siteConfig);
 
-renderFooter(document.getElementById('site-footer'), texts);
 document.getElementById('albums-heading').textContent = texts.landing.albumsSectionHeading;
 
 // Skeleton sulle card mentre i dati arrivano.
@@ -23,6 +22,7 @@ const [siteRes, albumsRes] = await Promise.all([fetchSite(), fetchAlbums()]);
 const site = resolveSiteContent(siteRes, siteConfig);
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);
 renderHero(document.getElementById('hero'), site, texts);
+renderFooter(document.getElementById('site-footer'), texts, site.social);
 
 cardsEl.innerHTML = '';
 if (!albumsRes.ok) {

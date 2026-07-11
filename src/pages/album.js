@@ -14,7 +14,6 @@ import { createLightbox } from '../components/Lightbox.js';
 validateSiteConfig(siteConfig);
 
 const gridEl = document.getElementById('photo-grid');
-renderFooter(document.getElementById('site-footer'), texts);
 renderSkeletons(gridEl, 12);
 
 const slug = window.location.pathname.replace(/^\/|\/$/g, '');
@@ -28,6 +27,7 @@ const [siteRes, albumsRes, manifestRes] = await Promise.all([
 
 const site = resolveSiteContent(siteRes, siteConfig);
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);
+renderFooter(document.getElementById('site-footer'), texts, site.social);
 
 const page = resolveAlbumPage(slug, albumsRes, manifestRes);
 

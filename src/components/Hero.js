@@ -1,6 +1,6 @@
 import '../styles/hero.css';
 
-export function renderHero(container, { name, heroUrl }, texts) {
+export function renderHero(container, { name, bio, heroUrl }, texts) {
   const imgHtml = heroUrl ? `<img class="hero__bg" alt="" fetchpriority="high" decoding="sync">` : '';
   container.innerHTML = `
     <div class="hero__inner">
@@ -15,5 +15,5 @@ export function renderHero(container, { name, heroUrl }, texts) {
     container.querySelector('.hero__bg').setAttribute('src', heroUrl);
   }
   container.querySelector('.hero__title').textContent = name;
-  container.querySelector('.hero__subtitle').textContent = texts.landing.heroSubtitle;
+  container.querySelector('.hero__subtitle').textContent = bio?.trim() ? bio : texts.landing.heroSubtitle;
 }

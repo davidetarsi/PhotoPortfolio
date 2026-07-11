@@ -3221,7 +3221,8 @@ Expected: `302` (redirect al login Access) oppure `401` (JWT gate del Worker). M
 5. Riordina una foto (drag) → ricarica la scheda pubblica → ordine aggiornato.
 6. Elimina una foto dall'album (conferma) → scompare dalla griglia admin → ricarica la scheda pubblica → non c'è più.
 7. Imposta una cover → home → la card mostra la cover.
-8. Cambia bio dal pannello → home aggiornata al reload.
+8. Cambia bio dal pannello → home aggiornata al reload (bio sostituisce il sottotitolo statico sotto il nome nell'hero; se la lasci vuota torna il testo di default).
+8b. Aggiungi un link Instagram dal pannello → home aggiornata al reload (compare nel footer).
 9. Imposta hero da "Prova Piano" → home aggiornata.
 
 - [ ] **Step 7 [UMANO]: E2E da iPhone (percorso WASM)**

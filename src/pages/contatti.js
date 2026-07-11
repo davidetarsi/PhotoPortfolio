@@ -10,10 +10,10 @@ import { createContactForm } from '../components/ContactForm.js';
 
 validateSiteConfig(siteConfig);
 
-renderFooter(document.getElementById('site-footer'), texts);
 document.getElementById('contatti-heading').textContent = texts.contatti.heading;
 document.getElementById('contatti-body').textContent = texts.contatti.body;
 document.getElementById('contatti-form').appendChild(createContactForm(siteConfig, texts));
 
 const site = resolveSiteContent(await fetchSite(), siteConfig);
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);
+renderFooter(document.getElementById('site-footer'), texts, site.social);
