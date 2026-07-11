@@ -30,6 +30,7 @@ const ctx = {
     attachSortable,
     fetchManifest,
     prompt: window.prompt.bind(window),
+    confirm: window.confirm.bind(window),
     runBatch,
     makeProcessFile: async () => {
       const deps = await makeProcessDeps();

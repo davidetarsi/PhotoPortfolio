@@ -3217,9 +3217,10 @@ Expected: `302` (redirect al login Access) oppure `401` (JWT gate del Worker). M
 3. Trascina 3-4 JPEG grandi → progress per file → griglia popolata.
 4. Apri `https://davidetarsi.com/prova-piano` in un'altra scheda → le foto ci sono, in ordine.
 5. Riordina una foto (drag) → ricarica la scheda pubblica → ordine aggiornato.
-6. Imposta una cover → home → la card mostra la cover.
-7. Cambia bio dal pannello → home aggiornata al reload.
-8. Imposta hero da "Prova Piano" → home aggiornata.
+6. Elimina una foto dall'album (conferma) → scompare dalla griglia admin → ricarica la scheda pubblica → non c'è più.
+7. Imposta una cover → home → la card mostra la cover.
+8. Cambia bio dal pannello → home aggiornata al reload.
+9. Imposta hero da "Prova Piano" → home aggiornata.
 
 - [ ] **Step 7 [UMANO]: E2E da iPhone (percorso WASM)**
 
