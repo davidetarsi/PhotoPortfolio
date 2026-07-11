@@ -137,6 +137,11 @@ describe('PUT /api/admin/albums/:slug/photos/:name', () => {
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: 'STORAGE_ERROR' });
   });
+
+  it('400 su slug riservato (es. "admin") anche se passa SLUG_RE', async () => {
+    const env = makeEnv();
+    expect((await put(env, '/api/admin/albums/admin/photos/a.webp', new Uint8Array([1]))).status).toBe(400);
+  });
 });
 
 describe('DELETE /api/admin/albums/:slug/photos/:name', () => {
@@ -179,6 +184,11 @@ describe('DELETE /api/admin/albums/:slug', () => {
 
   it('idempotente: cancellare un album inesistente risponde 200', async () => {
     expect((await call(makeEnv(), 'DELETE', '/api/admin/albums/fantasma')).status).toBe(200);
+  });
+
+  it('404 su slug riservato (es. "admin") anche se passa SLUG_RE — nessuna scrittura tentata', async () => {
+    const env = makeEnv();
+    expect((await call(env, 'DELETE', '/api/admin/albums/admin')).status).toBe(404);
   });
 
   it('DELETE album: errore R2 durante list → 500 con JSON pulito', async () => {

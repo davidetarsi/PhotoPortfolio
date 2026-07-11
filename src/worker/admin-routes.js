@@ -57,7 +57,9 @@ export async function handleAdminRequest(request, env, deps = {}) {
   if (photo) {
     const [, slug, rawName] = photo;
     const name = decodeURIComponent(rawName);
-    if (!SLUG_RE.test(slug) || !PHOTO_NAME_RE.test(name)) return jsonResponse({ error: 'Nome o slug invalido' }, 400);
+    if (!SLUG_RE.test(slug) || RESERVED_SLUGS.includes(slug) || !PHOTO_NAME_RE.test(name)) {
+      return jsonResponse({ error: 'Nome o slug invalido' }, 400);
+    }
     const key = `${slug}/${name}`;
 
     if (method === 'PUT') {
@@ -99,6 +101,7 @@ export async function handleAdminRequest(request, env, deps = {}) {
   if (albumDelete) {
     if (method !== 'DELETE') return jsonResponse({ error: 'METHOD_NOT_ALLOWED' }, 405);
     const slug = albumDelete[1];
+    if (RESERVED_SLUGS.includes(slug)) return jsonResponse({ error: 'NOT_FOUND' }, 404);
 
     // Loop paginato: list() max 1000 chiavi/pagina, delete() max 1000 chiavi/chiamata.
     // Prima gli oggetti, POI albums.json: se il loop muore a metà, l'album resta
