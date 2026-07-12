@@ -2,7 +2,7 @@ import '../styles/main.css';
 import { siteConfig } from '../../config/site.config.js';
 import { texts } from '../../config/texts.config.js';
 import { validateSiteConfig } from '../utils/validateConfig.js';
-import { fetchSite, fetchAlbums, fetchManifest } from '../providers/data.js';
+import { fetchSite, fetchAlbums, fetchManifest, fetchConfig } from '../providers/data.js';
 import { photosFromManifest } from '../providers/r2.js';
 import { resolveSiteContent } from './home-logic.js';
 import { resolveAlbumPage } from './album-logic.js';
@@ -18,14 +18,16 @@ renderSkeletons(gridEl, 12);
 
 const slug = window.location.pathname.replace(/^\/|\/$/g, '');
 
-// Lo slug è già noto dall'URL: nessun waterfall, tre fetch in volo insieme.
-const [siteRes, albumsRes, manifestRes] = await Promise.all([
+// Lo slug è già noto dall'URL: nessun waterfall, tutte le fetch in volo insieme.
+const [siteRes, albumsRes, manifestRes, configRes] = await Promise.all([
   fetchSite(),
   fetchAlbums(),
   fetchManifest(slug),
+  fetchConfig(),
 ]);
+const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2PublicUrl;
 
-const site = resolveSiteContent(siteRes, siteConfig);
+const site = resolveSiteContent(siteRes, { ...siteConfig, r2PublicUrl });
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);
 renderFooter(document.getElementById('site-footer'), texts, site.social);
 
@@ -55,7 +57,7 @@ if (page.kind === 'not_found') {
   if (page.kind === 'empty') {
     showMessage(texts.album.empty);
   } else {
-    const photos = photosFromManifest(page.entries, slug, siteConfig.r2PublicUrl);
+    const photos = photosFromManifest(page.entries, slug, r2PublicUrl);
     const lb = createLightbox(photos);
     renderGrid(gridEl, photos, (i, triggerEl) => lb.open(i, triggerEl));
   }

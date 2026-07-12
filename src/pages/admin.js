@@ -1,7 +1,7 @@
 import '../styles/admin.css';
 import { siteConfig } from '../../config/site.config.js';
 import { validateSiteConfig } from '../utils/validateConfig.js';
-import { fetchSite, fetchAlbums, fetchManifest } from '../providers/data.js';
+import { fetchSite, fetchAlbums, fetchManifest, fetchConfig } from '../providers/data.js';
 import { adminApi } from '../admin/api.js';
 import { parseAdminHash } from '../admin/router.js';
 import { attachSortable } from '../admin/sortable.js';
@@ -16,7 +16,8 @@ validateSiteConfig(siteConfig);
 const root = document.getElementById('admin-root');
 root.innerHTML = '<p class="admin-status">Caricamento…</p>';
 
-const [siteRes, albumsRes] = await Promise.all([fetchSite(), fetchAlbums()]);
+const [siteRes, albumsRes, configRes] = await Promise.all([fetchSite(), fetchAlbums(), fetchConfig()]);
+const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2PublicUrl;
 
 // Primo avvio: _site/site.json può non esistere ancora → base editabile dai default build.
 const ctx = {
@@ -24,7 +25,7 @@ const ctx = {
     ? siteRes.data
     : { name: siteConfig.name, bio: siteConfig.bio ?? '', hero: null, social: {} },
   albums: albumsRes.ok ? albumsRes.data : [],
-  r2PublicUrl: siteConfig.r2PublicUrl,
+  r2PublicUrl,
   api: adminApi,
   navigate: hash => { window.location.hash = hash; },
   deps: {
