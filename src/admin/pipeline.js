@@ -15,12 +15,14 @@ export function shouldUploadAsIs(fileType, width, height) {
   return fileType === 'image/webp' && width <= MAX_DIMENSION && height <= MAX_DIMENSION;
 }
 
-export async function processFile(file, { decode, encode }) {
+export async function processFile(file, { decode, encode, extractCapturedAt }) {
+  const uploadedAt = Date.now();
+  const capturedAt = await extractCapturedAt(file);
   const { bitmap, width, height } = await decode(file);
   if (shouldUploadAsIs(file.type, width, height)) {
-    return { blob: file, width, height };
+    return { blob: file, width, height, capturedAt, uploadedAt };
   }
   const target = targetDimensions(width, height);
   const blob = await encode(bitmap, target.width, target.height, WEBP_QUALITY);
-  return { blob, width: target.width, height: target.height };
+  return { blob, width: target.width, height: target.height, capturedAt, uploadedAt };
 }

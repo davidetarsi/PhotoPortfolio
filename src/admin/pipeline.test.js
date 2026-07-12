@@ -27,20 +27,32 @@ describe('shouldUploadAsIs', () => {
 });
 
 describe('processFile', () => {
-  it('webp piccolo → as-is: nessun encode, blob = file originale', async () => {
+  it('webp piccolo → as-is: nessun encode, blob = file originale, include capturedAt/uploadedAt', async () => {
     const decode = vi.fn(async () => ({ bitmap: 'BMP', width: 1000, height: 800 }));
     const encode = vi.fn();
+    const extractCapturedAt = vi.fn(async () => 1700000000000);
     const file = { type: 'image/webp' };
-    const res = await processFile(file, { decode, encode });
-    expect(res).toEqual({ blob: file, width: 1000, height: 800 });
+    const res = await processFile(file, { decode, encode, extractCapturedAt });
+    expect(res.blob).toBe(file);
+    expect(res.width).toBe(1000);
+    expect(res.height).toBe(800);
+    expect(res.capturedAt).toBe(1700000000000);
+    expect(Number.isFinite(res.uploadedAt)).toBe(true);
     expect(encode).not.toHaveBeenCalled();
+    expect(extractCapturedAt).toHaveBeenCalledWith(file); // legge il File originale, non bitmap/blob
   });
-  it('jpeg grande → resize + encode con qualità 0.85', async () => {
+  it('jpeg grande → resize + encode con qualità 0.85, include capturedAt/uploadedAt', async () => {
     const decode = vi.fn(async () => ({ bitmap: 'BMP', width: 3800, height: 1900 }));
     const encode = vi.fn(async () => 'WEBP_BLOB');
-    const res = await processFile({ type: 'image/jpeg' }, { decode, encode });
+    const extractCapturedAt = vi.fn(async () => undefined); // niente EXIF, es. screenshot
+    const file = { type: 'image/jpeg' };
+    const res = await processFile(file, { decode, encode, extractCapturedAt });
     expect(encode).toHaveBeenCalledWith('BMP', 1900, 950, WEBP_QUALITY);
-    expect(res).toEqual({ blob: 'WEBP_BLOB', width: 1900, height: 950 });
+    expect(res.blob).toBe('WEBP_BLOB');
+    expect(res.width).toBe(1900);
+    expect(res.height).toBe(950);
+    expect(res.capturedAt).toBeUndefined();
+    expect(Number.isFinite(res.uploadedAt)).toBe(true);
   });
   it('MAX_DIMENSION è 1900 (stesso limite di compress.js)', () => {
     expect(MAX_DIMENSION).toBe(1900);
