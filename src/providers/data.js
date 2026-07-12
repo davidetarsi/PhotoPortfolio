@@ -1,6 +1,6 @@
 // Letture runtime dei contenuti. Ogni funzione restituisce un result object,
 // mai throw: i chiamanti decidono il fallback (asimmetrico) per ciascun caso.
-import { validateSiteShape, validateAlbumsShape, validateManifestShape } from '../shared/content-rules.js';
+import { validateSiteShape, validateAlbumsShape, validateManifestShape, validateConfigShape } from '../shared/content-rules.js';
 
 async function fetchValidated(url, validate) {
   let res;
@@ -32,4 +32,8 @@ export async function fetchAlbums() {
 
 export function fetchManifest(slug) {
   return fetchValidated(`/api/data/albums/${slug}/manifest`, validateManifestShape);
+}
+
+export function fetchConfig() {
+  return fetchValidated('/api/data/config', validateConfigShape);
 }

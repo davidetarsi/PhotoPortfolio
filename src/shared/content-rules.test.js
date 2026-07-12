@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   SLUG_RE, RESERVED_SLUGS, PHOTO_NAME_RE, MAX_PHOTO_BYTES, slugifyTitle,
-  validateSiteShape, validateAlbumsShape, validateManifestShape,
+  validateSiteShape, validateAlbumsShape, validateManifestShape, validateConfigShape,
 } from './content-rules.js';
 
 describe('regex e costanti', () => {
@@ -82,5 +82,19 @@ describe('validateManifestShape', () => {
     expect(validateManifestShape([{ ...entry, name: 'a.jpg' }]).ok).toBe(false);
     expect(validateManifestShape([entry, entry]).ok).toBe(false);
     expect(validateManifestShape({}).ok).toBe(false);
+  });
+});
+
+describe('validateConfigShape', () => {
+  it('accetta un r2PublicUrl stringa non vuota', () => {
+    expect(validateConfigShape({ r2PublicUrl: 'https://pub-x.r2.dev' }).ok).toBe(true);
+  });
+  it('rifiuta null, stringa vuota/spazi, non-stringa, o oggetto non valido', () => {
+    expect(validateConfigShape({ r2PublicUrl: null }).ok).toBe(false);
+    expect(validateConfigShape({ r2PublicUrl: '' }).ok).toBe(false);
+    expect(validateConfigShape({ r2PublicUrl: '   ' }).ok).toBe(false);
+    expect(validateConfigShape({ r2PublicUrl: 42 }).ok).toBe(false);
+    expect(validateConfigShape(null).ok).toBe(false);
+    expect(validateConfigShape({}).ok).toBe(false);
   });
 });

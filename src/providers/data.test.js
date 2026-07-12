@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { fetchSite, fetchAlbums, fetchManifest } from './data.js';
+import { fetchSite, fetchAlbums, fetchManifest, fetchConfig } from './data.js';
 
 const SITE = { name: 'Davide', bio: '', hero: null, social: {} };
 const ALBUMS = { albums: [{ slug: 'sport', title: 'Sport', description: '', coverName: null }] };
@@ -52,5 +52,23 @@ describe('fetchManifest', () => {
   it('404 → NOT_FOUND (album nuovo senza manifest)', async () => {
     mockFetch(async () => jsonRes({ error: 'x' }, 404));
     expect((await fetchManifest('nuovo')).error).toBe('NOT_FOUND');
+  });
+});
+
+describe('fetchConfig', () => {
+  it('successo → {ok:true, data}; chiama /api/data/config', async () => {
+    mockFetch(async () => jsonRes({ r2PublicUrl: 'https://pub-x.r2.dev' }));
+    expect(await fetchConfig()).toEqual({ ok: true, data: { r2PublicUrl: 'https://pub-x.r2.dev' } });
+    expect(global.fetch).toHaveBeenCalledWith('/api/data/config');
+  });
+  it('r2PublicUrl null o vuoto → MALFORMED (il chiamante userà il fallback di build)', async () => {
+    mockFetch(async () => jsonRes({ r2PublicUrl: null }));
+    expect((await fetchConfig()).error).toBe('MALFORMED');
+    mockFetch(async () => jsonRes({ r2PublicUrl: '' }));
+    expect((await fetchConfig()).error).toBe('MALFORMED');
+  });
+  it('rete giù → NETWORK', async () => {
+    mockFetch(async () => { throw new TypeError('net'); });
+    expect((await fetchConfig()).error).toBe('NETWORK');
   });
 });

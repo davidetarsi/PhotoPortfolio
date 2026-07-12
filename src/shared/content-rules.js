@@ -67,3 +67,11 @@ export function validateManifestShape(data) {
   }
   return OK;
 }
+
+export function validateConfigShape(data) {
+  if (!isObj(data)) return fail('config: non è un oggetto');
+  if (typeof data.r2PublicUrl !== 'string' || !data.r2PublicUrl.trim()) {
+    return fail('config.r2PublicUrl deve essere una stringa non vuota');
+  }
+  return OK;
+}
