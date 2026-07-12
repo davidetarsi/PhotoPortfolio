@@ -59,6 +59,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
   flex-direction: column;
 }
 
+.admin-preview[hidden] {
+  display: none;
+}
+
 .admin-preview__header {
   display: flex;
   justify-content: space-between;
