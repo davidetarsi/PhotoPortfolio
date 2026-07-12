@@ -22,6 +22,7 @@
     "wrangler": "^4.107.0"
   },
   "dependencies": {
-    "@jsquash/webp": "^1.5.0"
+    "@jsquash/webp": "^1.5.0",
+    "exifr": "^7.1.3"
   }
 }
