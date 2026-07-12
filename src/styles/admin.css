@@ -18,7 +18,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
   padding: var(--space-sm) var(--space-md); border: 0; border-radius: var(--radius-sm);
   background: var(--color-accent); color: var(--color-bg); font: inherit; cursor: pointer;
 }
-.admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-md); }
+.admin-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-md); margin-top: var(--space-lg); }
 .admin-status { display: flex; align-items: center; gap: var(--space-sm); font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-muted); min-height: 1.2em; margin: 0; flex-basis: 100%; }
 .admin-status__badge {
   padding: 2px 8px; border-radius: var(--radius-sm);

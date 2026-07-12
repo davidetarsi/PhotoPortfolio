@@ -24,7 +24,7 @@ export function renderAdminHome(container, ctx) {
       <label>Bio <textarea name="site-bio" rows="2"></textarea></label>
       <label>Instagram <input name="site-instagram" type="url" placeholder="https://instagram.com/…"></label>
       <div class="admin-hero">
-        <span>Hero:</span>
+        <span>HeroImage:</span>
         ${heroSrc ? `<img class="admin-hero__thumb" alt="">` : '<em>nessuna</em>'}
         <select name="hero-album"><option value="">Scegli album…</option></select>
         <div class="admin-hero__picker"></div>
@@ -38,14 +38,14 @@ export function renderAdminHome(container, ctx) {
         <button class="admin-create-album">Nuovo album</button>
       </div>
     </section>
-    <section class="admin-panel admin-actions">
+    <div class="admin-actions">
       <button class="admin-preview-btn" type="button">Anteprima</button>
       <button class="admin-save-site">Salva sito</button>
       <p class="admin-status" role="status">
         <span class="admin-status__badge"></span>
         <span class="admin-status__text"></span>
       </p>
-    </section>
+    </div>
     <div class="admin-preview" hidden></div>
   `;
 
