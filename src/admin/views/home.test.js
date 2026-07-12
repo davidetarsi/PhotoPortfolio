@@ -114,6 +114,23 @@ describe('renderAdminHome', () => {
     expect(ctx.api.putAlbums).not.toHaveBeenCalled();
   });
 
+  it('scelta hero: click su una foto del picker salva, re-renderizza e mostra il messaggio', async () => {
+    const ctx = makeCtx();
+    ctx.deps.fetchManifest = vi.fn(async () => ({ ok: true, data: [{ name: 'a.webp' }, { name: 'b.webp' }] }));
+    renderAdminHome(container, ctx);
+    container.querySelector('[name="hero-album"]').value = 'sport';
+    container.querySelector('[name="hero-album"]').dispatchEvent(new Event('change'));
+    await vi.waitFor(() => expect(container.querySelectorAll('.admin-hero__choice')).toHaveLength(2));
+
+    container.querySelectorAll('.admin-hero__choice')[1].click();
+    await vi.waitFor(() => expect(ctx.api.putSite).toHaveBeenCalled());
+    expect(ctx.api.putSite.mock.calls[0][0].hero).toEqual({ album: 'sport', name: 'b.webp' });
+
+    // Il re-render ricrea .admin-status: il messaggio deve comparire sul nodo nuovo, non perdersi.
+    expect(container.querySelector('.admin-status__text').textContent).toBe('Hero aggiornata.');
+    expect(container.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+  });
+
   it('salvataggio riuscito mostra il badge "Ultima azione eseguita", non errore', async () => {
     const ctx = makeCtx();
     renderAdminHome(container, ctx);

@@ -11,8 +11,10 @@ export function renderAdminAlbum(container, ctx) {
       <h2></h2>
       <div class="admin-photo-grid"></div>
       <div class="admin-dropzone">
-        <p>Trascina qui le foto o</p>
-        <input type="file" multiple accept="image/jpeg,image/png,image/webp">
+        <label class="admin-dropzone__label">
+          Trascina qui le foto o <span class="admin-dropzone__browse">scegli i file da caricare</span>
+          <input class="admin-dropzone__input" type="file" multiple accept="image/jpeg,image/png,image/webp">
+        </label>
       </div>
       <ul class="admin-progress"></ul>
       <p class="admin-status" role="status">

@@ -101,6 +101,10 @@ export function renderAdminHome(container, ctx) {
         await api.putSite(updated);
         ctx.site = updated;
         renderAdminHome(container, ctx); // re-render con la nuova hero
+        // Il re-render sopra ricrea .admin-status da zero: say() del closure
+        // precedente scriverebbe su un nodo ormai smontato. Va ri-agganciato
+        // al nuovo nodo per far comparire il messaggio.
+        createStatus(container.querySelector('.admin-status')).say('Hero aggiornata.');
       }));
       picker.appendChild(img);
     }

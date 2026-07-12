@@ -55,9 +55,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
 .admin-photo__actions { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; padding: var(--space-xs); }
 .admin-photo__actions button { font-size: 0.7rem; padding: 2px 6px; }
 .admin-photo__delete { background: rgba(0,0,0,0.6); color: var(--color-text); }
-.admin-photo__cover.admin-photo__cover--selected { border: 2px solid var(--color-accent); }
+.admin-photo__cover.admin-photo__cover--selected { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .admin-dropzone { border: 2px dashed #2e3235; border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
 .admin-dropzone--over { border-color: var(--color-accent); }
+.admin-dropzone__label { display: block; cursor: pointer; }
+.admin-dropzone__browse { color: var(--color-accent); text-decoration: underline; }
+.admin-dropzone__input {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 .admin-progress { list-style: none; padding: 0; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-muted); }
 
 /* Header fisso + contenuto scrollabile separati: se hero+footer sono più
