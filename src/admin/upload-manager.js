@@ -37,10 +37,10 @@ export async function runBatch({
         const job = jobs[next++];
         try {
           onProgress(job.name, 'processing');
-          const { blob, width, height } = await processFile(job.file);
+          const { blob, width, height, capturedAt, uploadedAt } = await processFile(job.file);
           onProgress(job.name, 'uploading');
           await uploadPhoto(job.name, blob);
-          uploaded.push({ job, entry: { name: job.name, width, height } });
+          uploaded.push({ job, entry: { name: job.name, width, height, capturedAt, uploadedAt } });
           onProgress(job.name, 'done');
         } catch (error) {
           failed.push({ name: job.name, file: job.file, error });

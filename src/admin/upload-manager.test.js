@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { runBatch, attachBeforeUnloadGuard } from './upload-manager.js';
 
 const file = name => ({ name }); // basta .name per il manager
-const okProcess = async () => ({ blob: 'BLOB', width: 10, height: 20 });
+const okProcess = async () => ({ blob: 'BLOB', width: 10, height: 20, capturedAt: 1700000000000, uploadedAt: 1700000000001 });
 
 function makeDeps() {
   const calls = { uploads: [], manifests: [] };
@@ -25,6 +25,8 @@ describe('runBatch', () => {
     expect(res.uploaded.map(u => u.name)).toEqual(['img_001-2.webp', 'img-001.webp']);
     expect(res.manifest).toEqual([...existing, ...res.uploaded]);
     expect(d.calls.manifests).toHaveLength(1); // UNA sola scrittura manifest
+    expect(res.uploaded[0].capturedAt).toBe(1700000000000);
+    expect(res.uploaded[0].uploadedAt).toBe(1700000000001);
   });
 
   it('due file identici nello stesso batch non si sovrascrivono', async () => {

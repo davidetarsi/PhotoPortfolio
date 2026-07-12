@@ -3,6 +3,8 @@
 // manuale nel rollout. Safari non sa encodare WebP → fallback WASM lazy:
 // Chrome/Android non scaricano mai il chunk @jsquash/webp.
 
+import { extractCapturedAt } from './exif.js';
+
 function drawTo(bitmap, width, height) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -38,6 +40,7 @@ export async function makeProcessDeps() {
     return {
       decode,
       encode: async (bitmap, w, h, q) => canvasToBlob(drawTo(bitmap, w, h), 'image/webp', q),
+      extractCapturedAt,
     };
   }
 
@@ -50,5 +53,6 @@ export async function makeProcessDeps() {
       const buffer = await wasmEncode(imageData, { quality: Math.round(q * 100) });
       return new Blob([buffer], { type: 'image/webp' });
     },
+    extractCapturedAt,
   };
 }
