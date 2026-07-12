@@ -1,5 +1,6 @@
 import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
+import { createStatus } from '../status.js';
 
 export function renderAdminAlbum(container, ctx) {
   const { slug, r2PublicUrl, api, deps } = ctx;
@@ -14,29 +15,32 @@ export function renderAdminAlbum(container, ctx) {
         <input type="file" multiple accept="image/jpeg,image/png,image/webp">
       </div>
       <ul class="admin-progress"></ul>
-      <p class="admin-status" role="status"></p>
+      <p class="admin-status" role="status">
+        <span class="admin-status__badge"></span>
+        <span class="admin-status__text"></span>
+      </p>
     </section>
   `;
   container.querySelector('h2').textContent = album?.title ?? slug;
 
   const q = sel => container.querySelector(sel);
-  const status = q('.admin-status');
-  const say = msg => { status.textContent = msg; };
-  const run = fn => fn().catch(err => say(`Errore: ${err.message}`));
+  const { say, run } = createStatus(q('.admin-status'));
 
   let manifest = [];
 
   function renderPhotos() {
     const grid = q('.admin-photo-grid');
     grid.innerHTML = '';
+    const currentCoverName = ctx.albums.find(a => a.slug === slug)?.coverName ?? null;
     manifest.forEach(entry => {
+      const isCover = entry.name === currentCoverName;
       const cell = document.createElement('figure');
       cell.className = 'admin-photo';
       cell.draggable = true;
       cell.innerHTML = `
         <img class="admin-photo__img" alt="" loading="lazy">
         <div class="admin-photo__actions">
-          <button class="admin-photo__cover" title="Usa come cover">Cover</button>
+          <button class="admin-photo__cover${isCover ? ' admin-photo__cover--selected' : ''}" title="Usa come cover">Cover</button>
           <button class="admin-photo__delete" title="Elimina">✕</button>
         </div>
       `;
@@ -45,6 +49,7 @@ export function renderAdminAlbum(container, ctx) {
         const updated = ctx.albums.map(a => (a.slug === slug ? { ...a, coverName: entry.name } : a));
         await api.putAlbums(updated);
         ctx.albums = updated;
+        renderPhotos();
         say(`Cover: ${entry.name}`);
       }));
       cell.querySelector('.admin-photo__delete').addEventListener('click', () => run(async () => {
@@ -83,7 +88,8 @@ export function renderAdminAlbum(container, ctx) {
       renderPhotos();
       say(result.failed.length === 0
         ? `Caricate ${result.uploaded.length} foto.`
-        : `Caricate ${result.uploaded.length}, fallite ${result.failed.length}: riprova trascinandole di nuovo.`);
+        : `Caricate ${result.uploaded.length}, fallite ${result.failed.length}: riprova trascinandole di nuovo.`,
+      result.failed.length > 0);
     });
   }
 
@@ -113,7 +119,7 @@ export function renderAdminAlbum(container, ctx) {
   run(async () => {
     const res = await deps.fetchManifest(slug);
     if (res.ok) manifest = res.data;
-    else if (res.error !== 'NOT_FOUND') { say('Impossibile caricare il manifest.'); return; }
+    else if (res.error !== 'NOT_FOUND') { say('Impossibile caricare il manifest.', true); return; }
     renderPhotos();
   });
 }

@@ -79,7 +79,11 @@ describe('renderAdminHome', () => {
     expect(ctx.deps.showPreview).toHaveBeenCalledTimes(1);
     const [previewEl, data] = ctx.deps.showPreview.mock.calls[0];
     expect(previewEl.className).toBe('admin-preview');
-    expect(data).toEqual({ name: 'Nome Bozza', bio: 'Bio bozza', heroUrl: null, social: { instagram: 'https://instagram.com/bozza' } });
+    expect(data).toEqual({
+      name: 'Nome Bozza', bio: 'Bio bozza', heroUrl: null,
+      social: { instagram: 'https://instagram.com/bozza' },
+      albums: ctx.albums, r2PublicUrl: 'https://pub.r2.dev',
+    });
     expect(ctx.api.putSite).not.toHaveBeenCalled();
   });
 
@@ -94,7 +98,7 @@ describe('renderAdminHome', () => {
     expect(ctx.navigate).toHaveBeenCalledWith('#/album/street-photo');
   });
 
-  it('rifiuta slug riservato o duplicato senza chiamare l\'API', async () => {
+  it('rifiuta slug riservato o duplicato senza chiamare l\'API, badge errore attivo', async () => {
     const ctx = makeCtx();
     renderAdminHome(container, ctx);
     container.querySelector('[name="new-album-title"]').value = 'Admin';
@@ -102,10 +106,21 @@ describe('renderAdminHome', () => {
     await Promise.resolve();
     expect(ctx.api.putAlbums).not.toHaveBeenCalled();
     expect(container.querySelector('.admin-status').textContent).not.toBe('');
+    expect(container.querySelector('.admin-status__badge').textContent).toBe('Errore');
+    expect(container.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(true);
     container.querySelector('[name="new-album-title"]').value = 'Sport';
     container.querySelector('.admin-create-album').click();
     await Promise.resolve();
     expect(ctx.api.putAlbums).not.toHaveBeenCalled();
+  });
+
+  it('salvataggio riuscito mostra il badge "Ultima azione eseguita", non errore', async () => {
+    const ctx = makeCtx();
+    renderAdminHome(container, ctx);
+    container.querySelector('.admin-save-site').click();
+    await vi.waitFor(() => expect(ctx.api.putSite).toHaveBeenCalled());
+    expect(container.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+    expect(container.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(false);
   });
 
   it('riordino via sortable → putAlbums con l\'ordine nuovo', async () => {

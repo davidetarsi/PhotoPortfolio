@@ -71,6 +71,26 @@ describe('renderAdminAlbum', () => {
     expect(ctx.api.putAlbums.mock.calls[0][0][0].coverName).toBe('b.webp');
   });
 
+  it('al render, il badge cover selezionato è già sulla foto con coverName corrente', async () => {
+    const ctx = makeCtx({ albums: [{ slug: 'sport', title: 'Sport', description: '', coverName: 'b.webp' }] });
+    renderAdminAlbum(container, ctx);
+    await flush();
+    const covers = container.querySelectorAll('.admin-photo__cover');
+    expect(covers[0].classList.contains('admin-photo__cover--selected')).toBe(false);
+    expect(covers[1].classList.contains('admin-photo__cover--selected')).toBe(true);
+  });
+
+  it('click su Cover sposta il bordino selezionato sulla foto cliccata', async () => {
+    const ctx = makeCtx({ albums: [{ slug: 'sport', title: 'Sport', description: '', coverName: 'a.webp' }] });
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelectorAll('.admin-photo__cover')[1].click();
+    await vi.waitFor(() => expect(ctx.api.putAlbums).toHaveBeenCalled());
+    const covers = container.querySelectorAll('.admin-photo__cover');
+    expect(covers[0].classList.contains('admin-photo__cover--selected')).toBe(false);
+    expect(covers[1].classList.contains('admin-photo__cover--selected')).toBe(true);
+  });
+
   it('elimina foto (confirm) → deletePhoto e rimozione dalla griglia', async () => {
     const ctx = makeCtx();
     renderAdminAlbum(container, ctx);

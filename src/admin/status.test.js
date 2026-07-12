@@ -1,0 +1,52 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { createStatus } from './status.js';
+
+function makeEl() {
+  const el = document.createElement('p');
+  el.innerHTML = '<span class="admin-status__badge"></span><span class="admin-status__text"></span>';
+  return el;
+}
+
+describe('createStatus', () => {
+  let el;
+  beforeEach(() => { el = makeEl(); });
+
+  it('say() senza flag: badge "Ultima azione eseguita", nessuna classe errore', () => {
+    const { say } = createStatus(el);
+    say('Sito salvato.');
+    expect(el.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+    expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(false);
+    expect(el.querySelector('.admin-status__text').textContent).toBe('Sito salvato.');
+  });
+
+  it('say(msg, true): badge "Errore" con classe errore', () => {
+    const { say } = createStatus(el);
+    say('Titolo non valido.', true);
+    expect(el.querySelector('.admin-status__badge').textContent).toBe('Errore');
+    expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(true);
+    expect(el.querySelector('.admin-status__text').textContent).toBe('Titolo non valido.');
+  });
+
+  it('chiamate successive aggiornano badge e testo, non si accumulano', () => {
+    const { say } = createStatus(el);
+    say('Titolo non valido.', true);
+    say('Sito salvato.');
+    expect(el.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+    expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(false);
+    expect(el.querySelector('.admin-status__text').textContent).toBe('Sito salvato.');
+  });
+
+  it('run(): fn che risolve non tocca lo stato', async () => {
+    const { run } = createStatus(el);
+    await run(async () => {});
+    expect(el.querySelector('.admin-status__badge').textContent).toBe('');
+  });
+
+  it('run(): fn che rifiuta mostra il messaggio dell\'errore con badge errore', async () => {
+    const { run } = createStatus(el);
+    await run(async () => { throw new Error('Rete non disponibile'); });
+    expect(el.querySelector('.admin-status__badge').textContent).toBe('Errore');
+    expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(true);
+    expect(el.querySelector('.admin-status__text').textContent).toBe('Rete non disponibile');
+  });
+});

@@ -1,8 +1,11 @@
-// Overlay di anteprima per il form Sito. Riusa renderHero/renderFooter — le
-// stesse funzioni del sito pubblico — così l'anteprima non è mai una
-// reimplementazione parallela che può disallinearsi.
+// Overlay di anteprima per il form Sito. Riusa renderHero/renderFooter/
+// createAlbumCard — le stesse funzioni del sito pubblico — così l'anteprima
+// non è mai una reimplementazione parallela che può disallinearsi.
+import '../styles/main.css'; // .container, .section-heading (layout condiviso con index.html)
 import { renderHero } from '../components/Hero.js';
 import { renderFooter } from '../components/Footer.js';
+import { createAlbumCard } from '../components/AlbumCard.js';
+import { albumsToCards } from '../pages/home-logic.js';
 
 // Il listener va agganciato una sola volta PER SEMPRE (non per container: il
 // container viene ricreato ad ogni render di home.js). Cerca il contenitore
@@ -50,7 +53,7 @@ function ensureKeyboardHandling() {
   });
 }
 
-export function showPreview(container, { name, bio, heroUrl, social }, texts) {
+export function showPreview(container, { name, bio, heroUrl, social, albums = [], r2PublicUrl }, texts) {
   ensureKeyboardHandling();
   container.innerHTML = `
     <div class="admin-preview__header">
@@ -59,10 +62,17 @@ export function showPreview(container, { name, bio, heroUrl, social }, texts) {
     </div>
     <div class="admin-preview__content">
       <div class="admin-preview__hero"></div>
+      <div class="container">
+        <h2 class="section-heading"></h2>
+        <div class="admin-preview__albums album-cards"></div>
+      </div>
       <div class="admin-preview__footer"></div>
     </div>
   `;
   renderHero(container.querySelector('.admin-preview__hero'), { name, bio, heroUrl }, texts);
+  container.querySelector('.section-heading').textContent = texts.landing.albumsSectionHeading;
+  const cardsEl = container.querySelector('.admin-preview__albums');
+  albumsToCards(albums, r2PublicUrl).forEach(card => cardsEl.appendChild(createAlbumCard(card)));
   renderFooter(container.querySelector('.admin-preview__footer'), texts, social);
 
   const closeBtn = container.querySelector('.admin-preview__close');

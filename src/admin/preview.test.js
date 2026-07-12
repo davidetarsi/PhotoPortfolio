@@ -6,8 +6,16 @@ import { showPreview, hidePreview } from './preview.js';
 // optional chaining (src/components/Footer.js:11). Il fixture del brief
 // aveva solo `landing`, causando un TypeError in ogni test. Placeholder
 // '© 2026' allineato alla convenzione già usata in Footer.test.js.
-const texts = { landing: { heroSubtitle: 'Sottotitolo statico.' }, footer: { copyright: '© 2026' } };
-const pending = { name: 'Davide', bio: 'La mia bio', heroUrl: 'https://x/img.webp', social: { instagram: 'https://instagram.com/x' } };
+const texts = { landing: { heroSubtitle: 'Sottotitolo statico.', albumsSectionHeading: 'Album' }, footer: { copyright: '© 2026' } };
+const ALBUMS = [
+  { slug: 'sport', title: 'Sport', description: '', coverName: 'cover.webp' },
+  { slug: 'viaggi', title: 'Viaggi', description: '', coverName: null },
+];
+const pending = {
+  name: 'Davide', bio: 'La mia bio', heroUrl: 'https://x/img.webp',
+  social: { instagram: 'https://instagram.com/x' },
+  albums: ALBUMS, r2PublicUrl: 'https://pub.r2.dev',
+};
 
 describe('showPreview / hidePreview', () => {
   let container;
@@ -33,6 +41,22 @@ describe('showPreview / hidePreview', () => {
     expect(container.querySelector('.hero__title').textContent).toBe('Davide');
     expect(container.querySelector('.hero__subtitle').textContent).toBe('La mia bio');
     expect(container.querySelector('.site-footer__link').getAttribute('href')).toBe('https://instagram.com/x');
+  });
+
+  it('renderizza la griglia album — anteprima completa, non solo hero+footer', () => {
+    showPreview(container, pending, texts);
+    expect(container.querySelector('.section-heading').textContent).toBe('Album');
+    const cards = container.querySelectorAll('.admin-preview__albums .album-card');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].querySelector('.album-card__title').textContent).toBe('Sport');
+    expect(cards[0].querySelector('.album-card__img').getAttribute('src')).toBe('https://pub.r2.dev/sport/cover.webp');
+    expect(cards[1].querySelector('.album-card__img')).toBeNull(); // nessuna coverName → nessuna img
+  });
+
+  it('senza albums (default []) non esplode, griglia vuota', () => {
+    const { albums, ...rest } = pending;
+    showPreview(container, rest, texts);
+    expect(container.querySelectorAll('.admin-preview__albums .album-card')).toHaveLength(0);
   });
 
   it('sposta il focus sul tasto Chiudi', () => {

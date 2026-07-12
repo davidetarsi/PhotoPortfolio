@@ -2,6 +2,7 @@ import { photoUrl } from '../../providers/r2.js';
 import { slugifyTitle, SLUG_RE, RESERVED_SLUGS } from '../../shared/content-rules.js';
 import { moveItem } from '../sortable.js';
 import { texts } from '../../../config/texts.config.js';
+import { createStatus } from '../status.js';
 
 export function buildPendingSite({ name, bio, instagram }, currentSite) {
   return {
@@ -28,11 +29,7 @@ export function renderAdminHome(container, ctx) {
         <select name="hero-album"><option value="">Scegli album…</option></select>
         <div class="admin-hero__picker"></div>
       </div>
-      <button class="admin-preview-btn" type="button">Anteprima</button>
-      <button class="admin-save-site">Salva sito</button>
-      <p class="admin-status" role="status"></p>
     </section>
-    <div class="admin-preview" hidden></div>
     <section class="admin-panel">
       <h2>Album</h2>
       <div class="admin-album-list"></div>
@@ -41,12 +38,19 @@ export function renderAdminHome(container, ctx) {
         <button class="admin-create-album">Nuovo album</button>
       </div>
     </section>
+    <section class="admin-panel admin-actions">
+      <button class="admin-preview-btn" type="button">Anteprima</button>
+      <button class="admin-save-site">Salva sito</button>
+      <p class="admin-status" role="status">
+        <span class="admin-status__badge"></span>
+        <span class="admin-status__text"></span>
+      </p>
+    </section>
+    <div class="admin-preview" hidden></div>
   `;
 
   const q = sel => container.querySelector(sel);
-  const status = q('.admin-status');
-  const say = msg => { status.textContent = msg; };
-  const run = fn => fn().catch(err => say(`Errore: ${err.message}`));
+  const { say, run } = createStatus(q('.admin-status'));
 
   // --- form sito ---
   q('[name="site-name"]').value = site.name;
@@ -71,7 +75,7 @@ export function renderAdminHome(container, ctx) {
       bio: q('[name="site-bio"]').value,
       instagram: q('[name="site-instagram"]').value,
     }, site);
-    deps.showPreview(q('.admin-preview'), { name: pending.name, bio: pending.bio, heroUrl: heroSrc, social: pending.social }, texts);
+    deps.showPreview(q('.admin-preview'), { name: pending.name, bio: pending.bio, heroUrl: heroSrc, social: pending.social, albums, r2PublicUrl }, texts);
   });
 
   // --- hero picker: scegli album → thumbs → click imposta hero ---
@@ -87,7 +91,7 @@ export function renderAdminHome(container, ctx) {
     picker.innerHTML = '';
     if (!heroSelect.value) return;
     const res = await deps.fetchManifest(heroSelect.value);
-    if (!res.ok) { say('Impossibile leggere le foto di questo album.'); return; }
+    if (!res.ok) { say('Impossibile leggere le foto di questo album.', true); return; }
     for (const entry of res.data) {
       const img = document.createElement('img');
       img.className = 'admin-hero__choice';
@@ -116,7 +120,7 @@ export function renderAdminHome(container, ctx) {
     row.querySelector('.admin-album-row__title').textContent = a.title;
     row.querySelector('.admin-delete-album').addEventListener('click', () => run(async () => {
       const typed = deps.prompt(`Per eliminare scrivi il nome esatto dell'album: "${a.title}"`);
-      if (typed !== a.title) { say('Nome non corrispondente: cancellazione annullata.'); return; }
+      if (typed !== a.title) { say('Nome non corrispondente: cancellazione annullata.', true); return; }
       await api.deleteAlbum(a.slug);
       ctx.albums = ctx.albums.filter(x => x.slug !== a.slug);
       renderAdminHome(container, ctx);
@@ -134,9 +138,9 @@ export function renderAdminHome(container, ctx) {
   q('.admin-create-album').addEventListener('click', () => run(async () => {
     const title = q('[name="new-album-title"]').value.trim();
     const slug = slugifyTitle(title);
-    if (!title || !SLUG_RE.test(slug)) { say('Titolo non valido.'); return; }
-    if (RESERVED_SLUGS.includes(slug)) { say(`"${slug}" è un nome riservato.`); return; }
-    if (ctx.albums.some(a => a.slug === slug)) { say(`Esiste già un album "${slug}".`); return; }
+    if (!title || !SLUG_RE.test(slug)) { say('Titolo non valido.', true); return; }
+    if (RESERVED_SLUGS.includes(slug)) { say(`"${slug}" è un nome riservato.`, true); return; }
+    if (ctx.albums.some(a => a.slug === slug)) { say(`Esiste già un album "${slug}".`, true); return; }
     const next = [...ctx.albums, { slug, title, description: '', coverName: null }];
     await api.putAlbums(next);
     ctx.albums = next;
