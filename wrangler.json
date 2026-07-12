@@ -7,7 +7,7 @@
     "binding": "ASSETS"
   },
   "r2_buckets": [
-    { "binding": "BUCKET", "bucket_name": "<INSERISCI_QUI_IL_NOME_DEL_TUO_BUCKET_R2>" }
+    { "binding": "BUCKET", "bucket_name": "replace-with-real-production-bucket-name" }
   ],
   "vars": {
     "ACCESS_TEAM_DOMAIN": "",
@@ -17,7 +17,7 @@
     "staging": {
       "name": "photo-portfolio-staging",
       "r2_buckets": [
-        { "binding": "BUCKET", "bucket_name": "<INSERISCI_QUI_IL_NOME_DEL_TUO_BUCKET_R2>-staging" }
+        { "binding": "BUCKET", "bucket_name": "photo-portfolio-staging" }
       ],
       "vars": {
         "ACCESS_TEAM_DOMAIN": "",
