@@ -64,6 +64,8 @@ export function validateManifestShape(data) {
     seen.add(e.name);
     if (!Number.isFinite(e.width) || e.width <= 0) return fail(`manifest: width invalida per "${e.name}"`);
     if (!Number.isFinite(e.height) || e.height <= 0) return fail(`manifest: height invalida per "${e.name}"`);
+    if (e.capturedAt !== undefined && !Number.isFinite(e.capturedAt)) return fail(`manifest: capturedAt invalido per "${e.name}"`);
+    if (e.uploadedAt !== undefined && !Number.isFinite(e.uploadedAt)) return fail(`manifest: uploadedAt invalido per "${e.name}"`);
   }
   return OK;
 }

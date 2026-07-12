@@ -83,6 +83,16 @@ describe('validateManifestShape', () => {
     expect(validateManifestShape([entry, entry]).ok).toBe(false);
     expect(validateManifestShape({}).ok).toBe(false);
   });
+  it('accetta capturedAt/uploadedAt opzionali, se presenti devono essere numeri finiti', () => {
+    expect(validateManifestShape([{ ...entry, capturedAt: 1700000000000 }]).ok).toBe(true);
+    expect(validateManifestShape([{ ...entry, uploadedAt: 1700000000000 }]).ok).toBe(true);
+    expect(validateManifestShape([{ ...entry, capturedAt: 1700000000000, uploadedAt: 1700000000001 }]).ok).toBe(true);
+    expect(validateManifestShape([entry]).ok).toBe(true); // nessuno dei due: ok comunque (retrocompatibilità)
+  });
+  it('rifiuta capturedAt/uploadedAt non numerici quando presenti', () => {
+    expect(validateManifestShape([{ ...entry, capturedAt: 'ieri' }]).ok).toBe(false);
+    expect(validateManifestShape([{ ...entry, uploadedAt: NaN }]).ok).toBe(false);
+  });
 });
 
 describe('validateConfigShape', () => {
