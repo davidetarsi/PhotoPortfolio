@@ -14,7 +14,13 @@ function keyFor(pathname) {
 
 export async function handleDataRequest(request, env) {
   if (request.method !== 'GET') return jsonResponse({ error: 'METHOD_NOT_ALLOWED' }, 405);
-  const key = keyFor(new URL(request.url).pathname);
+  const pathname = new URL(request.url).pathname;
+
+  if (pathname === '/api/data/config') {
+    return jsonResponse({ r2PublicUrl: env.R2_PUBLIC_URL ?? null });
+  }
+
+  const key = keyFor(pathname);
   if (!key) return jsonResponse({ error: 'NOT_FOUND' }, 404);
   const obj = await env.BUCKET.get(key);
   if (!obj) return jsonResponse({ error: 'NOT_FOUND' }, 404);
