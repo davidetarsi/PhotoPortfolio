@@ -101,6 +101,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
   padding: 0 var(--space-lg) var(--space-lg);
 }
 
+.admin-preview__back { background: none; border: 0; padding: 0; cursor: pointer; }
+
 .admin-preview__close {
   padding: var(--space-sm) var(--space-md);
   border: 1px solid #2e3235;

@@ -77,7 +77,7 @@ describe('renderAdminHome', () => {
     container.querySelector('.admin-preview-btn').click();
 
     expect(ctx.deps.showPreview).toHaveBeenCalledTimes(1);
-    const [previewEl, data] = ctx.deps.showPreview.mock.calls[0];
+    const [previewEl, data, , showPreviewDeps] = ctx.deps.showPreview.mock.calls[0];
     expect(previewEl.className).toBe('admin-preview');
     expect(data).toEqual({
       name: 'Nome Bozza', bio: 'Bio bozza', heroUrl: null,
@@ -85,6 +85,7 @@ describe('renderAdminHome', () => {
       albums: ctx.albums, r2PublicUrl: 'https://pub.r2.dev',
     });
     expect(ctx.api.putSite).not.toHaveBeenCalled();
+    expect(showPreviewDeps).toBe(ctx.deps); // serve fetchManifest per aprire un album dentro l'anteprima
   });
 
   it('crea un album: slugify, putAlbums e navigate', async () => {

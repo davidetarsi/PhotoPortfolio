@@ -37,6 +37,12 @@ describe('createLightbox', () => {
     expect(document.querySelector('.lightbox__img').src).toBe('https://example.com/f2.jpg');
   });
 
+  it('destroy() chiude e rimuove il nodo .lightbox dal body', () => {
+    lb.open(0);
+    lb.destroy();
+    expect(document.querySelector('.lightbox')).toBeNull();
+  });
+
   it('close() removes lightbox--open and sets aria-hidden=true', () => {
     lb.open(0);
     lb.close();

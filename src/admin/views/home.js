@@ -75,7 +75,7 @@ export function renderAdminHome(container, ctx) {
       bio: q('[name="site-bio"]').value,
       instagram: q('[name="site-instagram"]').value,
     }, site);
-    deps.showPreview(q('.admin-preview'), { name: pending.name, bio: pending.bio, heroUrl: heroSrc, social: pending.social, albums, r2PublicUrl }, texts);
+    deps.showPreview(q('.admin-preview'), { name: pending.name, bio: pending.bio, heroUrl: heroSrc, social: pending.social, albums, r2PublicUrl }, texts, deps);
   });
 
   // --- hero picker: scegli album → thumbs → click imposta hero ---

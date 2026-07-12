@@ -6,7 +6,17 @@ import { showPreview, hidePreview } from './preview.js';
 // optional chaining (src/components/Footer.js:11). Il fixture del brief
 // aveva solo `landing`, causando un TypeError in ogni test. Placeholder
 // '© 2026' allineato alla convenzione già usata in Footer.test.js.
-const texts = { landing: { heroSubtitle: 'Sottotitolo statico.', albumsSectionHeading: 'Album' }, footer: { copyright: '© 2026' } };
+// album.* servono a renderAlbumView, che riusa resolveAlbumPage/texts esattamente
+// come src/pages/album.js.
+const texts = {
+  landing: { heroSubtitle: 'Sottotitolo statico.', albumsSectionHeading: 'Album' },
+  footer: { copyright: '© 2026' },
+  album: {
+    notFound: 'Album non trovato.',
+    empty: 'Nessuna foto trovata in questo album.',
+    error: { network: 'Errore di rete.', unknown: 'Errore sconosciuto.' },
+  },
+};
 const ALBUMS = [
   { slug: 'sport', title: 'Sport', description: '', coverName: 'cover.webp' },
   { slug: 'viaggi', title: 'Viaggi', description: '', coverName: null },
@@ -136,5 +146,108 @@ describe('showPreview / hidePreview', () => {
     const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
     document.dispatchEvent(tabEvent);
     expect(document.activeElement).toBe(closeBtn);
+  });
+});
+
+describe('anteprima: apertura album senza uscire dalla preview', () => {
+  let container, deps;
+  const MANIFEST = [{ name: 'a.webp', width: 4, height: 3 }, { name: 'b.webp', width: 1, height: 1 }];
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    container.className = 'admin-preview';
+    container.hidden = true;
+    document.body.replaceChildren(container);
+    deps = { fetchManifest: vi.fn(async () => ({ ok: true, data: structuredClone(MANIFEST) })) };
+  });
+  afterEach(() => { document.body.replaceChildren(); });
+
+  it('click su una album-card NON naviga (preventDefault) e mostra la vista album, header invariato', async () => {
+    showPreview(container, pending, texts, deps);
+    const headerBefore = container.querySelector('.admin-preview__header').outerHTML;
+
+    const card = container.querySelector('.admin-preview__albums .album-card');
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    card.dispatchEvent(evt);
+    expect(evt.defaultPrevented).toBe(true);
+
+    await vi.waitFor(() => expect(deps.fetchManifest).toHaveBeenCalledWith('sport'));
+    await vi.waitFor(() => expect(container.querySelectorAll('.photo-grid__item')).toHaveLength(2));
+
+    // Header — titolo "Anteprima" + Chiudi — resta esattamente lo stesso nodo/contenuto.
+    expect(container.querySelector('.admin-preview__header').outerHTML).toBe(headerBefore);
+    expect(container.querySelector('.section-heading').textContent).toBe('Sport');
+  });
+
+  it('vista album: bottone "Tutti gli album" torna alla landing (griglia album di nuovo visibile)', async () => {
+    showPreview(container, pending, texts, deps);
+    container.querySelector('.admin-preview__albums .album-card').click();
+    await vi.waitFor(() => expect(container.querySelectorAll('.photo-grid__item')).toHaveLength(2));
+
+    container.querySelector('.admin-preview__back').click();
+    expect(container.querySelectorAll('.admin-preview__albums .album-card')).toHaveLength(2);
+    expect(container.querySelector('.photo-grid__item')).toBeNull();
+  });
+
+  it('album vuoto (manifest 404) mostra il messaggio "empty", non un errore', async () => {
+    deps.fetchManifest = vi.fn(async () => ({ ok: false, error: 'NOT_FOUND' }));
+    showPreview(container, pending, texts, deps);
+    container.querySelector('.admin-preview__albums .album-card').click();
+    await vi.waitFor(() => expect(container.querySelector('.photo-grid__error')).not.toBeNull());
+    expect(container.querySelector('.photo-grid__error').textContent).toBe(texts.album.empty);
+    expect(container.querySelector('.section-heading').textContent).toBe('Sport');
+  });
+
+  it('foto cliccata apre la lightbox con l\'URL corretto', async () => {
+    showPreview(container, pending, texts, deps);
+    container.querySelector('.admin-preview__albums .album-card').click();
+    await vi.waitFor(() => expect(container.querySelectorAll('.photo-grid__item')).toHaveLength(2));
+
+    container.querySelectorAll('.photo-grid__item')[1].click();
+    const lightbox = document.querySelector('.lightbox');
+    expect(lightbox.classList.contains('lightbox--open')).toBe(true);
+    expect(lightbox.querySelector('.lightbox__img').src).toBe('https://pub.r2.dev/sport/b.webp');
+  });
+
+  it('cambiare album smonta la lightbox precedente — non se ne accumulano', async () => {
+    showPreview(container, pending, texts, deps);
+    container.querySelector('.admin-preview__albums .album-card').click();
+    await vi.waitFor(() => expect(container.querySelectorAll('.photo-grid__item')).toHaveLength(2));
+    container.querySelector('.photo-grid__item').click(); // apre la lightbox del primo album
+
+    container.querySelector('.admin-preview__back').click();
+    const cards = container.querySelectorAll('.admin-preview__albums .album-card');
+    cards[1].dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    await vi.waitFor(() => expect(deps.fetchManifest).toHaveBeenCalledWith('viaggi'));
+    await vi.waitFor(() => expect(container.querySelectorAll('.photo-grid__item')).toHaveLength(2));
+
+    expect(document.querySelectorAll('.lightbox')).toHaveLength(1); // non 2
+  });
+
+  it('hidePreview smonta anche la lightbox aperta, non resta in document.body', async () => {
+    showPreview(container, pending, texts, deps);
+    container.querySelector('.admin-preview__albums .album-card').click();
+    await vi.waitFor(() => expect(container.querySelectorAll('.photo-grid__item')).toHaveLength(2));
+    container.querySelector('.photo-grid__item').click();
+    expect(document.querySelector('.lightbox')).not.toBeNull();
+
+    hidePreview(container);
+    expect(document.querySelector('.lightbox')).toBeNull();
+  });
+
+  it('fetch manifest lenta: se nel frattempo si torna alla landing, la risposta tardiva non riscrive la vista', async () => {
+    let resolveFetch;
+    deps.fetchManifest = vi.fn(() => new Promise(r => { resolveFetch = r; }));
+    showPreview(container, pending, texts, deps);
+    container.querySelector('.admin-preview__albums .album-card').click();
+    await vi.waitFor(() => expect(deps.fetchManifest).toHaveBeenCalled());
+
+    container.querySelector('.admin-preview__back').click(); // torna alla landing prima che la fetch risolva
+    resolveFetch({ ok: true, data: structuredClone(MANIFEST) });
+    await new Promise(r => setTimeout(r, 0));
+
+    // Deve essere rimasti sulla landing: nessuna griglia foto comparsa sopra le card.
+    expect(container.querySelectorAll('.admin-preview__albums .album-card')).toHaveLength(2);
+    expect(container.querySelector('.photo-grid__item')).toBeNull();
   });
 });
