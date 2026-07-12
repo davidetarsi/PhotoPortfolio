@@ -50,6 +50,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
 
 .admin-back { color: var(--color-muted); text-decoration: none; font-family: var(--font-mono); font-size: 0.8rem; }
 .admin-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
+.admin-album-toolbar { display: flex; justify-content: flex-end; margin-bottom: var(--space-sm); }
 .admin-photo { position: relative; margin: 0; cursor: grab; }
 .admin-photo__img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); display: block; }
 .admin-photo__actions { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; padding: var(--space-xs); }

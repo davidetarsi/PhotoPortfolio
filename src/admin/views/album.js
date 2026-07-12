@@ -9,6 +9,9 @@ export function renderAdminAlbum(container, ctx) {
     <p><a class="admin-back" href="#/">← Tutti gli album</a></p>
     <section class="admin-panel">
       <h2></h2>
+      <div class="admin-album-toolbar">
+        <button class="admin-sort-date" type="button">Ordina per data</button>
+      </div>
       <div class="admin-photo-grid"></div>
       <div class="admin-dropzone">
         <label class="admin-dropzone__label">
@@ -104,6 +107,15 @@ export function renderAdminAlbum(container, ctx) {
     await api.putManifest(slug, reordered);
     manifest = reordered;
     renderPhotos();
+  }));
+
+  q('.admin-sort-date').addEventListener('click', () => run(async () => {
+    const sortKey = p => p.capturedAt ?? p.uploadedAt ?? 0;
+    const sorted = [...manifest].sort((a, b) => sortKey(a) - sortKey(b));
+    await api.putManifest(slug, sorted);
+    manifest = sorted;
+    renderPhotos();
+    say('Foto ordinate per data.');
   }));
 
   const dropzone = q('.admin-dropzone');

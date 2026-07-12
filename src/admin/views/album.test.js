@@ -126,4 +126,37 @@ describe('renderAdminAlbum', () => {
     await args.putManifest([]);
     expect(ctx.api.putManifest).toHaveBeenCalledWith('sport', []);
   });
+
+  it('"Ordina per data" riordina per capturedAt/uploadedAt, foto legacy senza data vanno per prime (fallback 0)', async () => {
+    const ctx = makeCtx();
+    ctx.deps.fetchManifest = vi.fn(async () => ({
+      ok: true,
+      data: [
+        { name: 'recente.webp', width: 1, height: 1, capturedAt: 1700000002000 },
+        { name: 'legacy.webp', width: 1, height: 1 }, // né capturedAt né uploadedAt
+        { name: 'vecchia.webp', width: 1, height: 1, uploadedAt: 1700000001000 },
+      ],
+    }));
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('.admin-sort-date').click();
+    await vi.waitFor(() => expect(ctx.api.putManifest).toHaveBeenCalled());
+    expect(ctx.api.putManifest.mock.calls[0][1].map(e => e.name)).toEqual(['legacy.webp', 'vecchia.webp', 'recente.webp']);
+  });
+
+  it('"Ordina per data" con due foto legacy (entrambe fallback 0) mantiene l\'ordine relativo — sort stabile', async () => {
+    const ctx = makeCtx();
+    ctx.deps.fetchManifest = vi.fn(async () => ({
+      ok: true,
+      data: [
+        { name: 'b.webp', width: 1, height: 1 },
+        { name: 'a.webp', width: 1, height: 1 },
+      ],
+    }));
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('.admin-sort-date').click();
+    await vi.waitFor(() => expect(ctx.api.putManifest).toHaveBeenCalled());
+    expect(ctx.api.putManifest.mock.calls[0][1].map(e => e.name)).toEqual(['b.webp', 'a.webp']); // invariato
+  });
 });
