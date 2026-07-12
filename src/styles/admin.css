@@ -13,6 +13,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-text); font-fa
   background: var(--color-bg); color: var(--color-text);
   border: 1px solid #2e3235; border-radius: var(--radius-sm); font: inherit;
 }
+.admin-panel textarea { resize: none; }
 .admin-panel button {
   padding: var(--space-sm) var(--space-md); border: 0; border-radius: var(--radius-sm);
   background: var(--color-accent); color: var(--color-bg); font: inherit; cursor: pointer;
