@@ -23,7 +23,7 @@
       "vars": {
         "ACCESS_TEAM_DOMAIN": "",
         "ACCESS_AUD": "",
-        "R2_PUBLIC_URL": "https://5bb4fb0e1b0c25a5fee6b56ee22742ba.r2.cloudflarestorage.com/photo-portfolio-staging"
+        "R2_PUBLIC_URL": "https://pub-a7de17dec08048a281f2c978f99ed4ca.r2.dev"
       }
     }
   }
