@@ -7,12 +7,12 @@
     "binding": "ASSETS"
   },
   "r2_buckets": [
-    { "binding": "BUCKET", "bucket_name": "replace-with-real-production-bucket-name" }
+    { "binding": "BUCKET", "bucket_name": "photo-portfolio" }
   ],
   "vars": {
     "ACCESS_TEAM_DOMAIN": "",
     "ACCESS_AUD": "",
-    "R2_PUBLIC_URL": ""
+    "R2_PUBLIC_URL": "https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev"
   },
   "env": {
     "staging": {
