@@ -39,9 +39,17 @@ export function renderAdminAlbum(container, ctx) {
 
   const fallbackAlbum = { slug, title: slug, description: '', coverName: null };
   const pending = { description: album?.description ?? '', coverName: album?.coverName ?? null };
+  let detachGuard = null;
+  function markDirty() {
+    if (!detachGuard) detachGuard = deps.attachBeforeUnloadGuard();
+  }
+  function clearDirty() {
+    if (detachGuard) { detachGuard(); detachGuard = null; }
+  }
   q('[name="album-description"]').value = pending.description;
   q('[name="album-description"]').addEventListener('input', () => {
     pending.description = q('[name="album-description"]').value;
+    markDirty();
   });
 
   let manifest = [];
@@ -64,6 +72,7 @@ export function renderAdminAlbum(container, ctx) {
       cell.querySelector('.admin-photo__img').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
       cell.querySelector('.admin-photo__cover').addEventListener('click', () => {
         pending.coverName = entry.name;
+        markDirty();
         renderPhotos();
         say(`Cover selezionata: ${entry.name} (premi Salva per confermare).`);
       });
@@ -133,8 +142,21 @@ export function renderAdminAlbum(container, ctx) {
     const updatedAlbums = ctx.albums.map(a => (a.slug === slug ? updatedAlbum : a));
     await api.putAlbums(updatedAlbums);
     ctx.albums = updatedAlbums;
+    clearDirty();
     say('Album salvato.');
   }));
+
+  // detachGuard è non-null solo quando c'è una modifica pending: usato
+  // direttamente come proxy di "dirty" invece di un booleano separato da
+  // tenere sincronizzato.
+  q('.admin-back').addEventListener('click', e => {
+    if (!detachGuard) return; // niente pending, naviga libero
+    if (!deps.confirm('Ci sono modifiche non salvate. Uscire comunque?')) {
+      e.preventDefault();
+    } else {
+      clearDirty();
+    }
+  });
 
   const dropzone = q('.admin-dropzone');
   const fileInput = dropzone.querySelector('input[type="file"]');

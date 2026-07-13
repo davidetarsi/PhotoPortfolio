@@ -7,7 +7,7 @@ import { parseAdminHash } from '../admin/router.js';
 import { attachSortable } from '../admin/sortable.js';
 import { renderAdminHome } from '../admin/views/home.js';
 import { renderAdminAlbum } from '../admin/views/album.js';
-import { runBatch } from '../admin/upload-manager.js';
+import { runBatch, attachBeforeUnloadGuard } from '../admin/upload-manager.js';
 import { processFile } from '../admin/pipeline.js';
 import { makeProcessDeps } from '../admin/encoder.js';
 import { showPreview } from '../admin/preview.js';
@@ -35,6 +35,7 @@ const ctx = {
     confirm: window.confirm.bind(window),
     showPreview,
     runBatch,
+    attachBeforeUnloadGuard,
     makeProcessFile: async () => {
       const deps = await makeProcessDeps();
       return file => processFile(file, deps);

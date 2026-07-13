@@ -22,6 +22,7 @@ function makeCtx(over = {}) {
       fetchManifest: vi.fn(async () => ({ ok: true, data: structuredClone(MANIFEST) })),
       prompt: vi.fn(() => null),
       confirm: vi.fn(() => true),
+      attachBeforeUnloadGuard: vi.fn(() => vi.fn()), // ritorna una funzione detach fittizia
       runBatch: vi.fn(async () => ({ uploaded: [], failed: [], manifest: MANIFEST })),
       makeProcessFile: vi.fn(async () => async () => ({ blob: 'B', width: 1, height: 1 })),
     },
@@ -178,5 +179,63 @@ describe('renderAdminAlbum', () => {
     container.querySelector('.admin-sort-date').click();
     await vi.waitFor(() => expect(ctx.api.putManifest).toHaveBeenCalled());
     expect(ctx.api.putManifest.mock.calls[0][1].map(e => e.name)).toEqual(['b.webp', 'a.webp']); // invariato
+  });
+
+  it('modifica pending (cover) + click "Tutti gli album" senza conferma → non naviga, chiede conferma', async () => {
+    const ctx = makeCtx();
+    ctx.deps.confirm = vi.fn(() => false); // utente annulla
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelectorAll('.admin-photo__cover')[1].click(); // sporca lo stato
+    const backLink = container.querySelector('.admin-back');
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    backLink.dispatchEvent(evt);
+    expect(ctx.deps.confirm).toHaveBeenCalledWith('Ci sono modifiche non salvate. Uscire comunque?');
+    expect(evt.defaultPrevented).toBe(true);
+  });
+
+  it('modifica pending + click "Tutti gli album" con conferma → naviga (non preventDefault)', async () => {
+    const ctx = makeCtx();
+    ctx.deps.confirm = vi.fn(() => true);
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelectorAll('.admin-photo__cover')[1].click();
+    const backLink = container.querySelector('.admin-back');
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    backLink.dispatchEvent(evt);
+    expect(evt.defaultPrevented).toBe(false);
+  });
+
+  it('nessuna modifica pending → click "Tutti gli album" naviga senza chiedere conferma', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    const backLink = container.querySelector('.admin-back');
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    backLink.dispatchEvent(evt);
+    expect(ctx.deps.confirm).not.toHaveBeenCalled();
+    expect(evt.defaultPrevented).toBe(false);
+  });
+
+  it('modifica pending → aggancia la guardia beforeunload; Salva la stacca', async () => {
+    const ctx = makeCtx();
+    const detach = vi.fn();
+    ctx.deps.attachBeforeUnloadGuard = vi.fn(() => detach);
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelectorAll('.admin-photo__cover')[1].click();
+    expect(ctx.deps.attachBeforeUnloadGuard).toHaveBeenCalledTimes(1);
+    container.querySelector('.admin-save-album').click();
+    await vi.waitFor(() => expect(ctx.api.putAlbums).toHaveBeenCalled());
+    expect(detach).toHaveBeenCalledTimes(1);
+  });
+
+  it('modifiche pending multiple non riattaccano la guardia più volte', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelectorAll('.admin-photo__cover')[0].click();
+    container.querySelectorAll('.admin-photo__cover')[1].click();
+    expect(ctx.deps.attachBeforeUnloadGuard).toHaveBeenCalledTimes(1);
   });
 });
