@@ -62,13 +62,34 @@ describe('renderAdminAlbum', () => {
     expect(ctx.api.putManifest.mock.calls[0][1].map(e => e.name)).toEqual(['b.webp', 'a.webp']);
   });
 
-  it('"Cover" → putAlbums con coverName aggiornato', async () => {
+  it('click su "Cover" aggiorna solo lo stato locale (bordino), NON chiama putAlbums finché non premi Salva', async () => {
     const ctx = makeCtx();
     renderAdminAlbum(container, ctx);
     await flush();
     container.querySelectorAll('.admin-photo__cover')[1].click();
-    await vi.waitFor(() => expect(ctx.api.putAlbums).toHaveBeenCalled());
-    expect(ctx.api.putAlbums.mock.calls[0][0][0].coverName).toBe('b.webp');
+    expect(ctx.api.putAlbums).not.toHaveBeenCalled();
+    expect(container.querySelectorAll('.admin-photo__cover')[1].classList.contains('admin-photo__cover--selected')).toBe(true);
+  });
+
+  it('bottone Salva scrive description+coverName pending in un\'unica putAlbums', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('[name="album-description"]').value = 'Nuova descrizione';
+    container.querySelector('[name="album-description"]').dispatchEvent(new Event('input'));
+    container.querySelectorAll('.admin-photo__cover')[1].click();
+    container.querySelector('.admin-save-album').click();
+    await vi.waitFor(() => expect(ctx.api.putAlbums).toHaveBeenCalledTimes(1));
+    const saved = ctx.api.putAlbums.mock.calls[0][0].find(a => a.slug === 'sport');
+    expect(saved.description).toBe('Nuova descrizione');
+    expect(saved.coverName).toBe('b.webp');
+  });
+
+  it('campo descrizione è precompilato con la description corrente dell\'album', async () => {
+    const ctx = makeCtx({ albums: [{ slug: 'sport', title: 'Sport', description: 'Bio esistente', coverName: null }] });
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(container.querySelector('[name="album-description"]').value).toBe('Bio esistente');
   });
 
   it('al render, il badge cover selezionato è già sulla foto con coverName corrente', async () => {
@@ -85,7 +106,6 @@ describe('renderAdminAlbum', () => {
     renderAdminAlbum(container, ctx);
     await flush();
     container.querySelectorAll('.admin-photo__cover')[1].click();
-    await vi.waitFor(() => expect(ctx.api.putAlbums).toHaveBeenCalled());
     const covers = container.querySelectorAll('.admin-photo__cover');
     expect(covers[0].classList.contains('admin-photo__cover--selected')).toBe(false);
     expect(covers[1].classList.contains('admin-photo__cover--selected')).toBe(true);

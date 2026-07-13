@@ -2,6 +2,10 @@ import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
 import { createStatus } from '../status.js';
 
+export function buildPendingAlbum({ description, coverName }, currentAlbum) {
+  return { ...currentAlbum, description, coverName };
+}
+
 export function renderAdminAlbum(container, ctx) {
   const { slug, r2PublicUrl, api, deps } = ctx;
   const album = ctx.albums.find(a => a.slug === slug);
@@ -9,6 +13,7 @@ export function renderAdminAlbum(container, ctx) {
     <p><a class="admin-back" href="#/">← Tutti gli album</a></p>
     <section class="admin-panel">
       <h2></h2>
+      <label>Sottotitolo <input name="album-description" type="text"></label>
       <div class="admin-album-toolbar">
         <button class="admin-sort-date" type="button">Ordina per data</button>
       </div>
@@ -20,6 +25,7 @@ export function renderAdminAlbum(container, ctx) {
         </label>
       </div>
       <ul class="admin-progress"></ul>
+      <button class="admin-save-album">Salva</button>
       <p class="admin-status" role="status">
         <span class="admin-status__badge"></span>
         <span class="admin-status__text"></span>
@@ -31,14 +37,20 @@ export function renderAdminAlbum(container, ctx) {
   const q = sel => container.querySelector(sel);
   const { say, run } = createStatus(q('.admin-status'));
 
+  const fallbackAlbum = { slug, title: slug, description: '', coverName: null };
+  const pending = { description: album?.description ?? '', coverName: album?.coverName ?? null };
+  q('[name="album-description"]').value = pending.description;
+  q('[name="album-description"]').addEventListener('input', () => {
+    pending.description = q('[name="album-description"]').value;
+  });
+
   let manifest = [];
 
   function renderPhotos() {
     const grid = q('.admin-photo-grid');
     grid.innerHTML = '';
-    const currentCoverName = ctx.albums.find(a => a.slug === slug)?.coverName ?? null;
     manifest.forEach(entry => {
-      const isCover = entry.name === currentCoverName;
+      const isCover = entry.name === pending.coverName;
       const cell = document.createElement('figure');
       cell.className = 'admin-photo';
       cell.draggable = true;
@@ -50,13 +62,11 @@ export function renderAdminAlbum(container, ctx) {
         </div>
       `;
       cell.querySelector('.admin-photo__img').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
-      cell.querySelector('.admin-photo__cover').addEventListener('click', () => run(async () => {
-        const updated = ctx.albums.map(a => (a.slug === slug ? { ...a, coverName: entry.name } : a));
-        await api.putAlbums(updated);
-        ctx.albums = updated;
+      cell.querySelector('.admin-photo__cover').addEventListener('click', () => {
+        pending.coverName = entry.name;
         renderPhotos();
-        say(`Cover: ${entry.name}`);
-      }));
+        say(`Cover selezionata: ${entry.name} (premi Salva per confermare).`);
+      });
       cell.querySelector('.admin-photo__delete').addEventListener('click', () => run(async () => {
         if (!deps.confirm(`Eliminare ${entry.name}?`)) return;
         await api.deletePhoto(slug, entry.name);
@@ -116,6 +126,14 @@ export function renderAdminAlbum(container, ctx) {
     manifest = sorted;
     renderPhotos();
     say('Foto ordinate per data.');
+  }));
+
+  q('.admin-save-album').addEventListener('click', () => run(async () => {
+    const updatedAlbum = buildPendingAlbum(pending, album ?? fallbackAlbum);
+    const updatedAlbums = ctx.albums.map(a => (a.slug === slug ? updatedAlbum : a));
+    await api.putAlbums(updatedAlbums);
+    ctx.albums = updatedAlbums;
+    say('Album salvato.');
   }));
 
   const dropzone = q('.admin-dropzone');
