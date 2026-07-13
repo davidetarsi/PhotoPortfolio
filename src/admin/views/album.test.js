@@ -238,4 +238,24 @@ describe('renderAdminAlbum', () => {
     container.querySelectorAll('.admin-photo__cover')[1].click();
     expect(ctx.deps.attachBeforeUnloadGuard).toHaveBeenCalledTimes(1);
   });
+
+  it('modifica pending + hashchange (Back/Forward o navigate(), non il back-link) stacca comunque la guardia beforeunload', async () => {
+    const ctx = makeCtx();
+    const detach = vi.fn();
+    ctx.deps.attachBeforeUnloadGuard = vi.fn(() => detach);
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelectorAll('.admin-photo__cover')[1].click(); // sporca lo stato, aggancia la guardia
+    expect(ctx.deps.attachBeforeUnloadGuard).toHaveBeenCalledTimes(1);
+    window.dispatchEvent(new Event('hashchange')); // router in admin.js farebbe repaint qui, senza mai chiamare clearDirty()
+    expect(detach).toHaveBeenCalledTimes(1);
+  });
+
+  it('hashchange senza modifica pending non fa nulla (nessuna guardia agganciata da staccare)', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(() => window.dispatchEvent(new Event('hashchange'))).not.toThrow();
+    expect(ctx.deps.attachBeforeUnloadGuard).not.toHaveBeenCalled();
+  });
 });

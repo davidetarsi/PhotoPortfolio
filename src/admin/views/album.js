@@ -46,6 +46,16 @@ export function renderAdminAlbum(container, ctx) {
   function clearDirty() {
     if (detachGuard) { detachGuard(); detachGuard = null; }
   }
+  // Se si esce dall'album sporco con un hashchange che non passa dal click
+  // handler del back-link (Back/Forward del browser, o un navigate()
+  // programmatico), il router in admin.js sovrascrive root.innerHTML e
+  // scarta questa closure senza mai chiamare clearDirty(): il listener
+  // beforeunload agganciato da markDirty() resterebbe attaccato a window
+  // per il resto della sessione SPA (si accumula ad ogni album sporco
+  // abbandonato così), causando poi un prompt "Leave site?" fantasma su un
+  // refresh/chiusura futura senza modifiche pending. { once: true } fa sì
+  // che questo listener stesso non si accumuli mai.
+  window.addEventListener('hashchange', clearDirty, { once: true });
   q('[name="album-description"]').value = pending.description;
   q('[name="album-description"]').addEventListener('input', () => {
     pending.description = q('[name="album-description"]').value;
