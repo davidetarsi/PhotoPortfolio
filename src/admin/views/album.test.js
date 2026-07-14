@@ -275,4 +275,85 @@ describe('renderAdminAlbum', () => {
     expect(container.querySelector('.admin-sort-date__label').textContent).toBe('Ordina per:');
     expect(container.querySelector('.admin-sort-date__value').textContent).toBe('Data');
   });
+
+  it('default: vista griglia, bottone griglia attivo (aria-pressed)', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(container.querySelector('.admin-view-toggle__btn--grid').getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector('.admin-view-toggle__btn--list').getAttribute('aria-pressed')).toBe('false');
+    expect(container.querySelectorAll('.admin-photo')).toHaveLength(2);
+    expect(container.querySelectorAll('.admin-photo-row')).toHaveLength(0);
+  });
+
+  it('click su toggle lista: passa a righe, aggiorna aria-pressed su entrambi i bottoni', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('.admin-view-toggle__btn--list').click();
+    expect(container.querySelector('.admin-view-toggle__btn--list').getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector('.admin-view-toggle__btn--grid').getAttribute('aria-pressed')).toBe('false');
+    expect(container.querySelectorAll('.admin-photo-row')).toHaveLength(2);
+    expect(container.querySelectorAll('.admin-photo')).toHaveLength(0);
+  });
+
+  it('vista lista mostra nome file e data formattata quando capturedAt è presente', async () => {
+    const ctx = makeCtx({
+      deps: {
+        attachSortable: vi.fn(),
+        fetchManifest: vi.fn(async () => ({ ok: true, data: [
+          { name: 'a.webp', width: 1, height: 1, capturedAt: new Date('2025-06-14T00:00:00Z').getTime() },
+        ] })),
+        prompt: vi.fn(() => null), confirm: vi.fn(() => true),
+        attachBeforeUnloadGuard: vi.fn(() => vi.fn()),
+        runBatch: vi.fn(async () => ({ uploaded: [], failed: [], manifest: [] })),
+        makeProcessFile: vi.fn(async () => async () => ({})),
+        alert: vi.fn(),
+      },
+    });
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('.admin-view-toggle__btn--list').click();
+    const row = container.querySelector('.admin-photo-row');
+    expect(row.querySelector('.admin-photo-row__name').textContent).toBe('a.webp');
+    expect(row.querySelector('.admin-photo-row__date').textContent).toBe('14/06/2025');
+  });
+
+  it('vista lista mostra "—" per foto legacy senza capturedAt né uploadedAt', async () => {
+    const ctx = makeCtx({
+      deps: {
+        attachSortable: vi.fn(),
+        fetchManifest: vi.fn(async () => ({ ok: true, data: [{ name: 'legacy.webp', width: 1, height: 1 }] })),
+        prompt: vi.fn(() => null), confirm: vi.fn(() => true),
+        attachBeforeUnloadGuard: vi.fn(() => vi.fn()),
+        runBatch: vi.fn(async () => ({ uploaded: [], failed: [], manifest: [] })),
+        makeProcessFile: vi.fn(async () => async () => ({})),
+        alert: vi.fn(),
+      },
+    });
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('.admin-view-toggle__btn--list').click();
+    expect(container.querySelector('.admin-photo-row__date').textContent).toBe('—');
+  });
+
+  it('vista lista: click su Cover seleziona la riga', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('.admin-view-toggle__btn--list').click();
+    container.querySelector('.admin-photo-row .admin-photo-row__cover').click();
+    expect(container.querySelector('.admin-photo-row__cover--selected')).not.toBeNull();
+  });
+
+  it('vista lista: click su Elimina (confermato) rimuove la riga', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    container.querySelector('.admin-view-toggle__btn--list').click();
+    expect(container.querySelectorAll('.admin-photo-row')).toHaveLength(2);
+    container.querySelector('.admin-photo-row .admin-photo-row__delete').click();
+    await flush();
+    expect(container.querySelectorAll('.admin-photo-row')).toHaveLength(1);
+  });
 });

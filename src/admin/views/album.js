@@ -16,6 +16,10 @@ export function renderAdminAlbum(container, ctx) {
       <h2></h2>
       <label>Sottotitolo <input name="album-description" type="text"></label>
       <div class="admin-album-toolbar">
+        <div class="admin-view-toggle" role="group">
+          <button class="admin-view-toggle__btn admin-view-toggle__btn--grid" type="button" title="Vista griglia">▦</button>
+          <button class="admin-view-toggle__btn admin-view-toggle__btn--list" type="button" title="Vista lista">☰</button>
+        </div>
         <button class="admin-sort-date" type="button">
           <span class="admin-sort-date__label">Ordina per:</span>
           <span class="admin-sort-date__value">Data</span>
@@ -68,36 +72,80 @@ export function renderAdminAlbum(container, ctx) {
   });
 
   let manifest = [];
+  let viewMode = 'grid';
+
+  function formatPhotoDate(entry) {
+    const ts = entry.capturedAt ?? entry.uploadedAt;
+    if (ts === undefined) return '—';
+    // timeZone: 'UTC' esplicito — capturedAt/uploadedAt sono epoch ms senza
+    // fuso orario associato, e senza forzare UTC il rendering dipende dal
+    // fuso della macchina che esegue il codice (rischio concreto anche nei
+    // test: una mezzanotte UTC può ricadere sul giorno prima in fusi < 0).
+    return new Date(ts).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+  }
+
+  function handleCoverClick(entry) {
+    pending.coverName = entry.name;
+    markDirty();
+    renderPhotos();
+    say(`Cover selezionata: ${entry.name} (premi Salva per confermare).`);
+  }
+
+  function handleDeleteClick(entry) {
+    return run(async () => {
+      if (!deps.confirm(`Eliminare ${entry.name}?`)) return;
+      await api.deletePhoto(slug, entry.name);
+      manifest = manifest.filter(e => e.name !== entry.name);
+      renderPhotos();
+    });
+  }
+
+  function buildGridCell(entry, isCover) {
+    const cell = document.createElement('figure');
+    cell.className = 'admin-photo';
+    cell.draggable = true;
+    cell.innerHTML = `
+      <img class="admin-photo__img" alt="" loading="lazy">
+      <div class="admin-photo__actions">
+        <button class="admin-photo__cover${isCover ? ' admin-photo__cover--selected' : ''}" title="Usa come cover">Cover</button>
+        <button class="admin-photo__delete" title="Elimina">✕</button>
+      </div>
+    `;
+    cell.querySelector('.admin-photo__img').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
+    cell.querySelector('.admin-photo__cover').addEventListener('click', () => handleCoverClick(entry));
+    cell.querySelector('.admin-photo__delete').addEventListener('click', () => handleDeleteClick(entry));
+    return cell;
+  }
+
+  function buildListRow(entry, isCover) {
+    const row = document.createElement('div');
+    row.className = 'admin-photo-row';
+    row.draggable = true;
+    row.innerHTML = `
+      <img class="admin-photo-row__thumb" alt="" loading="lazy">
+      <span class="admin-photo-row__name"></span>
+      <span class="admin-photo-row__date"></span>
+      <div class="admin-photo-row__actions">
+        <button class="admin-photo-row__cover${isCover ? ' admin-photo-row__cover--selected' : ''}" title="Usa come cover">Cover</button>
+        <button class="admin-photo-row__delete" title="Elimina">✕</button>
+      </div>
+    `;
+    row.querySelector('.admin-photo-row__thumb').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
+    row.querySelector('.admin-photo-row__name').textContent = entry.name;
+    row.querySelector('.admin-photo-row__date').textContent = formatPhotoDate(entry);
+    row.querySelector('.admin-photo-row__cover').addEventListener('click', () => handleCoverClick(entry));
+    row.querySelector('.admin-photo-row__delete').addEventListener('click', () => handleDeleteClick(entry));
+    return row;
+  }
 
   function renderPhotos() {
     const grid = q('.admin-photo-grid');
     grid.innerHTML = '';
+    grid.classList.toggle('admin-photo-grid--list', viewMode === 'list');
     manifest.forEach(entry => {
       const isCover = entry.name === pending.coverName;
-      const cell = document.createElement('figure');
-      cell.className = 'admin-photo';
-      cell.draggable = true;
-      cell.innerHTML = `
-        <img class="admin-photo__img" alt="" loading="lazy">
-        <div class="admin-photo__actions">
-          <button class="admin-photo__cover${isCover ? ' admin-photo__cover--selected' : ''}" title="Usa come cover">Cover</button>
-          <button class="admin-photo__delete" title="Elimina">✕</button>
-        </div>
-      `;
-      cell.querySelector('.admin-photo__img').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
-      cell.querySelector('.admin-photo__cover').addEventListener('click', () => {
-        pending.coverName = entry.name;
-        markDirty();
-        renderPhotos();
-        say(`Cover selezionata: ${entry.name} (premi Salva per confermare).`);
-      });
-      cell.querySelector('.admin-photo__delete').addEventListener('click', () => run(async () => {
-        if (!deps.confirm(`Eliminare ${entry.name}?`)) return;
-        await api.deletePhoto(slug, entry.name);
-        manifest = manifest.filter(e => e.name !== entry.name);
-        renderPhotos();
-      }));
-      grid.appendChild(cell);
+      const node = viewMode === 'list' ? buildListRow(entry, isCover) : buildGridCell(entry, isCover);
+      grid.appendChild(node);
     });
   }
 
@@ -142,6 +190,16 @@ export function renderAdminAlbum(container, ctx) {
     manifest = reordered;
     renderPhotos();
   }));
+
+  function setViewMode(mode) {
+    viewMode = mode;
+    q('.admin-view-toggle__btn--grid').setAttribute('aria-pressed', String(mode === 'grid'));
+    q('.admin-view-toggle__btn--list').setAttribute('aria-pressed', String(mode === 'list'));
+    renderPhotos();
+  }
+  setViewMode('grid');
+  q('.admin-view-toggle__btn--grid').addEventListener('click', () => setViewMode('grid'));
+  q('.admin-view-toggle__btn--list').addEventListener('click', () => setViewMode('list'));
 
   q('.admin-sort-date').addEventListener('click', () => run(async () => {
     const sortKey = p => p.capturedAt ?? p.uploadedAt ?? 0;
