@@ -16,7 +16,10 @@ export function renderAdminAlbum(container, ctx) {
       <h2></h2>
       <label>Sottotitolo <input name="album-description" type="text"></label>
       <div class="admin-album-toolbar">
-        <button class="admin-sort-date" type="button">Ordina per data</button>
+        <button class="admin-sort-date" type="button">
+          <span class="admin-sort-date__label">Ordina per:</span>
+          <span class="admin-sort-date__value">Data</span>
+        </button>
       </div>
       <div class="admin-photo-grid"></div>
       <div class="admin-dropzone">

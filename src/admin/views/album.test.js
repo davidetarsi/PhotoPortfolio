@@ -267,4 +267,12 @@ describe('renderAdminAlbum', () => {
     expect(() => window.dispatchEvent(new Event('hashchange'))).not.toThrow();
     expect(ctx.deps.attachBeforeUnloadGuard).not.toHaveBeenCalled();
   });
+
+  it('il controllo ordina mostra label "Ordina per:" e valore "Data"', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(container.querySelector('.admin-sort-date__label').textContent).toBe('Ordina per:');
+    expect(container.querySelector('.admin-sort-date__value').textContent).toBe('Data');
+  });
 });
