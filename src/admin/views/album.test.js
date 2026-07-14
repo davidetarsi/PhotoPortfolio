@@ -22,6 +22,7 @@ function makeCtx(over = {}) {
       fetchManifest: vi.fn(async () => ({ ok: true, data: structuredClone(MANIFEST) })),
       prompt: vi.fn(() => null),
       confirm: vi.fn(() => true),
+      alert: vi.fn(),
       attachBeforeUnloadGuard: vi.fn(() => vi.fn()), // ritorna una funzione detach fittizia
       runBatch: vi.fn(async () => ({ uploaded: [], failed: [], manifest: MANIFEST })),
       makeProcessFile: vi.fn(async () => async () => ({ blob: 'B', width: 1, height: 1 })),
@@ -42,6 +43,14 @@ describe('renderAdminAlbum', () => {
     const imgs = container.querySelectorAll('.admin-photo__img');
     expect(imgs).toHaveLength(2);
     expect(imgs[0].getAttribute('src')).toBe('https://pub.r2.dev/sport/a.webp');
+  });
+
+  it('include la top bar con back-link', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(container.querySelector('.admin-topbar')).not.toBeNull();
+    expect(container.querySelector('.admin-back')).not.toBeNull();
   });
 
   it('manifest 404 (album nuovo) → griglia vuota, nessun errore', async () => {

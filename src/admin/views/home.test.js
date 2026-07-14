@@ -21,6 +21,7 @@ function makeCtx(over = {}) {
       attachSortable: vi.fn(), // cattura onMove
       fetchManifest: vi.fn(async () => ({ ok: true, data: [] })),
       prompt: vi.fn(() => null),
+      alert: vi.fn(),
       showPreview: vi.fn(),
     },
     ...over,
@@ -56,6 +57,13 @@ describe('renderAdminHome', () => {
     renderAdminHome(container, makeCtx());
     expect(container.querySelector('[name="site-name"]').value).toBe('Davide');
     expect(container.querySelectorAll('.admin-album-row')).toHaveLength(2);
+  });
+
+  it('include la top bar senza back-link', async () => {
+    const ctx = makeCtx();
+    renderAdminHome(container, ctx);
+    expect(container.querySelector('.admin-topbar')).not.toBeNull();
+    expect(container.querySelector('.admin-back')).toBeNull();
   });
 
   it('salva il sito con i valori del form', async () => {
