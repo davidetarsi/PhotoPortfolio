@@ -1,5 +1,6 @@
 import '../styles/admin.css';
 import { siteConfig } from '../../config/site.config.js';
+import { adminConfig } from '../../config/admin.config.js';
 import { validateSiteConfig } from '../utils/validateConfig.js';
 import { fetchSite, fetchAlbums, fetchManifest, fetchConfig } from '../providers/data.js';
 import { adminApi } from '../admin/api.js';
@@ -14,6 +15,8 @@ import { showPreview } from '../admin/preview.js';
 
 validateSiteConfig(siteConfig);
 const root = document.getElementById('admin-root');
+document.body.style.setProperty('--admin-bg-image', `url(${adminConfig.backgroundImageUrl})`);
+document.body.classList.add('admin-body');
 root.innerHTML = '<p class="admin-status">Caricamento…</p>';
 
 const [siteRes, albumsRes, configRes] = await Promise.all([fetchSite(), fetchAlbums(), fetchConfig()]);

@@ -3,6 +3,15 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); }
+body.admin-body {
+  background-image:
+    linear-gradient(rgba(16, 17, 18, 0.55), rgba(16, 17, 18, 0.75)),
+    var(--admin-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
 
 .admin-root { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
 .admin-panel { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
