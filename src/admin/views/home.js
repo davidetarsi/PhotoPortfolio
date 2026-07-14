@@ -1,8 +1,8 @@
 import { photoUrl } from '../../providers/r2.js';
-import { slugifyTitle, SLUG_RE, RESERVED_SLUGS } from '../../shared/content-rules.js';
 import { moveItem } from '../sortable.js';
 import { texts } from '../../../config/texts.config.js';
 import { createStatus } from '../status.js';
+import { createAlbum } from '../album-creation.js';
 
 export function buildPendingSite({ name, bio, instagram }, currentSite) {
   return {
@@ -140,14 +140,8 @@ export function renderAdminHome(container, ctx) {
 
   // --- nuovo album ---
   q('.admin-create-album').addEventListener('click', () => run(async () => {
-    const title = q('[name="new-album-title"]').value.trim();
-    const slug = slugifyTitle(title);
-    if (!title || !SLUG_RE.test(slug)) { say('Titolo non valido.', true); return; }
-    if (RESERVED_SLUGS.includes(slug)) { say(`"${slug}" è un nome riservato.`, true); return; }
-    if (ctx.albums.some(a => a.slug === slug)) { say(`Esiste già un album "${slug}".`, true); return; }
-    const next = [...ctx.albums, { slug, title, description: '', coverName: null }];
-    await api.putAlbums(next);
-    ctx.albums = next;
-    navigate(`#/album/${slug}`);
+    const result = await createAlbum(q('[name="new-album-title"]').value, ctx);
+    if (!result.ok) { say(result.error, true); return; }
+    navigate(`#/album/${result.slug}`);
   }));
 }

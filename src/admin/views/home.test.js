@@ -96,7 +96,7 @@ describe('renderAdminHome', () => {
     await vi.waitFor(() => expect(ctx.api.putAlbums).toHaveBeenCalled());
     const sent = ctx.api.putAlbums.mock.calls[0][0];
     expect(sent[2]).toEqual({ slug: 'street-photo', title: 'Street Photo', description: '', coverName: null });
-    expect(ctx.navigate).toHaveBeenCalledWith('#/album/street-photo');
+    await vi.waitFor(() => expect(ctx.navigate).toHaveBeenCalledWith('#/album/street-photo'));
   });
 
   it('rifiuta slug riservato o duplicato senza chiamare l\'API, badge errore attivo', async () => {
