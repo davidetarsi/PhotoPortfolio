@@ -31,6 +31,7 @@ export function renderAdminAlbum(container, ctx) {
           Trascina qui le foto o <span class="admin-dropzone__browse">scegli i file da caricare</span>
           <input class="admin-dropzone__input" type="file" multiple accept="image/jpeg,image/png,image/webp">
         </label>
+        <p class="admin-dropzone__constraints">JPG, PNG, WebP fino a 20MB</p>
       </div>
       <ul class="admin-progress"></ul>
       <button class="admin-save-album">Salva</button>

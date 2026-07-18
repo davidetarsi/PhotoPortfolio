@@ -356,4 +356,11 @@ describe('renderAdminAlbum', () => {
     await flush();
     expect(container.querySelectorAll('.admin-photo-row')).toHaveLength(1);
   });
+
+  it('la dropzone mostra i vincoli di formato e dimensione', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(container.querySelector('.admin-dropzone__constraints').textContent).toBe('JPG, PNG, WebP fino a 20MB');
+  });
 });
