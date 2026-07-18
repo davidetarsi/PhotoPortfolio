@@ -104,8 +104,8 @@ body.admin-body {
 .admin-photo__cover.admin-photo__cover--selected { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 .admin-view-toggle { display: inline-flex; border: 1px solid #2e3235; border-radius: var(--radius-sm); overflow: hidden; }
-.admin-view-toggle__btn { background: var(--color-surface); color: var(--color-muted); border: 0; padding: var(--space-xs) var(--space-sm); cursor: pointer; font-size: 0.9rem; line-height: 1; }
-.admin-view-toggle__btn[aria-pressed="true"] { background: var(--color-accent); color: var(--color-bg); }
+.admin-panel .admin-view-toggle__btn { background: var(--color-surface); color: var(--color-muted); border: 0; padding: var(--space-xs) var(--space-sm); cursor: pointer; font-size: 0.9rem; line-height: 1; }
+.admin-panel .admin-view-toggle__btn[aria-pressed="true"] { background: var(--color-accent); color: var(--color-bg); }
 
 .admin-photo-grid--list { display: flex; flex-direction: column; gap: var(--space-xs); }
 .admin-photo-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); background: var(--color-surface); border-radius: var(--radius-sm); cursor: grab; }
@@ -113,6 +113,8 @@ body.admin-body {
 .admin-photo-row__name { flex: 1; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin-photo-row__date { color: var(--color-muted); font-family: var(--font-mono); font-size: 0.75rem; }
 .admin-photo-row__actions { display: flex; gap: var(--space-xs); flex-shrink: 0; }
+.admin-photo-row__actions button { font-size: 0.7rem; padding: 2px 6px; background: var(--color-bg); color: var(--color-text); }
+.admin-photo-row__delete { background: rgba(0,0,0,0.6); }
 .admin-photo-row__cover.admin-photo-row__cover--selected { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .admin-dropzone { border: 2px dashed #2e3235; border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
 .admin-dropzone--over { border-color: var(--color-accent); }

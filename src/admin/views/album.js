@@ -83,7 +83,7 @@ export function renderAdminAlbum(container, ctx) {
 
   function formatPhotoDate(entry) {
     const ts = entry.capturedAt ?? entry.uploadedAt;
-    if (ts === undefined) return '—';
+    if (ts == null) return '—';
     // timeZone: 'UTC' esplicito — capturedAt/uploadedAt sono epoch ms senza
     // fuso orario associato, e senza forzare UTC il rendering dipende dal
     // fuso della macchina che esegue il codice (rischio concreto anche nei

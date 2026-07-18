@@ -63,7 +63,7 @@ describe('createStatus', () => {
     const first = el.querySelector('.admin-status__time').textContent;
     say('Secondo.');
     const second = el.querySelector('.admin-status__time').textContent;
-    expect(second).toBe(el.querySelector('.admin-status__time').textContent);
+    expect(second).toMatch(/^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}$/);
     expect(first).toMatch(/^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}$/);
   });
 });

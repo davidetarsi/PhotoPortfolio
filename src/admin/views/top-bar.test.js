@@ -71,4 +71,14 @@ describe('attachTopBar', () => {
     expect(ctx.deps.alert).toHaveBeenCalledWith('Esiste già un album "sport".');
     expect(ctx.navigate).not.toHaveBeenCalled();
   });
+
+  it('API rifiuta (errore rete): deps.alert riceve messaggio di fallback, nessuna navigazione', async () => {
+    const ctx = makeCtx([]);
+    ctx.api.putAlbums = vi.fn(async () => { throw new Error('Network error'); });
+    attachTopBar(container, ctx);
+    container.querySelector('.admin-topbar__new-album').click();
+    await new Promise(r => setTimeout(r, 0));
+    expect(ctx.deps.alert).toHaveBeenCalledWith('Impossibile creare l\'album. Riprova.');
+    expect(ctx.navigate).not.toHaveBeenCalled();
+  });
 });
