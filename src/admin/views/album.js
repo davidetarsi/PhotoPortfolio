@@ -13,8 +13,13 @@ export function renderAdminAlbum(container, ctx) {
   container.innerHTML = `
     ${topBarHtml({ showBackLink: true })}
     <section class="admin-panel">
-      <h2></h2>
-      <label>Sottotitolo <input name="album-description" type="text"></label>
+      <div class="admin-album-header">
+        <span class="admin-album-header__icon">📷</span>
+        <div class="admin-album-header__text">
+          <h2></h2>
+          <input class="admin-album-header__subtitle" name="album-description" type="text" aria-label="Sottotitolo" placeholder="Aggiungi un sottotitolo…">
+        </div>
+      </div>
       <div class="admin-album-toolbar">
         <div class="admin-view-toggle" role="group">
           <button class="admin-view-toggle__btn admin-view-toggle__btn--grid" type="button" title="Vista griglia">▦</button>

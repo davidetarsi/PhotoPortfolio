@@ -30,6 +30,18 @@ body.admin-body {
 .admin-root { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
 .admin-panel { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
 .admin-panel h2 { margin: 0 0 var(--space-md); font-weight: 400; }
+.admin-album-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+.admin-album-header__icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: var(--color-surface); font-size: 1.4rem;
+}
+.admin-album-header__text h2 { margin: 0; font-family: var(--font-heading); font-size: 1.75rem; font-weight: 500; }
+.admin-album-header__subtitle {
+  width: 100%; margin-top: var(--space-xs); padding: 0; border: 0; background: transparent;
+  color: var(--color-muted); font: inherit; font-size: 0.9rem;
+}
+.admin-album-header__subtitle:focus { outline: none; border-bottom: 1px solid var(--color-accent); }
 .admin-panel label { display: block; margin-bottom: var(--space-md); font-size: 0.9rem; }
 .admin-panel input, .admin-panel textarea, .admin-panel select {
   width: 100%; margin-top: var(--space-xs); padding: var(--space-sm);

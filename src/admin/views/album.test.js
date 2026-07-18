@@ -363,4 +363,20 @@ describe('renderAdminAlbum', () => {
     await flush();
     expect(container.querySelector('.admin-dropzone__constraints').textContent).toBe('JPG, PNG, WebP fino a 20MB');
   });
+
+  it('header album: emoji icona presente, nessuna label visibile "Sottotitolo" (solo aria-label)', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(container.querySelector('.admin-album-header__icon').textContent).toBe('📷');
+    expect(container.querySelector('[name="album-description"]').getAttribute('aria-label')).toBe('Sottotitolo');
+    expect(container.textContent).not.toContain('Sottotitolo ');
+  });
+
+  it('header album: il titolo resta dentro il nuovo wrapper, invariato nel contenuto', async () => {
+    const ctx = makeCtx();
+    renderAdminAlbum(container, ctx);
+    await flush();
+    expect(container.querySelector('.admin-album-header__text h2').textContent).toBe('Sport');
+  });
 });
