@@ -53,6 +53,8 @@ body.admin-body {
 }
 .admin-status__badge:empty { display: none; }
 .admin-status__badge--error { background: var(--color-error); }
+.admin-status__time { color: var(--color-muted); font-size: 0.75rem; }
+.admin-status__time:not(:empty)::before { content: '· '; }
 
 .admin-hero { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; margin-bottom: var(--space-md); }
 .admin-hero__thumb { width: 72px; height: 48px; object-fit: cover; border-radius: var(--radius-sm); }

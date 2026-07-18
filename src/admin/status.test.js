@@ -3,7 +3,7 @@ import { createStatus } from './status.js';
 
 function makeEl() {
   const el = document.createElement('p');
-  el.innerHTML = '<span class="admin-status__badge"></span><span class="admin-status__text"></span>';
+  el.innerHTML = '<span class="admin-status__badge"></span><span class="admin-status__text"></span><span class="admin-status__time"></span>';
   return el;
 }
 
@@ -48,5 +48,22 @@ describe('createStatus', () => {
     expect(el.querySelector('.admin-status__badge').textContent).toBe('Errore');
     expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(true);
     expect(el.querySelector('.admin-status__text').textContent).toBe('Rete non disponibile');
+  });
+
+  it('say() imposta un timestamp leggibile in .admin-status__time', () => {
+    const { say } = createStatus(el);
+    say('Sito salvato.');
+    const time = el.querySelector('.admin-status__time').textContent;
+    expect(time).toMatch(/^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}$/);
+  });
+
+  it('chiamate successive aggiornano il timestamp (non si accumula testo)', () => {
+    const { say } = createStatus(el);
+    say('Primo.');
+    const first = el.querySelector('.admin-status__time').textContent;
+    say('Secondo.');
+    const second = el.querySelector('.admin-status__time').textContent;
+    expect(second).toBe(el.querySelector('.admin-status__time').textContent);
+    expect(first).toMatch(/^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}$/);
   });
 });

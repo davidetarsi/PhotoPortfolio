@@ -46,6 +46,7 @@ export function renderAdminHome(container, ctx) {
       <p class="admin-status" role="status">
         <span class="admin-status__badge"></span>
         <span class="admin-status__text"></span>
+        <span class="admin-status__time"></span>
       </p>
     </div>
     <div class="admin-preview" hidden></div>
