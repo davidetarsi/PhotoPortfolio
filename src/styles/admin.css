@@ -13,28 +13,17 @@ body.admin-body {
   min-height: 100vh;
 }
 
-.admin-topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: var(--space-md) var(--space-lg);
-  background: rgba(16, 17, 18, 0.6);
-  backdrop-filter: blur(8px);
-}
-.admin-topbar__left { display: flex; align-items: center; gap: var(--space-md); }
+.admin-topbar { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
 .admin-topbar__icon { font-size: 1.2rem; }
-.admin-topbar__new-album {
-  padding: var(--space-sm) var(--space-md); border: 0; border-radius: var(--radius-lg);
-  background: var(--color-accent); color: var(--color-bg); font: inherit; font-weight: 600;
-  cursor: pointer;
-}
 
 .admin-root { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
-.admin-panel { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
+.admin-panel { background: var(--color-bg); border: 1px solid #2e3235; border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
 .admin-panel h2 { margin: 0 0 var(--space-md); font-weight: 400; }
 .admin-album-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
 .admin-album-header__icon {
   display: flex; align-items: center; justify-content: center;
   width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
-  background: var(--color-bg); font-size: 1.4rem;
+  background: var(--color-surface); font-size: 1.4rem;
 }
 .admin-album-header__text h2 { margin: 0; font-family: var(--font-heading); font-size: 1.75rem; font-weight: 500; }
 .admin-panel .admin-album-header__subtitle {

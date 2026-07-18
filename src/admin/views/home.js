@@ -3,7 +3,7 @@ import { moveItem } from '../sortable.js';
 import { texts } from '../../../config/texts.config.js';
 import { createStatus } from '../status.js';
 import { createAlbum } from '../album-creation.js';
-import { topBarHtml, attachTopBar } from './top-bar.js';
+import { topBarHtml } from './top-bar.js';
 
 export function buildPendingSite({ name, bio, instagram }, currentSite) {
   return {
@@ -19,8 +19,8 @@ export function renderAdminHome(container, ctx) {
   const heroSrc = site.hero ? photoUrl(r2PublicUrl, site.hero.album, site.hero.name) : null;
 
   container.innerHTML = `
-    ${topBarHtml({ showBackLink: false })}
     <section class="admin-panel">
+      ${topBarHtml({ showBackLink: false })}
       <h2>Sito</h2>
       <label>Nome <input name="site-name" type="text"></label>
       <label>Bio <textarea name="site-bio" rows="2"></textarea></label>
@@ -54,7 +54,6 @@ export function renderAdminHome(container, ctx) {
 
   const q = sel => container.querySelector(sel);
   const { say, run } = createStatus(q('.admin-status'));
-  attachTopBar(container, ctx);
 
   // --- form sito ---
   q('[name="site-name"]').value = site.name;

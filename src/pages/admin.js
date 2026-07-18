@@ -36,7 +36,6 @@ const ctx = {
     fetchManifest,
     prompt: window.prompt.bind(window),
     confirm: window.confirm.bind(window),
-    alert: window.alert.bind(window),
     showPreview,
     runBatch,
     attachBeforeUnloadGuard,

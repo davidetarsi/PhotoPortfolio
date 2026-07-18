@@ -22,7 +22,6 @@ function makeCtx(over = {}) {
       fetchManifest: vi.fn(async () => ({ ok: true, data: structuredClone(MANIFEST) })),
       prompt: vi.fn(() => null),
       confirm: vi.fn(() => true),
-      alert: vi.fn(),
       attachBeforeUnloadGuard: vi.fn(() => vi.fn()), // ritorna una funzione detach fittizia
       runBatch: vi.fn(async () => ({ uploaded: [], failed: [], manifest: MANIFEST })),
       makeProcessFile: vi.fn(async () => async () => ({ blob: 'B', width: 1, height: 1 })),
@@ -308,7 +307,6 @@ describe('renderAdminAlbum', () => {
         attachBeforeUnloadGuard: vi.fn(() => vi.fn()),
         runBatch: vi.fn(async () => ({ uploaded: [], failed: [], manifest: [] })),
         makeProcessFile: vi.fn(async () => async () => ({})),
-        alert: vi.fn(),
       },
     });
     renderAdminAlbum(container, ctx);
@@ -328,7 +326,6 @@ describe('renderAdminAlbum', () => {
         attachBeforeUnloadGuard: vi.fn(() => vi.fn()),
         runBatch: vi.fn(async () => ({ uploaded: [], failed: [], manifest: [] })),
         makeProcessFile: vi.fn(async () => async () => ({})),
-        alert: vi.fn(),
       },
     });
     renderAdminAlbum(container, ctx);

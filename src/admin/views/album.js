@@ -1,7 +1,7 @@
 import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
 import { createStatus } from '../status.js';
-import { topBarHtml, attachTopBar } from './top-bar.js';
+import { topBarHtml } from './top-bar.js';
 
 export function buildPendingAlbum({ description, coverName }, currentAlbum) {
   return { ...currentAlbum, description, coverName };
@@ -11,8 +11,8 @@ export function renderAdminAlbum(container, ctx) {
   const { slug, r2PublicUrl, api, deps } = ctx;
   const album = ctx.albums.find(a => a.slug === slug);
   container.innerHTML = `
-    ${topBarHtml({ showBackLink: true })}
     <section class="admin-panel">
+      ${topBarHtml({ showBackLink: true })}
       <div class="admin-album-header">
         <span class="admin-album-header__icon">📷</span>
         <div class="admin-album-header__text">
@@ -51,7 +51,6 @@ export function renderAdminAlbum(container, ctx) {
 
   const q = sel => container.querySelector(sel);
   const { say, run } = createStatus(q('.admin-status'));
-  attachTopBar(container, ctx);
 
   const fallbackAlbum = { slug, title: slug, description: '', coverName: null };
   const pending = { description: album?.description ?? '', coverName: album?.coverName ?? null };

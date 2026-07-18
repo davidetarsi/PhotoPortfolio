@@ -21,7 +21,6 @@ function makeCtx(over = {}) {
       attachSortable: vi.fn(), // cattura onMove
       fetchManifest: vi.fn(async () => ({ ok: true, data: [] })),
       prompt: vi.fn(() => null),
-      alert: vi.fn(),
       showPreview: vi.fn(),
     },
     ...over,
