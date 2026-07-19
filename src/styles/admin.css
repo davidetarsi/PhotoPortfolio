@@ -50,6 +50,11 @@ body.admin-body {
    titolo e sottotitolo) invece di stringersi. */
 @media (max-width: 640px) {
   .admin-album-header__text { grid-template-columns: 1fr; grid-template-areas: "title" "subtitle" "toolbar"; }
+  /* La toolbar impilata eredita il rientro di icona+gap dell'header
+     (48px + gap), che la disallinea dalla griglia foto sotto (che parte
+     dal solo padding del pannello). La riportiamo a sinistra di quello
+     stesso rientro così torna a filo con la prima foto. */
+  .admin-album-toolbar { justify-content: flex-start; margin-left: calc(-48px - var(--space-md)); }
 }
 .admin-panel .admin-album-header__subtitle:focus { outline: none; border-bottom: 1px solid var(--color-accent); }
 .admin-panel label { display: block; margin-bottom: var(--space-md); font-size: 0.9rem; }
@@ -103,6 +108,7 @@ body.admin-body {
   background: var(--color-surface); color: var(--color-text);
   border: 1px solid #2e3235; border-radius: var(--radius-lg);
   padding: var(--space-xs) var(--space-md); cursor: pointer; font: inherit;
+  flex-shrink: 0; white-space: nowrap;
 }
 .admin-album-toolbar .admin-sort-date::after { content: '▾'; color: var(--color-muted); margin-left: var(--space-xs); }
 .admin-sort-date__label { color: var(--color-muted); }
