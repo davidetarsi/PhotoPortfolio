@@ -16,18 +16,16 @@ export function renderAdminAlbum(container, ctx) {
       <div class="admin-album-header">
         <span class="admin-album-header__icon">📷</span>
         <div class="admin-album-header__text">
-          <div class="admin-album-header__title-row">
-            <h2></h2>
-            <div class="admin-album-toolbar">
-              <div class="admin-view-toggle" role="group">
-                <button class="admin-view-toggle__btn admin-view-toggle__btn--grid" type="button" title="Vista griglia">▦</button>
-                <button class="admin-view-toggle__btn admin-view-toggle__btn--list" type="button" title="Vista lista">☰</button>
-              </div>
-              <button class="admin-sort-date" type="button">
-                <span class="admin-sort-date__label">Ordina per:</span>
-                <span class="admin-sort-date__value">Data</span>
-              </button>
+          <h2></h2>
+          <div class="admin-album-toolbar">
+            <div class="admin-view-toggle" role="group">
+              <button class="admin-view-toggle__btn admin-view-toggle__btn--grid" type="button" title="Vista griglia">▦</button>
+              <button class="admin-view-toggle__btn admin-view-toggle__btn--list" type="button" title="Vista lista">☰</button>
             </div>
+            <button class="admin-sort-date" type="button">
+              <span class="admin-sort-date__label">Ordina per:</span>
+              <span class="admin-sort-date__value">Data</span>
+            </button>
           </div>
           <input class="admin-album-header__subtitle" name="album-description" type="text" aria-label="Sottotitolo" placeholder="Aggiungi un sottotitolo…">
         </div>

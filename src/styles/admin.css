@@ -31,12 +31,25 @@ body.admin-body {
   width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
   background: var(--color-surface); font-size: 1.4rem;
 }
-.admin-album-header__text { flex: 1; min-width: 0; }
-.admin-album-header__title-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-md); }
-.admin-album-header__text h2 { margin: 0; font-family: var(--font-heading); font-size: 1.75rem; font-weight: 500; }
+.admin-album-header__text {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "title toolbar" "subtitle subtitle";
+  align-items: center;
+  gap: var(--space-xs) var(--space-md);
+  flex: 1; min-width: 0;
+}
+.admin-album-header__text h2 { grid-area: title; min-width: 0; margin: 0; font-family: var(--font-heading); font-size: 1.75rem; font-weight: 500; }
 .admin-panel .admin-album-header__subtitle {
+  grid-area: subtitle;
   width: 100%; margin-top: var(--space-xs); padding: 0; border: 0; background: transparent;
   color: var(--color-muted); font: inherit; font-size: 0.9rem;
+}
+/* Sotto una certa larghezza titolo+toolbar non hanno più spazio per stare
+   sulla stessa riga: la toolbar scende sotto al sottotitolo (non tra
+   titolo e sottotitolo) invece di stringersi. */
+@media (max-width: 640px) {
+  .admin-album-header__text { grid-template-columns: 1fr; grid-template-areas: "title" "subtitle" "toolbar"; }
 }
 .admin-panel .admin-album-header__subtitle:focus { outline: none; border-bottom: 1px solid var(--color-accent); }
 .admin-panel label { display: block; margin-bottom: var(--space-md); font-size: 0.9rem; }
@@ -84,7 +97,7 @@ body.admin-body {
 
 .admin-back { color: var(--color-muted); text-decoration: none; font-family: var(--font-mono); font-size: 0.8rem; }
 .admin-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
-.admin-album-toolbar { display: flex; align-items: center; gap: var(--space-sm); flex-shrink: 0; margin-left: auto; }
+.admin-album-toolbar { grid-area: toolbar; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm); }
 .admin-album-toolbar .admin-sort-date {
   display: flex; align-items: center; gap: var(--space-xs);
   background: var(--color-surface); color: var(--color-text);
