@@ -13,7 +13,7 @@ body.admin-body {
   min-height: 100vh;
 }
 
-.admin-topbar { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+.admin-topbar { display: flex; align-items: center; gap: var(--space-md); padding-bottom: var(--space-md); margin-bottom: var(--space-md); border-bottom: 1px solid #2e3235; }
 .admin-topbar__icon { font-size: 1.2rem; }
 
 .admin-root { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
