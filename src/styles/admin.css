@@ -31,6 +31,8 @@ body.admin-body {
   width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
   background: var(--color-surface); font-size: 1.4rem;
 }
+.admin-album-header__text { flex: 1; min-width: 0; }
+.admin-album-header__title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); }
 .admin-album-header__text h2 { margin: 0; font-family: var(--font-heading); font-size: 1.75rem; font-weight: 500; }
 .admin-panel .admin-album-header__subtitle {
   width: 100%; margin-top: var(--space-xs); padding: 0; border: 0; background: transparent;
@@ -82,7 +84,7 @@ body.admin-body {
 
 .admin-back { color: var(--color-muted); text-decoration: none; font-family: var(--font-mono); font-size: 0.8rem; }
 .admin-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
-.admin-album-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+.admin-album-toolbar { display: flex; align-items: center; gap: var(--space-sm); flex-shrink: 0; }
 .admin-album-toolbar .admin-sort-date {
   display: flex; align-items: center; gap: var(--space-xs);
   background: var(--color-surface); color: var(--color-text);
