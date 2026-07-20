@@ -2,15 +2,29 @@
 @import '../../theme/typography.css';
 
 *, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); }
-body.admin-body {
+html { overflow-x: hidden; }
+body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); overflow-x: hidden; }
+body.admin-body { min-height: 100vh; position: relative; }
+/* position:fixed su uno pseudo-elemento invece di background-attachment:fixed
+   — quest'ultimo è notoriamente inaffidabile sui browser mobile (repaint a
+   scatti durante lo scroll, a volte l'immagine "salta"). Dimensionato sul
+   viewport (inset:0) e non sull'altezza reale della pagina, quindi con
+   background-size:cover copre sempre senza dover ripetere l'immagine;
+   background-color fa da sfondo di riserva (mai visibile in pratica, dato
+   che cover coprirebbe comunque, ma coerente con la tonalità scura della
+   foto se mai il caricamento dell'immagine fallisse). */
+body.admin-body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background-image:
     linear-gradient(rgba(16, 17, 18, 0.55), rgba(16, 17, 18, 0.75)),
     var(--admin-bg-image);
+  background-color: var(--color-bg);
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
-  min-height: 100vh;
+  background-repeat: no-repeat;
 }
 
 .admin-topbar {
