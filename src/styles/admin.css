@@ -5,18 +5,22 @@
 html { overflow-x: hidden; }
 body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); overflow-x: hidden; }
 body.admin-body { min-height: 100vh; position: relative; }
-/* position:fixed su uno pseudo-elemento invece di background-attachment:fixed
-   — quest'ultimo è notoriamente inaffidabile sui browser mobile (repaint a
-   scatti durante lo scroll, a volte l'immagine "salta"). Dimensionato sul
-   viewport (inset:0) e non sull'altezza reale della pagina, quindi con
-   background-size:cover copre sempre senza dover ripetere l'immagine;
-   background-color fa da sfondo di riserva (mai visibile in pratica, dato
-   che cover coprirebbe comunque, ma coerente con la tonalità scura della
-   foto se mai il caricamento dell'immagine fallisse). */
+/* position:absolute (ancorato alla pagina, non al viewport) invece di
+   position:fixed/background-attachment:fixed — su mobile, quando la barra
+   indirizzi si nasconde/mostra durante lo scroll il viewport cambia altezza
+   in continuazione, e un elemento fixed deve reinseguirlo ad ogni frame:
+   è quello il "salto" percepito. Qui l'altezza si fissa una volta sola
+   (100vh al load) e poi scorre via normalmente col resto della pagina —
+   niente più ricalcoli durante lo scroll. Alto quanto un viewport, non
+   quanto la pagina intera: sotto quel punto resta il solo background-color
+   di body (stessa tonalità scura), niente ripetizione dell'immagine.
+   Si perde l'effetto "resta fermo durante lo scroll", mai richiesto
+   esplicitamente — cambio consapevole in cambio di zero glitch. */
 body.admin-body::before {
   content: '';
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100vh;
   z-index: -1;
   background-image:
     linear-gradient(rgba(16, 17, 18, 0.55), rgba(16, 17, 18, 0.75)),
