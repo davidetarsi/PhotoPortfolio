@@ -23,7 +23,7 @@ Con il destinatario giusto, le conseguenze a cascata sono:
 | Come si configura una nuova installazione? | File in repo + variabili d'ambiente + un README onesto. Niente wizard obbligatorio. |
 | Come si crea l'infrastruttura? | `terraform apply`. È il formato che quel pubblico si aspetta e sa valutare. |
 | Come si cambia tema? | Si edita `theme/tokens.css` e si fa deploy. Trenta secondi, nessuna UI necessaria. |
-| A cosa serve allora la dashboard? | Alle operazioni quotidiane sui **contenuti** — caricare foto, riordinare, cover, bio — che non devono richiedere un deploy. |
+| A cosa serve allora la dashboard? | Alle operazioni quotidiane sui **contenuti** — caricare foto, riordinare, cover, bio — che non devono richiedere un deploy, e a vederne il risultato prima di salvare. |
 | Serve impedire CSS arbitrario? | No. Ha accesso al repo. I "limiti intenzionali" contro l'utente sono teatro. |
 | Chi fa il primo setup? | Il destinatario stesso, con la documentazione. Se non ci riesce, è un bug della documentazione. |
 
@@ -66,6 +66,9 @@ Ha esattamente ciò che manca al template:
 - `src/admin/` — 14 file: API, encoder, EXIF, naming, pipeline, preview, router, sortable, status, upload-manager, viste.
 - `src/providers/` — `r2.js`, `data.js`.
 - `src/shared/content-rules.js` — validazione condivisa client/Worker.
+- `src/admin/preview.js` — anteprima del sito con i valori correnti del form, che riusa le funzioni di render del sito pubblico invece di reimplementarle.
+- `src/admin/{pipeline,encoder,exif}.js` — compressione client-side all'upload, gemella di `scripts/compress.js`.
+- `scripts/` — `compress.js`, `migrate.js`, `upload.js`, ognuno con test.
 - Cloudflare Access su `/admin`, ambiente staging separato con bucket e public URL propri.
 - Album come **dati runtime su R2**, non come file di configurazione.
 
@@ -142,11 +145,16 @@ Modelli comuni: `SiteProfile`, `Album`, `Photo`. Nessun componente deve conoscer
 
 La verifica è una sola e va automatizzata: **la stessa suite di test di contratto gira su tutti i provider**. Se passa su tutti e tre, il confine è reale; se un provider ha bisogno di un test speciale, il confine è finto.
 
-## 8. Immagini: la parte trascurata
+## 8. Immagini: la compressione c'è, le derivate no
 
-Per un prodotto *fotografico* questa è la funzionalità con più impatto percepito, ed è assente da entrambi i repo e da entrambe le bozze precedenti.
+La compressione è una funzionalità **acquisita e da conservare**, in entrambe le forme in cui esiste oggi:
 
-Oggi: il template ha `scripts/compress.js` (WebP in build); il sito personale comprime lato client all'upload. Nessuno dei due genera **più dimensioni**. Una griglia carica immagini a piena risoluzione e le scala via CSS.
+- `scripts/compress.js` — Node e sharp, da riga di comando, con test. Serve alla modalità base e ai caricamenti massivi.
+- `src/admin/{pipeline,encoder}.js` — l'equivalente nel browser, usato dalla dashboard all'upload. Stesse regole: lato massimo 1900px, qualità 0.85, mai ingrandire, pass-through per i WebP già ottimizzati. Safari non sa codificare WebP da canvas, quindi c'è un fallback WASM caricato pigramente solo dove serve.
+
+Questa doppia implementazione è una scelta corretta — la dashboard non può dipendere da Node — ma va **riconosciuta come vincolo**: le regole di compressione vivono in due posti e devono restare allineate. Le parti pure (`targetDimensions`, `shouldUploadAsIs`) sono già isolate in `pipeline.js` e sono il punto naturale da condividere fra le due implementazioni invece di duplicarle una terza volta.
+
+Ciò che manca davvero sono le **derivate**: nessuna delle due genera più dimensioni per la stessa foto. Una griglia scarica immagini da 1900px e le scala via CSS a 300. Per un prodotto *fotografico* è la lacuna con più impatto percepito, ed è assente da entrambi i repo e da entrambe le bozze precedenti.
 
 Target minimo:
 
@@ -173,13 +181,24 @@ Con destinatari sviluppatori, Terraform è la scelta giusta — non per necessit
 
 ## 10. Dashboard: cosa entra nella v1
 
-La dashboard serve alle operazioni **sui contenuti dopo la consegna**, non alla configurazione visuale.
+La dashboard **è parte del prodotto**, non un'opzione: gestire album e foto da riga di comando o da commit è scomodo anche per uno sviluppatore, e la comodità quotidiana è esattamente ciò che rende il sito consegnabile invece che solo installabile. Quello che la dashboard *non* è, è un editor di configurazione visuale.
 
-**Dentro la v1** — è ciò che il sito personale già fa e che va generalizzato: creazione e modifica album, upload con compressione, riordino, scelta cover, testi degli album, profilo/bio/social, protezione Access, validazione sia nel browser sia nel Worker.
+**Dentro la v1** — è ciò che il sito personale già fa e che va generalizzato:
 
-**Fuori dalla v1:** selettore di temi, editor di colori e font, controlli di layout, stato bozza separato dal pubblicato, cronologia delle revisioni, rollback multi-livello. Per un destinatario con accesso al repo, "cambia tema" è una modifica a `tokens.css` seguita da un deploy — e `git revert` è già il rollback.
+- creazione, modifica ed eliminazione degli album;
+- **upload con compressione** (`pipeline.js` + `encoder.js`, incluso il fallback WASM per Safari — vedi §8);
+- riordino delle foto, scelta della cover, testi degli album;
+- profilo, bio, social;
+- **anteprima del sito con le modifiche non ancora salvate** (`preview.js`);
+- protezione Cloudflare Access e validazione sia nel browser sia nel Worker.
 
-Questa singola scelta rimuove la milestone più costosa delle bozze precedenti senza togliere nulla a nessun utente reale.
+L'anteprima merita una nota architetturale, perché è fatta bene e va conservata così: `preview.js` riusa `renderHero`, `createAlbumCard`, `PhotoGrid`, `Lightbox` e la logica di pagina **del sito pubblico**, invece di reimplementare un render parallelo. È ciò che impedisce all'anteprima di mentire, ed è anche un test implicito del confine fra componenti e dati: se i componenti dipendessero dal provider, l'anteprima non potrebbe riusarli con i valori di un form.
+
+**Fuori dalla v1:** selettore di temi, editor di colori e font, controlli di layout, **stato bozza persistito** lato server, cronologia delle revisioni, rollback multi-livello.
+
+Da notare la distinzione, perché è sottile: l'**anteprima** (guardo com'è, prima di salvare) resta dentro; la **bozza persistita** (salvo una versione non pubblicata, ci torno domani, la confronto, la ripristino) resta fuori. La prima è un render locale e costa poco; la seconda richiede due stati sul server, una UI per gestirli e una storia di versioni. Per un destinatario con accesso al repo, "cambia tema" è una modifica a `tokens.css` seguita da un deploy — e `git revert` è già il rollback.
+
+È questa distinzione, non l'eliminazione della dashboard, a rimuovere la milestone più costosa delle bozze precedenti.
 
 ## 11. Modello di distribuzione
 
@@ -217,9 +236,9 @@ Il flusso di codice corretto è **dal sito personale verso il template** (sezion
 3. La personalizzazione ordinaria avviene fuori da `src/`, in file JavaScript — non YAML.
 4. Il template supporta due modalità: base (file/Drive, statica) e avanzata (R2 + Worker + dashboard).
 5. Il modello dati è indipendente dal provider; il confine è verificato da test di contratto condivisi.
-6. Le derivate delle immagini sono una funzionalità di prima classe, non un'ottimizzazione tardiva.
+6. La compressione resta in entrambe le forme (CLI e browser) con regole allineate; le derivate delle immagini sono una funzionalità di prima classe, non un'ottimizzazione tardiva.
 7. Terraform gestisce le risorse persistenti; Wrangler e CI/CD gestiscono build e deploy; nessuna proprietà condivisa.
-8. La dashboard v1 gestisce contenuti, non configurazione visuale.
+8. La dashboard fa parte del prodotto e la v1 include l'anteprima; gestisce contenuti, non configurazione visuale. Anteprima dentro, bozza persistita fuori.
 9. Ogni destinatario ha una propria installazione single-tenant.
 10. I fork non si aggiornano automaticamente; la superficie di personalizzazione resta stretta e il changelog documenta gli aggiornamenti che richiedono intervento.
 11. Nessun package `core` condiviso. Da rivalutare solo a partire da tre installazioni attive.

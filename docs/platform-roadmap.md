@@ -24,7 +24,7 @@ Non coprono — e sono le voci che storicamente costano di più:
 - iterazioni visuali sui temi (potenzialmente illimitate);
 - il tempo del destinatario pilota, che non controlli.
 
-**Nota onesta sul totale.** Il percorso completo sta intorno alle **24–37 sessioni**. È sensibilmente più della stima delle bozze precedenti (10,5–17 giornate), e la differenza non è pessimismo: quelle stime davano 1,5–2,5 giornate a una dashboard con preview, bozza/pubblicato, revisioni e rollback, quando la dashboard *esistente* — che fa molto meno — ha richiesto sessioni intere solo per il restyling. Qui la dashboard v1 è stata ridotta a ciò che serve davvero (vedi direzione §10), ma il tempo per portarla e generalizzarla resta reale.
+**Nota onesta sul totale.** Il percorso completo sta intorno alle **24–37 sessioni**. È sensibilmente più della stima delle bozze precedenti (10,5–17 giornate), e la differenza non è pessimismo: quelle stime davano 1,5–2,5 giornate a una dashboard con editor dei temi, bozza/pubblicato, revisioni e rollback, quando la dashboard *esistente* — che fa molto meno — ha richiesto sessioni intere solo per il restyling. Qui la dashboard v1 tiene tutto ciò che serve davvero, anteprima e compressione incluse, e lascia fuori solo la configurazione visuale e lo stato bozza persistito (direzione §10): ma il tempo per portare e generalizzare i 18 file resta reale.
 
 Il numero che conta non è il totale: è che **dopo la fase 2 hai già un template che fa tutto quello che fa oggi il tuo sito personale**, e dopo la fase 8 hai un'installazione vera nelle mani di qualcun altro.
 
@@ -108,18 +108,20 @@ F4 e F5 possono procedere in parallelo alle fasi infrastrutturali: toccano file 
 
 **Obiettivo:** il destinatario gestisce i contenuti senza toccare il codice.
 
-**Scope v1** (vedi direzione §10 — tutto il resto è escluso deliberatamente): creazione e modifica album, upload con compressione, riordino foto, scelta cover, testi album, profilo/bio/social.
+**Scope v1** (vedi direzione §10 — tutto il resto è escluso deliberatamente): creazione e modifica album, upload con compressione, riordino foto, scelta cover, testi album, profilo/bio/social, **anteprima del sito con le modifiche non salvate**.
 
 **Attività**
 
 - Portare `src/admin/` (API, encoder, EXIF, naming, pipeline, preview, router, sortable, status, upload-manager, viste) rimuovendo i riferimenti personali.
 - Portare `src/worker/{admin-routes,access-jwt}.js` e `src/shared/content-rules.js`.
+- **Compressione all'upload:** portare `pipeline.js` + `encoder.js` mantenendo le regole attuali (1900px, q85, mai ingrandire, pass-through per WebP già ottimizzati) e il fallback WASM per Safari, che non codifica WebP da canvas. Verificare che il chunk WASM resti a caricamento pigro: Chrome e Android non devono scaricarlo mai.
+- **Anteprima:** portare `preview.js` conservando il principio che la rende affidabile — riusa `renderHero`, `createAlbumCard`, `PhotoGrid`, `Lightbox` e la logica di pagina del sito pubblico, senza render paralleli. Verificare che regga sia la vista landing sia la vista album con lightbox.
 - Rendere configurabili le email amministratore e il team domain di Access.
 - Validazione sia nel browser sia nel Worker: il Worker non si fida mai del client.
 - Verificare che nessun token Cloudflare raggiunga il browser.
 - Portare e adattare i test delle viste e delle route amministrative.
 
-**Fatto quando:** da un'installazione pulita, un utente autorizzato crea un album, carica foto, riordina, sceglie una cover e modifica la bio; un utente non autorizzato non passa; un input non valido viene rifiutato dal Worker anche aggirando il browser.
+**Fatto quando:** da un'installazione pulita, un utente autorizzato crea un album, carica foto (compresse, anche da Safari), riordina, sceglie una cover, modifica la bio e vede l'anteprima del risultato prima di salvare; un utente non autorizzato non passa; un input non valido viene rifiutato dal Worker anche aggirando il browser.
 
 **Stima:** 4–6 sessioni. È la fase più grossa: 18 file da portare e generalizzare.
 
@@ -163,18 +165,20 @@ F4 e F5 possono procedere in parallelo alle fasi infrastrutturali: toccano file 
 
 ## F5 — Derivate delle immagini
 
-**Perché conta.** È la funzionalità che il destinatario nota per prima, e oggi manca (direzione §8).
+**Perché conta.** La compressione c'è già ed è buona; quello che manca sono le **derivate**. Oggi una griglia scarica immagini da 1900px e le scala via CSS a 300 (direzione §8). È la cosa che il destinatario nota per prima, in 4G.
+
+**Vincolo da rispettare:** le regole di compressione vivono in due implementazioni gemelle — `scripts/compress.js` (Node/sharp) e `src/admin/{pipeline,encoder}.js` (browser). Aggiungere derivate significa toccarle entrambe e tenerle allineate. Prima di duplicare la logica una terza volta, valutare di condividere le parti pure già isolate in `pipeline.js` (`targetDimensions`, `shouldUploadAsIs`) fra le due.
 
 **Attività**
 
 - Decidere le dimensioni: indicativamente griglia, lightbox, originale.
-- Generare le derivate nella pipeline di upload (modalità avanzata) e in `scripts/compress.js` (modalità base).
-- Aggiungere `srcset`/`sizes` ai componenti immagine.
+- Generare le derivate in **entrambe** le implementazioni, con le stesse regole e gli stessi nomi di file.
+- Aggiungere `srcset`/`sizes` ai componenti immagine — che sono gli stessi usati dall'anteprima della dashboard, quindi il beneficio arriva anche lì senza lavoro aggiuntivo.
 - Fissare `width`/`height` o `aspect-ratio` per eliminare il layout shift.
-- Definire il comportamento per le foto già caricate prima di questa fase.
+- Definire il comportamento per le foto già caricate prima di questa fase: rigenerazione con `scripts/migrate.js` o fallback all'originale quando la derivata non esiste.
 - Misurare prima e dopo su una galleria reale, in rete lenta.
 
-**Fatto quando:** una griglia non scarica più immagini a piena risoluzione, e il miglioramento è misurato, non supposto.
+**Fatto quando:** una griglia non scarica più immagini a piena risoluzione, le due implementazioni producono gli stessi output a parità di input, e il miglioramento è misurato, non supposto.
 
 **Stima:** 2–3 sessioni.
 
