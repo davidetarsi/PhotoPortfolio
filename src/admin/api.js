@@ -20,4 +20,9 @@ export const adminApi = {
   deletePhoto: (slug, name) =>
     send(`/api/admin/albums/${slug}/photos/${encodeURIComponent(name)}`, { method: 'DELETE' }),
   deleteAlbum: slug => send(`/api/admin/albums/${slug}`, { method: 'DELETE' }),
+  listMessages: async () => {
+    const res = await send('/api/admin/messages', { method: 'GET' });
+    return { ok: true, data: await res.json() };
+  },
+  deleteMessage: id => send(`/api/admin/messages/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };

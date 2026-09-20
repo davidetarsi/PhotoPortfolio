@@ -39,6 +39,9 @@ body.admin-body::before {
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .admin-topbar__icon { font-size: 1.2rem; }
+.admin-topbar__nav { display: flex; gap: var(--space-md); margin-left: auto; }
+.admin-topbar__nav-link { color: var(--color-text); text-decoration: none; font-size: 0.9rem; padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); border: 1px solid transparent; }
+.admin-topbar__nav-link:hover { border-color: var(--color-border); }
 
 .admin-root { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
 .admin-panel { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
@@ -188,3 +191,51 @@ body.admin-body::before {
   font: inherit;
   cursor: pointer;
 }
+
+.admin-messages-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+.admin-message {
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+}
+.admin-message__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+.admin-message__name { font-weight: 500; color: var(--color-text); }
+.admin-message__date { font-size: 0.8rem; color: var(--color-muted); font-family: var(--font-mono); }
+.admin-message__subject {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+}
+.admin-message__body {
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.admin-message__actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+.admin-message__reply {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.admin-message__reply:hover { text-decoration: underline; }
+.admin-message__delete {
+  background: transparent;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  padding: 2px 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.admin-message__delete:hover { border-color: var(--color-accent); color: var(--color-accent); }

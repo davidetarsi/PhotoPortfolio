@@ -20,6 +20,7 @@ export const texts = {
     form: {
       namePlaceholder: 'Nome',
       emailPlaceholder: 'Email',
+      subjectPlaceholder: 'Soggetto',
       messagePlaceholder: 'Messaggio',
       submitLabel: 'Invia',
       successMessage: 'Messaggio inviato. Ti risponderò presto.',
@@ -75,6 +76,15 @@ export const texts = {
     status: {
       lastAction: 'Ultima azione eseguita',
       error: 'Errore',
+    },
+    messages: {
+      sectionTitle: 'Messaggi',
+      empty: 'Nessun messaggio ricevuto.',
+      loadError: 'Impossibile caricare i messaggi.',
+      confirmDelete: 'Eliminare il messaggio di {nome}?',
+      deleted: 'Messaggio eliminato.',
+      reply: 'Rispondi',
+      delete: 'Elimina',
     },
   },
 };

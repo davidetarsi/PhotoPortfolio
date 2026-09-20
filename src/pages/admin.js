@@ -1,6 +1,7 @@
 import '../styles/admin.css';
 import { siteConfig } from '../../config/site.config.js';
 import { adminConfig } from '../../config/admin.config.js';
+import { texts } from '../../config/texts.config.js';
 import { validateSiteConfig } from '../utils/validateConfig.js';
 import { fetchSite, fetchAlbums, fetchManifest, fetchConfig } from '../providers/data.js';
 import { adminApi } from '../admin/api.js';
@@ -8,6 +9,7 @@ import { parseAdminHash } from '../admin/router.js';
 import { attachSortable } from '../admin/sortable.js';
 import { renderAdminHome } from '../admin/views/home.js';
 import { renderAdminAlbum } from '../admin/views/album.js';
+import { renderMessages } from '../admin/views/messages.js';
 import { runBatch, attachBeforeUnloadGuard } from '../admin/upload-manager.js';
 import { processFile } from '../admin/pipeline.js';
 import { makeProcessDeps } from '../admin/encoder.js';
@@ -49,6 +51,7 @@ const ctx = {
 function renderRoute() {
   const route = parseAdminHash(window.location.hash);
   if (route.view === 'album') renderAdminAlbum(root, Object.assign(ctx, { slug: route.slug }));
+  else if (route.view === 'messages') renderMessages(root, { ...ctx.deps, api: adminApi, confirm: window.confirm.bind(window), say: (msg, err) => { if (err) console.error(msg); else console.log(msg); } }, texts);
   else renderAdminHome(root, ctx);
 }
 window.addEventListener('hashchange', renderRoute);
