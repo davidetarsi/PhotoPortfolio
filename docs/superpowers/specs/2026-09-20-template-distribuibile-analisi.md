@@ -28,7 +28,7 @@ Verificato sul branch `staging` di `davidetarsi/photoportfolio` (33 commit avant
 | Terraform | **assente** | nessun `.tf` in nessuno dei due repo |
 | Stringhe dashboard in `texts.config.js` | **assente** | hardcoded in italiano nei JS |
 
-Copertura test: 268 test.
+Copertura test: 264 test (verificati con `npm test`; un conteggio precedente diceva 268, ma era una stima via `grep` che includeva 4 occorrenze di `makeJwtTestKit(`).
 
 **Conseguenza**: tre delle quattro direzioni che volevi prendere sono già costruite. Quello che resta non è un progetto nuovo, è un lavoro di completamento e di confezionamento. Questo cambia molto la stima complessiva, in meglio.
 

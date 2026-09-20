@@ -236,7 +236,7 @@ npm ci
 npm test
 ```
 
-Atteso: tutti i test passano. Il numero atteso è **268** (rilevato sul sito il 2026-09-20); se ne passano meno, il merge ha perso qualcosa e va indagato prima di proseguire.
+Atteso: tutti i test passano. Il numero atteso è **264** (verificato con `npm test` il 2026-09-20); se ne passano meno, il merge ha perso qualcosa e va indagato prima di proseguire.
 
 - [ ] **Step 3: Eseguire la build**
 
