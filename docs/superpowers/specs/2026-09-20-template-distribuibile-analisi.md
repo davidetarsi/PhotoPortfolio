@@ -23,7 +23,8 @@ Verificato sul branch `staging` di `davidetarsi/photoportfolio` (33 commit avant
 | Compressione nel browser prima dell'upload | fatto | `src/admin/pipeline.js` — 1900px, WebP q85 |
 | Compressione da CLI | fatto, coesiste | `scripts/compress.js` |
 | Token di tema condivisi tra sito e dashboard | fatto | `src/styles/admin.css` importa `theme/tokens.css` |
-| Anteprima prima del salvataggio | **parziale** | solo nome, bio, Instagram |
+| Stato "modifica poi salva" | **parziale** | sito (nome/bio/social) e album (descrizione/cover), con guardia `beforeunload` |
+| Anteprima prima del salvataggio | **parziale** | overlay coi componenti veri del sito, ma solo dalla schermata "Sito" |
 | Terraform | **assente** | nessun `.tf` in nessuno dei due repo |
 | Stringhe dashboard in `texts.config.js` | **assente** | hardcoded in italiano nei JS |
 
@@ -31,13 +32,32 @@ Copertura test: 268 test.
 
 **Conseguenza**: tre delle quattro direzioni che volevi prendere sono già costruite. Quello che resta non è un progetto nuovo, è un lavoro di completamento e di confezionamento. Questo cambia molto la stima complessiva, in meglio.
 
-### 1.1 La correzione sull'anteprima
+### 1.1 Come sta davvero l'anteprima
 
-Nella conversazione l'anteprima è stata descritta come "si vedono le modifiche fatte al sito prima di salvare". Il codice fa meno di così, e per scelta esplicita documentata in [2026-07-11-admin-preview-design.md](2026-07-11-admin-preview-design.md):
+> **Nota**: la prima stesura di questa sezione era **sbagliata**. Era stata dedotta da [2026-07-11-admin-preview-design.md](2026-07-11-admin-preview-design.md), che descrive lo scope di luglio e non lo stato attuale: il codice è andato avanti nei 33 commit di `staging`. Quanto segue è verificato sul codice il 2026-09-20.
 
-> **Fuori** (deciso esplicitamente): **Album** (riordino foto, cover, elimina, nuovo album): tutte le azioni restano a salvataggio istantaneo. Un'anteprima per gli album richiederebbe prima trasformarli in "modifica poi salva" — fuori scope, eventualmente un progetto a parte in futuro.
+Il design di luglio dichiarava fuori scope l'anteprima per gli album, e prevedeva lo stato "modifica poi salva" solo per i tre campi del form Sito. **Da allora il meccanismo è stato esteso**, e oggi la situazione è questa:
 
-Oggi l'anteprima copre tre campi di testo. Tutto ciò che riguarda le foto scrive su R2 al click, senza stato intermedio. **L'anteprima completa è ancora tutta da fare**, ed è il pezzo di codice più consistente tra quelli rimasti (§5).
+| Azione | Comportamento | Dove |
+|---|---|---|
+| Nome, bio, Instagram | in sospeso → "Salva sito" | `views/home.js` |
+| Descrizione album, cover | in sospeso → "Salva" + guardia `beforeunload` | `views/album.js:93` |
+| Scelta della hero | scrive subito | `views/home.js:92` |
+| Caricamento foto | scrive subito | `views/album.js:158` |
+| Eliminazione foto | scrive subito | `views/album.js:100` |
+| Riordino per trascinamento | scrive subito | `views/album.js:193` |
+| Ordina per data | scrive subito | `views/album.js:210` |
+
+Lo stato "sporco" esiste già, con `markDirty`/`clearDirty` e avviso all'uscita, ed è coperto da test.
+
+Anche l'overlay di anteprima è più ricco di quanto il design di luglio lasci pensare: non è un layout parallelo, ma **riusa i componenti veri del sito pubblico** — `Hero`, `Footer`, `AlbumCard`, `PhotoGrid`, `Lightbox`, `resolveAlbumPage` — e permette di aprire un album al suo interno per vederne le foto.
+
+**Dove sta il buco, allora.** Non nella finestra di anteprima, che è quasi completa. Sta in due punti:
+
+1. Il tasto Anteprima **esiste solo nella schermata "Sito"**: nella vista album non c'è.
+2. Le operazioni sulle foto — caricamento, eliminazione, riordino, ordinamento — non hanno mai uno stato in sospeso. Quando andresti a guardarle in anteprima, sono già online.
+
+In una riga: *c'è una buona finestra, ma quasi niente da guardarci dentro prima di pubblicare.*
 
 ---
 
@@ -183,28 +203,31 @@ Raccomandazione: **due o tre varianti di card, nominate e concrete** (per esempi
 
 ## 5. Punto 3 — Anteprima completa
 
-È il pezzo di codice più grosso rimasto, ed è un cambio di modello di interazione, non una feature additiva.
+Vedi §1.1 per lo stato verificato, che è più avanzato di quanto la prima stesura sostenesse.
 
-**Oggi**: ogni azione sugli album (riordino, cover, eliminazione, nuovo album) scrive su R2 immediatamente. Non esiste uno stato "modificato ma non salvato".
+**Quello che c'è già e non va rifatto**: lo schema "in sospeso → Salva → guardia all'uscita" è scritto e testato in due posti; l'overlay di anteprima disegna il sito con i componenti veri e sa già aprire un album.
 
-**Per avere l'anteprima** serve introdurre quello stato: le modifiche si accumulano in una bozza, l'anteprima la legge, e un'azione esplicita la pubblica.
+**Quello che manca** è circoscritto a due cose:
 
-Conseguenze da mettere in conto, perché toccano tutta la dashboard:
+1. **Il tasto Anteprima nella vista album.** Lì descrizione e cover sono già in sospeso, quindi c'è già qualcosa da mostrare e l'overlay sa già disegnarlo. Lavoro piccolo, mezza giornata scarsa.
+2. **Lo stato in sospeso per le operazioni sulle foto** — caricamento, eliminazione, riordino, ordinamento. Questa è la parte vera, e la difficoltà non sta nella UI ma nello storage:
+   - serve un manifest **bozza** distinto dal **pubblicato**, e la promozione dell'uno sull'altro;
+   - una foto caricata e poi scartata lascia comunque il binario su R2, perché l'upload è già avvenuto: servono una pulizia degli orfani e una politica su quando eseguirla;
+   - il sito pubblico va istruito a leggere il manifest bozza quando richiesto in anteprima, autenticato.
 
-- Serve un manifest **bozza** distinto dal **pubblicato** su R2, e la promozione dell'uno sull'altro.
-- Serve gestire lo stato "sporco": indicatore, conferma prima di uscire, possibilità di annullare le modifiche.
-- Le foto già caricate sono un caso ibrido: il file binario è per forza già su R2 (l'upload è avvenuto), ma la sua *presenza nell'album* può restare in bozza. Serve poi una pulizia dei file caricati e mai pubblicati.
-- Il sito pubblico va istruito a leggere il manifest bozza quando richiesto in anteprima, autenticato.
+La stima di 3–5 giorni della prima stesura era tarata sull'idea sbagliata che andasse riscritta ogni vista. Con lo schema pending già esistente, il grosso è il manifest bozza e la pulizia degli orfani.
 
-Non è difficile, ma non è piccolo, e tocca quasi ogni vista della dashboard. È anche l'unico dei quattro punti che **non blocca** la distribuzione del template: il template funziona benissimo con il salvataggio istantaneo attuale.
+È comunque l'unico dei quattro punti che **non blocca** la distribuzione: il template funziona con il salvataggio immediato.
 
-> **Deciso: rimandata**, da riconsiderare dopo aver raccolto il feedback dei primi utilizzatori. Il template si distribuisce con il salvataggio istantaneo.
+> **Deciso: rimandata**, da riconsiderare dopo aver raccolto il feedback dei primi utilizzatori. Il template si distribuisce con il salvataggio immediato per le operazioni sulle foto.
 >
-> Perché questa è la scelta giusta e non un rinvio: oggi non esiste alcuna prova che il salvataggio istantaneo dia fastidio nell'uso reale. Cinque giorni di lavoro su una supposizione sono cinque giorni a rischio. Se il fastidio è reale, il feedback dirà anche *quali* schermate contano — e il lavoro sarà più mirato di quanto potremmo progettarlo adesso.
+> Decisione **riconfermata il 2026-09-20** dopo la correzione di §1.1, cioè sapendo che il lavoro residuo è minore di quanto la prima stima dicesse. Anche l'aggiunta del solo tasto Anteprima nella vista album (mezza giornata) è stata valutata e rimandata insieme al resto, per non lasciare un mezzo intervento in mezzo al guado.
 >
-> Conseguenza sul design attuale: l'anteprima parziale dei tre campi **resta com'è**. È un'asimmetria (tre campi con anteprima, tutto il resto no) e va dichiarata in `CUSTOMIZING.md` come stato noto e voluto, non lasciata sembrare una svista.
+> Perché resta la scelta giusta: non esiste alcuna prova che il salvataggio immediato dia fastidio nell'uso reale. Se il fastidio è reale, il feedback dirà anche *quali* operazioni contano — e il lavoro sarà più mirato di quanto potremmo progettarlo adesso.
 >
-> Domanda da porre esplicitamente ai primi utilizzatori: *"ti è mai capitato di modificare un album e desiderare di annullare prima che fosse online?"*
+> Conseguenza sul design attuale: l'asimmetria **resta com'è** (alcune cose si salvano, altre vanno subito online) e va dichiarata in `CUSTOMIZING.md` come stato noto e voluto, non lasciata sembrare una svista.
+>
+> Domanda da porre esplicitamente ai primi utilizzatori: *"ti è mai capitato di caricare o riordinare foto e desiderare di annullare prima che fossero online?"*
 
 ---
 
@@ -232,7 +255,7 @@ Aggiornato con le decisioni di §8.
 | 2 | Dominio custom sul bucket, per il sito in produzione | corregge un problema già attivo; stessa area di 1 | mezza giornata |
 | 3 | `CUSTOMIZING.md` riscritto + guardia su `migrate` + README con il flusso fork/merge | senza, il template è inutilizzabile da altri | 1 giorno |
 | 4 | Stringhe admin in `texts.config.js` + tre varianti di card | completa la centralizzazione | 2 giorni |
-| — | Anteprima completa con bozza/pubblicato | **rimandata** in attesa di feedback (§5) | 3–5 giorni |
+| — | Anteprima per le operazioni sulle foto | **rimandata** in attesa di feedback (§5) | da ristimare, minore di 3–5 gg |
 
 Stime grossolane, da rivedere quando ciascun punto avrà il suo piano.
 
@@ -253,7 +276,7 @@ Chiuse in conversazione il 2026-09-20. Ciascuna è riportata anche in fondo alla
 | 3 | Dominio delle foto | **`r2.dev` di default** con avviso, custom documentato e opzionale nel `.tf`. Sul sito in produzione il custom si applica comunque. | §3.5 |
 | 4 | Ruolo di Terraform | **Percorso principale**, runbook manuale come alternativa supportata e mantenuta. | §3.4 |
 | 5 | Varianti di card | **Tre** — `cinematic`, `editoriale`, `minimal` — dai mockup esistenti, solo CSS. | §4.4 |
-| 6 | Anteprima completa | **Rimandata**, da riconsiderare col feedback dei primi utilizzatori. | §5 |
+| 6 | Anteprima completa | **Rimandata**, riconfermata il 2026-09-20 dopo la correzione di §1.1. | §5 |
 
 ### 8.1 Quello che le decisioni implicano, e che non era nelle domande
 
