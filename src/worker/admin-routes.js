@@ -9,6 +9,8 @@ import {
 
 const MANIFEST_RE = /^\/api\/admin\/albums\/([a-z0-9][a-z0-9-]*)\/manifest$/;
 const PHOTO_RE = /^\/api\/admin\/albums\/([a-z0-9][a-z0-9-]*)\/photos\/([^/]+)$/;
+const MESSAGE_ID_RE = /^[A-Za-z0-9-]+$/;
+const MESSAGES_PREFIX = '_messages/';
 
 async function readJson(request) {
   try { return { ok: true, data: await request.json() }; }
@@ -127,6 +129,29 @@ export async function handleAdminRequest(request, env, deps = {}) {
     } catch {
       return jsonResponse({ error: 'STORAGE_ERROR' }, 500);
     }
+    return jsonResponse({ ok: true });
+  }
+
+  if (pathname === '/api/admin/messages' && request.method === 'GET') {
+    const { objects } = await env.BUCKET.list({ prefix: MESSAGES_PREFIX });
+    const messages = [];
+    for (const { key } of objects) {
+      const obj = await env.BUCKET.get(key);
+      if (!obj) continue;
+      messages.push({ id: key.slice(MESSAGES_PREFIX.length, -'.json'.length), ...(await obj.json()) });
+    }
+    // Le chiavi sono ordinabili per data: invertirle basta, senza guardare receivedAt.
+    messages.reverse();
+    return jsonResponse({ messages });
+  }
+
+  const delMsg = pathname.match(/^\/api\/admin\/messages\/(.+)$/);
+  if (delMsg && request.method === 'DELETE') {
+    const id = decodeURIComponent(delMsg[1]);
+    // L'id finisce dentro una chiave R2: senza questo controllo un id
+    // con barre o punti puo' uscire da _messages/ e cancellare altro.
+    if (!MESSAGE_ID_RE.test(id)) return jsonResponse({ error: 'INVALID_ID' }, 400);
+    await env.BUCKET.delete(`${MESSAGES_PREFIX}${id}.json`);
     return jsonResponse({ ok: true });
   }
 
