@@ -28,11 +28,11 @@ Bucket, domini, applicazioni Access: questa configurazione vive in `infra/variab
 |---|---|---|
 | **Nome, bio, link social** | Dashboard `/admin` sezione "Sito" — oppure `config/site.config.js` prima di `npm run migrate` | La dashboard è il posto normale dopo il primo setup. `config/` è solo il seed. |
 | **Foto hero della home** | Dashboard sezione "Sito", selettore hero | Sempre senza rilanciare migrate |
-| **Aggiungere un album** | Dashboard `/admin`, oppure `config/albums.config.js` + `npm run migrate` | Come per il nome: dashboad dopo il primo setup, `config/` solo per il seed. |
+| **Aggiungere un album** | Dashboard `/admin`, oppure `config/albums.config.js` + `npm run migrate` | Come per il nome: dashboard dopo il primo setup, `config/` solo per il seed. |
 | **Riordinare album** | Dashboard (trascinamento), oppure `config/albums.config.js` + `npm run migrate` | |
 | **Aggiungere/eliminare foto in un album** | Dashboard `/admin`, vista album | Sempre tramite dashboard |
 | **Colori del sito** | `theme/tokens.css`, variabili `--color-*` | Richiede `npm test && npm run build` e deploy |
-| **Font** | `theme/tokens.css` (`--font-body`, `--font-heading`) + `theme/typography.css` + `<link>` Google Fonts negli HTML | Tre file, tre passi — omittere uno causa fallback silenzioso. Vedi sezione Font qui sotto. |
+| **Font** | `theme/tokens.css` (`--font-body`, `--font-heading`) + `theme/typography.css` + `<link>` Google Fonts negli HTML | Tre file, tre passi — ometterne uno causa un fallback silenzioso. Vedi sezione Font qui sotto. |
 | **Spaziature, raggi bordi** | `theme/tokens.css`, variabili `--space-*` e `--radius-*` | Richiede rebuild e deploy |
 | **Testi UI** (form, messaggi errore, nav) | `config/texts.config.js` | Richiede rebuild e deploy |
 | **Sfondo dashboard admin** | `config/admin.config.js`, campo `backgroundImageUrl` | URL di una foto già caricata su R2 |
@@ -58,7 +58,8 @@ Cambiare font richiede **tre modifiche coordinate** — dimenticarne una causa f
 --font-heading: 'Playfair Display', serif;
 ```
 
-2. **In tutti e tre gli HTML** (`index.html`, `album.html`, `contatti.html`): sostituisci il tag `<link>` Google Fonts
+2. **In tutti e quattro gli HTML** (`index.html`, `album.html`, `contatti.html`, `admin.html`): sostituisci il tag `<link>` Google Fonts.
+   Dimenticare `admin.html` e' l'errore piu' facile: il sito cambia font e la dashboard resta indietro.
 
 ```html
 <!-- Prima -->
@@ -97,7 +98,11 @@ Eccezione: se vuoi correggere un bug o aggiungere una feature al template stesso
 
 ### `wrangler.json`
 
-Ha segnaposti ed è destinato a essere compilato a mano o con `npm run infra:sync`. Non deve stare nel commit, ma siccome il deploy di Cloudflare lo legge dal repository, deve starci. Se lo modifichi manualmente, ricorda che `npm run infra:sync` lo riscriveà completamente.
+Il template lo distribuisce coi segnaposto; tu ci metti i tuoi valori, **e lo committi**. Non è una svista: il deploy di Cloudflare legge la configurazione del Worker dal repository, quindi un `wrangler.json` che resta sul tuo computer significa un deploy che fallisce.
+
+I valori che contiene non sono segreti — nomi di bucket, team domain, AUD e URL pubblico del bucket sono tutti già visibili dall'esterno. Le vere credenziali stanno in `.env`, che non è versionato.
+
+Due conseguenze pratiche: andrà in conflitto a ogni `git merge upstream/main` (risolvi con `git checkout --ours wrangler.json`), e `npm run infra:sync` lo riscrive daccapo dagli output di Terraform, quindi eventuali modifiche a mano vanno rifatte o riportate nel `.tf`.
 
 ---
 
@@ -146,7 +151,7 @@ Lo script genera WebP a 1900px (lato lungo) con qualità 85. La cartella `optimi
 
 ## Anteprime social (Open Graph)
 
-Titolo, descrizione e immagine delle anteprime (WhatsApp, Instagram DM, LinkedIn, iMessage…) vengono iniettati nell'HTML **a build time** da `site.config.js`: non serve toccare i file HTML.
+Titolo, descrizione e immagine delle anteprime (WhatsApp, Instagram DM, LinkedIn, iMessage…) vengono iniettati nell'HTML **a build time** da `site.config.js`, con l'URL dell'immagine costruito dal dominio delle foto dichiarato in `wrangler.json`: non serve toccare i file HTML.
 
 Due limiti da conoscere:
 
@@ -173,7 +178,7 @@ Due limiti da conoscere:
 | `slug` | Identificatore URL | `'matrimoni-2024'` |
 | `title` | Titolo card e pagina | `'Matrimoni 2024'` |
 | `description` | Testo sotto titolo | `'Reportage emozionali.'` |
-| `coverName` | Nome file copertina — va cercato nell'album dal dashboard, non URL | `'copertina.webp'` |
+| `coverName` | Nome file copertina — il nome del file dentro l'album, non un URL | `'copertina.webp'` |
 
 ### `texts.config.js` (testi UI)
 
@@ -183,7 +188,7 @@ Modifica i messaggi di caricamento, errore, form, nav, footer. Tutti i testi del
 
 | Campo | Descrizione |
 |---|---|
-| `backgroundImageUrl` | URL foto già su R2 per sfondo dashboard | |
+| `backgroundImageUrl` | URL di una foto già su R2, usata come sfondo della dashboard. Vuoto = nessuno sfondo |
 
 ---
 

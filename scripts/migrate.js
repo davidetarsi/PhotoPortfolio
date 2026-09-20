@@ -14,7 +14,11 @@ export function albumsToRuntime(legacyAlbums) {
       slug: a.slug,
       title: a.title,
       description: a.description ?? '',
-      coverName: a.coverName ?? null,
+      // `||` e non `??`: il seed usa la stringa vuota per "nessuna cover", e
+      // "" non e' un coverName valido per validateAlbumsShape, che accetta
+      // solo null o un nome di file. Con `??` la stringa vuota sopravvivrebbe
+      // e il sito rifiuterebbe i propri dati appena migrati.
+      coverName: a.coverName || null,
     })),
   };
 }
