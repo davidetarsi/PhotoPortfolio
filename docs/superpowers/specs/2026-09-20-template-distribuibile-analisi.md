@@ -1,7 +1,7 @@
 # Da sito personale a template distribuibile — Analisi
 
 **Data**: 2026-09-20
-**Stato**: da discutere
+**Stato**: decisioni chiuse il 2026-09-20 (§8)
 **Origine**: conversazione sulla direzione da dare al progetto — Terraform per l'infrastruttura, centralizzazione della personalizzazione, dashboard con anteprima. Obiettivo dichiarato: un template che amici sviluppatori-fotografi possano clonare da GitHub e usare subito.
 
 Questo documento **non è un piano**. Serve a stabilire cosa esiste davvero, cosa manca, cosa è fattibile e a che prezzo, prima di decidere l'ordine dei lavori.
@@ -53,6 +53,8 @@ Questo ha una conseguenza che va molto oltre il tuo caso. L'audit di luglio si c
 
 Se vuoi che i cloni possano aggiornarsi, la via d'ingresso non può essere "Use this template". Deve essere un **fork**, oppure un `git clone` seguito dal cambio di `origin` — entrambi conservano la storia e rendono possibile `git merge template/main` per sempre. Costa una riga in più nel README e cambia la natura del progetto: da template morto a base viva.
 
+> **Deciso**: si adotta il **fork su GitHub**. Un click, GitHub configura da solo il remote `upstream`, e ogni miglioria futura arriva con un `git merge upstream/main`. Conseguenza pratica: il repo template va reso **pubblico** (non si forka un repo privato se non dentro la stessa organizzazione), e il README deve spiegare il comando di merge. Chi vuole un repo privato e slegato usa il clone manuale come via secondaria, da documentare in una riga.
+
 **La causa di fondo.** Al di là del meccanismo git, il lavoro vero accade nel sito e il template è a valle: qualsiasi cosa a valle di dove si lavora, e che va aggiornata a mano, prima o poi resta indietro. La roadmap originale (Fase 8) prescriveva già il rapporto giusto — *"migliorie al template nel repo base; i siti derivati le recuperano con un merge dal template"* — ma la pratica ha fatto il contrario.
 
 **La raccomandazione: invertire la direzione.** Il template diventa il repo dove si sviluppa (*upstream*); il tuo sito diventa il primo dei cloni, che accoglie le migliorie con un merge e aggiunge solo configurazione e contenuti propri.
@@ -65,7 +67,13 @@ Perché questo risolve il problema alla radice:
 
 **Il bootstrap.** Serve creare un antenato comune, una volta sola: si porta l'albero attuale del sito dentro il template con un merge `--allow-unrelated-histories`, su un branch dedicato e via PR. Da quel punto in avanti i due repo condividono storia e i merge successivi sono ordinari. È un'operazione singola, reversibile perché non riscrive niente, e non richiede force push.
 
-**Nota sulla scelta fatta in conversazione.** Hai scelto "template separato che si risincronizza", e questa raccomandazione la rispetta: i repo restano due. Quello che propongo di cambiare non è il numero di repo, ma **da che parte scorre il lavoro**. Se invece preferisci continuare a sviluppare nel sito, allora il bootstrap va fatto lo stesso e serve in più una disciplina esplicita — per esempio, nessuna feature si considera chiusa finché non è stata portata nel template — altrimenti fra sei mesi siamo di nuovo a centinaia di commit di distanza.
+> **Deciso**: **il template diventa upstream**, il sito passa a valle. I repo restano due, come scelto, ma il verso del lavoro si inverte.
+>
+> Conseguenze operative da mettere in conto:
+> - Le feature nuove nascono in `PhotoPortfolioTemplate`, non più in `photoportfolio`.
+> - `photoportfolio` conserva solo ciò che è personale: `config/`, i valori di `wrangler.json`, eventuali ritocchi di `theme/`. Più la sua superficie personale resta piccola, meno attrito avranno i merge.
+> - Il bootstrap con `--allow-unrelated-histories` va fatto **prima** di qualsiasi altro lavoro, altrimenti ogni commit nuovo nasce dalla parte sbagliata.
+> - Va deciso, al bootstrap, quale albero vince: quello del sito (architettura attuale) portato nel template. È l'unica direzione sensata, visto che il template è fermo a un'architettura che non esiste più.
 
 ---
 
@@ -115,6 +123,8 @@ L'alternativa onesta è uno **script di setup** che chiama l'API Cloudflare via 
 
 Raccomandazione: **Terraform**, ma con il `terraform apply` posizionato come percorso principale documentato e non come prerequisito assoluto — chi vuole può ancora creare le risorse a mano seguendo il runbook. Il valore di Terraform qui non è tanto l'automazione quanto il fatto che **descrive** l'infrastruttura: oggi quella conoscenza esiste solo nella tua testa e in un documento di deploy.
 
+> **Deciso**: Terraform come **percorso principale**, runbook manuale come alternativa supportata. Conseguenza: il runbook non è un ripiego scritto una volta e dimenticato — va tenuto allineato al `.tf`, perché è la seconda via ufficiale. In pratica il `.tf` diventa la fonte, e il runbook si scrive rileggendolo.
+
 ### 3.5 Scoperta collaterale: `r2.dev` non va bene in produzione
 
 Verificando i resource Terraform è emerso un problema che riguarda il tuo sito **adesso**, non il template.
@@ -128,6 +138,10 @@ Su `r2.dev` non hai cache, né WAF, né controlli d'accesso. Per un sito che è 
 **La correzione** è un dominio custom sul bucket (`cloudflare_r2_custom_domain`), per esempio `img.tuodominio.it`. Richiede che il dominio sia su Cloudflare, il che è già vero per il sito. Va nello stesso lavoro di Terraform, perché è la stessa risorsa.
 
 Per il template questo diventa una decisione da esporre: o si impone il dominio custom (setup più lungo, ma corretto), o si accetta `r2.dev` come default con un avviso chiaro e il custom domain documentato come passo consigliato. Propendo per la seconda: abbassa la barriera d'ingresso e non mente a chi lo usa.
+
+> **Deciso**: nel template, `r2.dev` **di default** con avviso esplicito nel README, e dominio custom documentato come passo consigliato prima della produzione. Il `.tf` prevede il dominio custom come risorsa opzionale, attivabile da una variabile.
+>
+> **Per il tuo sito, che è già in produzione, il dominio custom si applica comunque** — è la voce 2 dell'ordine dei lavori (§7). Le due cose non vanno confuse: il default permissivo serve a chi prova il template, non a chi ha un sito online.
 
 ---
 
@@ -161,6 +175,10 @@ Il tuo pubblico sono **sviluppatori**. Per loro, un CSS pulito, ben commentato e
 
 Raccomandazione: **due o tre varianti di card, nominate e concrete** (per esempio `minimal`, `editoriale`, `cinematic` — hai già i mockup da cui derivarle), selezionabili con un token. Non un sistema generico. Se dopo che tre amici l'hanno usato emerge una quarta esigenza reale, si aggiunge allora.
 
+> **Deciso**: **tre varianti** — `cinematic`, `editoriale`, `minimal` — derivate dai mockup già presenti in `mockups/` (`mockup-1-cinematic.html`, `mockup-3-editoriale.html`, `mockup-4-minimal.html`), selezionabili con un token in `theme/tokens.css`. `mockup-2-split.html` resta fuori per ora.
+>
+> Vincolo da rispettare in implementazione: le tre varianti devono differire **solo** per CSS, senza rami condizionali nel JS dei componenti. Se una variante richiede una struttura DOM diversa, è il segnale che stiamo scivolando verso il sistema generico che abbiamo scartato.
+
 ---
 
 ## 5. Punto 3 — Anteprima completa
@@ -180,6 +198,14 @@ Conseguenze da mettere in conto, perché toccano tutta la dashboard:
 
 Non è difficile, ma non è piccolo, e tocca quasi ogni vista della dashboard. È anche l'unico dei quattro punti che **non blocca** la distribuzione del template: il template funziona benissimo con il salvataggio istantaneo attuale.
 
+> **Deciso: rimandata**, da riconsiderare dopo aver raccolto il feedback dei primi utilizzatori. Il template si distribuisce con il salvataggio istantaneo.
+>
+> Perché questa è la scelta giusta e non un rinvio: oggi non esiste alcuna prova che il salvataggio istantaneo dia fastidio nell'uso reale. Cinque giorni di lavoro su una supposizione sono cinque giorni a rischio. Se il fastidio è reale, il feedback dirà anche *quali* schermate contano — e il lavoro sarà più mirato di quanto potremmo progettarlo adesso.
+>
+> Conseguenza sul design attuale: l'anteprima parziale dei tre campi **resta com'è**. È un'asimmetria (tre campi con anteprima, tutto il resto no) e va dichiarata in `CUSTOMIZING.md` come stato noto e voluto, non lasciata sembrare una svista.
+>
+> Domanda da porre esplicitamente ai primi utilizzatori: *"ti è mai capitato di modificare un album e desiderare di annullare prima che fosse online?"*
+
 ---
 
 ## 6. Punto 4 — Igiene del template
@@ -197,34 +223,62 @@ I punti 2 e 3 si risolvono da soli se si fa Terraform (§3.1): sono gli output d
 
 ## 7. Ordine consigliato
 
+Aggiornato con le decisioni di §8.
+
 | # | Lavoro | Perché qui | Grandezza |
 |---|---|---|---|
-| 0 | Bootstrap della storia comune tra i due repo | senza, ogni lavoro successivo nasce già divergente | mezza giornata |
+| 0 | Bootstrap: albero del sito dentro il template con `--allow-unrelated-histories`, template reso pubblico e promosso a upstream | senza, ogni lavoro successivo nasce dalla parte sbagliata | mezza giornata |
 | 1 | Terraform + CSP generata + wrangler parametrico + runbook | un lavoro solo, stessi valori; sblocca la distribuzione | 2–3 giorni |
-| 2 | Dominio custom sul bucket | corregge un problema di produzione già attivo; stessa area di 1 | mezza giornata |
-| 3 | `CUSTOMIZING.md` riscritto + guardia su `migrate` | senza, il template è inutilizzabile da altri | 1 giorno |
-| 4 | Stringhe admin in `texts.config.js` + varianti di card | completa la centralizzazione | 2 giorni |
-| 5 | Anteprima completa con bozza/pubblicato | il più grosso, il meno bloccante | 3–5 giorni |
+| 2 | Dominio custom sul bucket, per il sito in produzione | corregge un problema già attivo; stessa area di 1 | mezza giornata |
+| 3 | `CUSTOMIZING.md` riscritto + guardia su `migrate` + README con il flusso fork/merge | senza, il template è inutilizzabile da altri | 1 giorno |
+| 4 | Stringhe admin in `texts.config.js` + tre varianti di card | completa la centralizzazione | 2 giorni |
+| — | Anteprima completa con bozza/pubblicato | **rimandata** in attesa di feedback (§5) | 3–5 giorni |
 
 Stime grossolane, da rivedere quando ciascun punto avrà il suo piano.
 
-**Dopo il punto 3 il template è già condivisibile.** I punti 4 e 5 lo migliorano, ma non bloccano i tuoi amici. Se l'obiettivo è "dare il repo a qualcuno entro poco", la linea di arrivo è il punto 3, non il 5.
+**Dopo il punto 3 il template è già condivisibile.** Il punto 4 lo migliora ma non blocca i tuoi amici. Se l'obiettivo è dare il repo a qualcuno entro poco, la linea di arrivo è il punto 3.
+
+Dal punto 1 in avanti il lavoro si svolge **nel repo template**, non più qui: è la conseguenza diretta della decisione di §8.2.
 
 ---
 
-## 8. Decisioni aperte
+## 8. Decisioni prese
 
-1. **Direzione di propagazione** (§2): il template diventa upstream, oppure resta a valle con una disciplina esplicita?
-2. **Via d'ingresso per chi clona** (§2): fork/clone con storia conservata — i cloni possono ricevere aggiornamenti — oppure "Use this template", più comodo ma definitivo? Questa decisione va presa **prima** di dare il repo a chiunque: cambiarla dopo significa chiedere agli amici di rifare il repo da capo.
-3. **Dominio custom sul bucket** (§3.5): obbligatorio nel template, o default `r2.dev` con avviso?
-4. **Terraform obbligatorio o consigliato** (§3.4) nel percorso di setup?
-5. **Quante varianti di card** (§4.4), e da quali dei quattro mockup esistenti derivarle?
-6. **L'anteprima completa serve davvero?** (§5) È il lavoro più grosso. Vale la pena prima di aver dato il template a qualcuno e aver sentito se il salvataggio istantaneo dà fastidio?
+Chiuse in conversazione il 2026-09-20. Ciascuna è riportata anche in fondo alla sezione che la riguarda.
+
+| # | Decisione | Esito | Rif. |
+|---|---|---|---|
+| 1 | Via d'ingresso per chi clona | **Fork su GitHub** — conserva la storia, aggiornamenti con `git merge upstream/main`. Il template va reso pubblico. | §2 |
+| 2 | Direzione di propagazione | **Template upstream**, sito a valle. Le feature nuove nascono nel template. | §2 |
+| 3 | Dominio delle foto | **`r2.dev` di default** con avviso, custom documentato e opzionale nel `.tf`. Sul sito in produzione il custom si applica comunque. | §3.5 |
+| 4 | Ruolo di Terraform | **Percorso principale**, runbook manuale come alternativa supportata e mantenuta. | §3.4 |
+| 5 | Varianti di card | **Tre** — `cinematic`, `editoriale`, `minimal` — dai mockup esistenti, solo CSS. | §4.4 |
+| 6 | Anteprima completa | **Rimandata**, da riconsiderare col feedback dei primi utilizzatori. | §5 |
+
+### 8.1 Quello che le decisioni implicano, e che non era nelle domande
+
+Tre conseguenze meritano di essere dette prima che diventino sorprese:
+
+1. **Il repo template deve diventare pubblico** perché il fork funzioni fuori dal tuo account. Finché resta privato, i tuoi amici non possono forkarlo. Va verificato che nella storia che ci porteremo dietro non ci sia nulla di personale o sensibile — è un controllo da fare al bootstrap (punto 0), non dopo.
+
+2. **Il tuo sito diventerà un clone a valle**, quindi ogni personalizzazione che lasci fuori da `config/` e `theme/` diventerà attrito a ogni merge. Vale la pena, al bootstrap, verificare quanto della tua personalizzazione è già confinata lì.
+
+3. **Le voci 1 e 4 dell'ordine dei lavori si svolgono nel template**, non in questo repo. Questa analisi è l'ultimo documento che nasce qui: da subito dopo il bootstrap, la documentazione di progetto vive nel template.
+
+### 8.2 Domande che restano aperte davvero
+
+Non bloccano l'inizio dei lavori, ma vanno risolte lungo la strada:
+
+- Il repo template mantiene il nome `PhotoPortfolioTemplate`, o ne vuole uno più adatto a essere pubblico?
+- Il dominio custom del punto 2 (`img.tuodominio.it` o simile): quale dominio, e su quale zona Cloudflare?
+- Lo stato Terraform resta locale come raccomandato in §3.3, o preferisci il backend su R2?
 
 ---
 
 ## 9. Nota di metodo
 
 Questa analisi è stata scritta dopo aver letto il codice su `staging`, non ricostruita a memoria dalla conversazione. Dove la conversazione e il codice divergevano (§1.1) ho seguito il codice.
+
+Le decisioni di §8 sono state prese in conversazione dopo la prima stesura, e sono state riportate sia nella tabella riepilogativa sia in fondo a ciascuna sezione interessata, così che leggendo una sezione da sola non si possa scambiare la raccomandazione per la decisione.
 
 Non è stata scritta né modificata alcuna riga di codice dell'applicazione.
