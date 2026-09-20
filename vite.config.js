@@ -5,13 +5,20 @@ import { siteConfig } from './config/site.config.js'
 import { injectSiteMeta } from './src/utils/injectSiteMeta.js'
 import { buildHeaders } from './src/utils/buildHeaders.js'
 
+// Letto una volta: serve sia al meta og:image sia alla CSP, e leggerlo due
+// volte aprirebbe la porta a due valori diversi nello stesso build.
+const wranglerConfig = existsSync('wrangler.json')
+  ? JSON.parse(readFileSync('wrangler.json', 'utf8'))
+  : null
+const r2PublicUrl = wranglerConfig?.vars?.R2_PUBLIC_URL ?? ''
+
 // Sostituisce i placeholder {{SITE_*}} negli HTML a build time (e in dev),
 // così titolo e Open Graph sono nell'HTML statico visibile ai crawler social.
 const siteMetaPlugin = () => ({
   name: 'site-meta',
   transformIndexHtml: {
     order: 'pre',
-    handler: html => injectSiteMeta(html, siteConfig),
+    handler: html => injectSiteMeta(html, siteConfig, r2PublicUrl),
   },
 })
 
