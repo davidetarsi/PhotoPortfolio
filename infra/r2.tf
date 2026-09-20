@@ -13,7 +13,10 @@ resource "cloudflare_r2_bucket" "staging" {
 resource "cloudflare_r2_managed_domain" "prod" {
   account_id  = var.account_id
   bucket_name = cloudflare_r2_bucket.prod.name
-  enabled     = true
+
+  # Resta acceso finche' non si e' verificato che il dominio custom serve
+  # davvero le foto. Lo staging non ha un custom, quindi il suo resta sempre acceso.
+  enabled = var.keep_managed_domain || var.custom_photo_domain == ""
 }
 
 resource "cloudflare_r2_managed_domain" "staging" {
