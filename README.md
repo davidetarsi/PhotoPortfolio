@@ -1,6 +1,40 @@
-# Photo Portfolio — Boilerplate
+# Photo Portfolio
 
-Sito portfolio fotografico multipagina servito da un Worker Cloudflare. Le foto stanno su un bucket R2 e si caricano da una dashboard protetta da Cloudflare Access. Personalizza `config/` e `theme/`, poi deploya su Cloudflare Workers.
+**Un sito portfolio fotografico che si aggiorna da solo: carichi le foto da una dashboard, e sono online.** Nessun database, nessun server da mantenere, zero euro al mese.
+
+<!-- TODO: sostituire con uno screenshot reale della home, es. docs/screenshot-home.png
+     Un portfolio fotografico si giudica guardandolo: questa immagine vale piu'
+     di tutto il testo che segue.
+![Il sito](docs/screenshot-home.png)
+-->
+
+> 🔗 **Demo dal vivo:** *(da aggiungere)* · **Dashboard:** *(screenshot da aggiungere)*
+
+## Perché esiste
+
+I portfolio per fotografi finiscono quasi sempre in uno di due posti: un abbonamento mensile a una piattaforma che decide come deve apparire il tuo lavoro, oppure un sito statico che ti obbliga a ricompilare e ridistribuire ogni volta che aggiungi una foto.
+
+Questo template sta nel mezzo. Il sito è statico e velocissimo, ma le foto vivono su un bucket **Cloudflare R2** e si caricano da una **dashboard protetta da login**: le aggiungi, le riordini, scegli la copertina, e il sito cambia subito — senza toccare il codice, senza fare un deploy.
+
+È pensato per **fotografi che sanno programmare**, o per chi allestisce il sito a un amico che fotografa: il primo setup chiede di saper usare git e la console di Cloudflare, tutto il resto no.
+
+## Cosa fa
+
+- **Pagine**: home con gli album, pagina album con griglia e lightbox, contatti con form funzionante.
+- **Dashboard `/admin`**: carica foto (compresse nel browser prima dell'invio), riordina per trascinamento o per data, scegli la copertina, crea ed elimina album, modifica nome, bio e social.
+- **Accesso protetto** da Cloudflare Access: si entra con un codice via email, e nessuna password vive nel codice.
+- **Tre aspetti già pronti** per le card degli album, si cambiano con una riga.
+- **Tutto personalizzabile dai file di configurazione**: colori, font, spaziature e testi — anche quelli della dashboard.
+- **Infrastruttura descritta in Terraform**, oppure creabile a mano seguendo il runbook.
+- **Intestazioni di sicurezza generate automaticamente**, allineate al tuo dominio senza che tu le scriva.
+
+## Cosa serve
+
+- Un account **Cloudflare** (il piano gratuito basta).
+- **Node.js 20+**.
+- Un dominio, se lo vuoi: altrimenti funziona su un sottodominio `workers.dev` gratuito.
+
+Costo ricorrente: **zero**, salvo il dominio se scegli di averne uno.
 
 ## Come partire, e come restare aggiornati
 
@@ -165,3 +199,19 @@ public/          ← asset statici (favicon). `_headers` non sta qui: si genera 
 - **Meta tag OpenGraph:** iniettati a build time da `site.config.js`, con l'URL dell'immagine costruito dal dominio in `wrangler.json`
 - **Framework:** vanilla JS/HTML/CSS (nessun runtime framework)
 - **Compressione foto:** `npm run compress -- --input <percorso>` (Sharp, WebP 1900px q85)
+
+## Licenza
+
+[MIT](LICENSE) — puoi usarlo, modificarlo e ridistribuirlo, anche per lavoro, a patto di conservare la nota di copyright.
+
+## Sostieni il progetto
+
+Se questo template ti è stato utile — se ci hai messo online il tuo portfolio, o quello di qualcuno a cui tieni — puoi contribuire a tenerlo vivo. Ogni contributo va nel tempo per manutenerlo, rispondere alle segnalazioni e aggiungere quello che serve a chi lo usa.
+
+Non è dovuto e il progetto resta gratuito comunque: è un modo per dire che è servito a qualcosa.
+
+- **[GitHub Sponsors](https://github.com/sponsors/davidetarsi)** — anche il bottone *Sponsor* qui in alto
+- **Ko-fi** — *(da aggiungere)*
+- **PayPal** — *(da aggiungere)*
+
+Se preferisci non contribuire con denaro: apri una segnalazione quando trovi un problema, o raccontami che ci hai fatto. Vale parecchio anche quello.
