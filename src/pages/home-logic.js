@@ -1,5 +1,6 @@
 // Logica pura del bootstrap home: testabile senza DOM né rete.
 import { photoUrl } from '../providers/r2.js';
+import { resolveHeroUrl } from '../utils/resolveHeroUrl.js';
 
 export function resolveSiteContent(siteRes, buildConfig) {
   if (siteRes.ok) {
@@ -16,7 +17,7 @@ export function resolveSiteContent(siteRes, buildConfig) {
     name: buildConfig.name,
     bio: buildConfig.bio,
     social: buildConfig.social ?? {},
-    heroUrl: buildConfig.heroImageUrl ?? null,
+    heroUrl: resolveHeroUrl(buildConfig.heroImage, buildConfig.r2PublicUrl),
   };
 }
 

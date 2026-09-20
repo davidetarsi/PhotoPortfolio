@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { resolveSiteContent, albumsToCards } from './home-logic.js';
 
-const BUILD = { name: 'Build Name', bio: 'Build bio', heroImageUrl: 'https://pub.r2.dev/sport/hero.webp', social: { x: 'y' }, r2PublicUrl: 'https://pub.r2.dev' };
+const BUILD = { name: 'Build Name', bio: 'Build bio', heroImage: { album: 'sport', name: 'hero.webp' }, social: { x: 'y' }, r2PublicUrl: 'https://pub.r2.dev' };
 
 describe('resolveSiteContent', () => {
   it('site.json ok → usa i dati runtime e costruisce heroUrl dalla referenza', () => {

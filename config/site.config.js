@@ -5,7 +5,7 @@ export const siteConfig = {
   name: 'Nome Fotografo',
   bio: 'Una breve descrizione del fotografo.',
   language: 'it',
-  heroImageUrl: '',  // dopo l'upload: 'https://pub-xxxxxxxx.r2.dev/nome-album/nome-foto.webp'
+  heroImage: null,  // dopo l'upload: { album: 'nome-album', name: 'nome-foto.webp' }
   social: {
     // instagram: 'https://instagram.com/...',
   },

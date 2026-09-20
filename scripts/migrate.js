@@ -6,17 +6,6 @@ import { fileURLToPath } from 'url';
 import { siteConfig } from '../config/site.config.js';
 import { albums } from '../config/albums.config.js';
 
-export function parseHeroRef(url) {
-  if (!url) return null;
-  try {
-    const segments = new URL(url).pathname.split('/').filter(Boolean);
-    if (segments.length < 2) return null;
-    return { album: segments[segments.length - 2], name: segments[segments.length - 1] };
-  } catch {
-    return null;
-  }
-}
-
 export function albumsToRuntime(legacyAlbums) {
   return {
     albums: legacyAlbums.map(a => ({
@@ -36,7 +25,7 @@ export function siteToRuntime(cfg) {
   return {
     name: cfg.name,
     bio: cfg.bio ?? '',
-    hero: parseHeroRef(cfg.heroImageUrl),
+    hero: cfg.heroImage ?? null,
     social,
   };
 }
