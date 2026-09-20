@@ -27,6 +27,20 @@ I conflitti, se ci sono, cadranno su `config/` e `theme/` — cioè su ciò che 
 
 > Preferisci un repo privato e slegato dal fork? Allora `git clone` di questo repo, poi ripunta `origin` sul tuo e aggiungi `upstream` come sopra: il risultato per gli aggiornamenti è identico.
 
+## Infrastruttura
+
+L'infrastruttura Cloudflare — bucket R2, domini pubblici, applicazioni Access — è descritta in [`infra/`](infra/) con Terraform. Da lì si genera `wrangler.json`:
+
+```bash
+export CLOUDFLARE_API_TOKEN=...        # mai scriverlo in un file
+cd infra && cp terraform.tfvars.example terraform.tfvars   # poi compila
+terraform init && terraform apply
+terraform -chdir=. output -json > outputs.json
+npm run infra:sync
+```
+
+Preferisci configurare a mano dalla dashboard? Va bene: segui il [runbook](docs/runbook-cloudflare.md), che porta allo stesso risultato. In entrambi i casi la CSP si genera da `wrangler.json` durante la build.
+
 ---
 
 > ⚠️ **Le istruzioni di setup qui sotto sono superate.** Descrivono l'architettura Google Drive, sostituita da R2 + Worker + dashboard admin. Vanno riscritte insieme a `CUSTOMIZING.md`: non seguirle alla lettera per ora.
