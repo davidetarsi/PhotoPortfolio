@@ -1,158 +1,196 @@
 # Guida alla personalizzazione
 
-Questo boilerplate è progettato per essere riutilizzato su contesti diversi: portfolio fotografici, siti per strutture ricettive, gallerie d'artista. Qui trovi le istruzioni per ogni tipo di modifica.
+Questo template gestisce tre ambiti diversi di personalizzazione: **contenuto**, **aspetto** e **infrastruttura**. Qui trovi dove modificare ogni cosa.
 
 ---
 
-## Identità (`config/site.config.js`)
+## La distinzione che spiega tutto
 
-| Campo | Descrizione | Esempio |
+### Contenuto — Vive su R2, si cambia dalla dashboard
+
+Nome del fotografo, bio, hero image, album, foto: tutto questo **a runtime** la verità è su R2 e si modifica dalla **dashboard admin** `/admin`. I file in `config/site.config.js` e `config/albums.config.js` sono solo il **seed iniziale**, usati una volta da `npm run migrate` per popolare R2 al primo giro.
+
+**Attenzione:** rilanciare `npm run migrate` dopo aver usato la dashboard riporta nome, bio, hero e album ai valori del seed, **cancellando il lavoro fatto dalla dashboard**. Il comando ora si rifiuta di farlo senza `--force`, ma è importante capire perché.
+
+### Aspetto e testi d'interfaccia — Vivono nei file
+
+Colori, font, spaziature, testi UI (form, messaggi errore): questi cambiano nei file `theme/` e `config/texts.config.js`. Valgono sia per il sito che per la dashboard, che importa gli stessi token. Ogni modifica ai file richiede un rebuild e un deploy.
+
+### Infrastruttura — Configurazione Cloudflare
+
+Bucket, domini, applicazioni Access: questa configurazione vive in `infra/variables.tf` (se usi Terraform) e `wrangler.json`. Non ha a che fare con il contenuto o l'aspetto — una volta configurata, non la tocchi quasi mai.
+
+---
+
+## Voglio cambiare X, tocco Y
+
+| Voglio cambiare | Dove | Note |
 |---|---|---|
-| `name` | Nome visualizzato in nav, footer, `<title>` e anteprime social | `'Mario Rossi Fotografia'` |
-| `bio` | Testo nella sezione hero, meta description e anteprime social | `'Fotografo di matrimoni a Milano.'` |
-| `heroImageUrl` | Immagine hero e immagine delle anteprime social — usa il formato Drive diretto | `'https://lh3.googleusercontent.com/d/FILE_ID'` |
-| `social.instagram` | Link Instagram (rimuovere il commento per attivarlo) | `'https://instagram.com/mariorossi'` |
-| `language` | Lingua del sito (usata per `<html lang="">`) | `'it'` |
-
-`driveApiKey` e `web3formsAccessKey` vengono letti da `.env` — non modificarli qui.
-
-### Anteprime social (Open Graph)
-
-Titolo, descrizione e immagine delle anteprime (WhatsApp, Instagram DM, LinkedIn, iMessage…) vengono iniettati nell'HTML **a build time** dai valori qui sopra: non serve toccare i file HTML. Due limiti da conoscere:
-
-- `heroImageUrl` deve essere un URL assoluto (`https://…`), altrimenti i crawler social ignorano l'immagine. Se è vuoto, l'anteprima esce senza immagine.
-- Qualsiasi link del sito venga condiviso — inclusi i link ai singoli album — mostra sempre l'anteprima generica del sito. I crawler social non eseguono JavaScript, quindi non possono conoscere il contenuto dell'album dietro `album.html?album=<slug>`. È un limite dell'hosting statico puro, accettato per scelta.
-
----
-
-## Album (`config/albums.config.js`)
-
-Ogni elemento dell'array `albums` corrisponde a una voce nella landing e a una pagina album accessibile via `album.html?album=<slug>`.
-
-| Campo | Descrizione | Esempio |
-|---|---|---|
-| `slug` | Identificatore URL — solo lettere minuscole e trattini | `'matrimoni-2024'` |
-| `title` | Titolo della card e della pagina album | `'Matrimoni 2024'` |
-| `description` | Testo sotto il titolo nella card | `'Reportage emozionali.'` |
-| `driveFolderId` | ID cartella Google Drive — dalla URL `drive.google.com/drive/folders/<ID>` | `'1AbCdEfGhIjKlMnOpQrStUv'` |
-| `cover` | URL immagine di copertina — usa il formato Drive diretto | `'https://lh3.googleusercontent.com/d/FILE_ID'` |
-
-Per **aggiungere** un album: aggiungere un oggetto all'array `albums`.
-Per **rimuovere** un album: eliminare l'oggetto dall'array.
-Per **riordinare** gli album: riordinare gli oggetti nell'array.
-
-> **Il concetto "album" si adatta al dominio.** La struttura è la stessa — una cartella Drive con una copertina — ma il significato dipende dal contesto:
-> - Fotografo: `{ slug: 'matrimoni', title: 'Matrimoni', ... }`
-> - Casa vacanze a Roma: `{ slug: 'camere', title: 'Le nostre camere', ... }`, `{ slug: 'salone', title: 'Spazi comuni', ... }`, `{ slug: 'esterni', title: 'Esterni e terrazza', ... }`
-> - Artista visivo: `{ slug: 'acquerelli-2024', title: 'Acquerelli 2024', ... }`
->
-> Il frontend non sa nulla del dominio — mostra titolo, descrizione e foto. Solo `config/albums.config.js` cambia.
+| **Nome, bio, link social** | Dashboard `/admin` sezione "Sito" — oppure `config/site.config.js` prima di `npm run migrate` | La dashboard è il posto normale dopo il primo setup. `config/` è solo il seed. |
+| **Foto hero della home** | Dashboard sezione "Sito", selettore hero | Sempre senza rilanciare migrate |
+| **Aggiungere un album** | Dashboard `/admin`, oppure `config/albums.config.js` + `npm run migrate` | Come per il nome: dashboad dopo il primo setup, `config/` solo per il seed. |
+| **Riordinare album** | Dashboard (trascinamento), oppure `config/albums.config.js` + `npm run migrate` | |
+| **Aggiungere/eliminare foto in un album** | Dashboard `/admin`, vista album | Sempre tramite dashboard |
+| **Colori del sito** | `theme/tokens.css`, variabili `--color-*` | Richiede `npm test && npm run build` e deploy |
+| **Font** | `theme/tokens.css` (`--font-body`, `--font-heading`) + `theme/typography.css` + `<link>` Google Fonts negli HTML | Tre file, tre passi — omittere uno causa fallback silenzioso. Vedi sezione Font qui sotto. |
+| **Spaziature, raggi bordi** | `theme/tokens.css`, variabili `--space-*` e `--radius-*` | Richiede rebuild e deploy |
+| **Testi UI** (form, messaggi errore, nav) | `config/texts.config.js` | Richiede rebuild e deploy |
+| **Sfondo dashboard admin** | `config/admin.config.js`, campo `backgroundImageUrl` | URL di una foto già caricata su R2 |
+| **Chi può accedere a `/admin`** | `infra/variables.tf`, campo `admin_emails` (Terraform) oppure dashboard Access per path `/admin` e `/api/admin` (manuale) | Richiede Terraform apply oppure modifica manuale in Access. Vedi [runbook](docs/runbook-cloudflare.md). |
+| **Dominio delle foto** | `infra/variables.tf`, `custom_photo_domain` (Terraform), oppure dashboard R2 (manuale) | Vedi [runbook sezione 8](docs/runbook-cloudflare.md#8-dominio-custom-per-le-foto). Da fare una sola volta prima di andare in produzione. |
+| **Intestazioni di sicurezza / CSP** | — Non si tocca — | Si genera da `wrangler.json` durante la build. Vedi il plugin CSP in `vite.config.js`. |
 
 ---
 
-## Testi UI (`config/texts.config.js`)
+## Font: tre passi per non sbagliare
 
-| Campo | Descrizione |
-|---|---|
-| `landing.heroSubtitle` | Sottotitolo sotto il nome nella landing |
-| `landing.albumsSectionHeading` | Titolo della sezione album nella landing |
-| `contatti.heading` | Titolo della pagina contatti |
-| `contatti.body` | Testo descrittivo sopra il form |
-| `contatti.form.namePlaceholder` | Placeholder campo nome |
-| `contatti.form.emailPlaceholder` | Placeholder campo email |
-| `contatti.form.messagePlaceholder` | Placeholder campo messaggio |
-| `contatti.form.submitLabel` | Testo del bottone di invio |
-| `contatti.form.successMessage` | Messaggio mostrato dopo invio riuscito |
-| `contatti.form.errorMessage` | Messaggio mostrato in caso di errore |
-| `nav.homeLabel` | Etichetta link home in navigazione |
-| `nav.contattiLabel` | Etichetta link contatti in navigazione |
-| `footer.copyright` | Testo copyright nel footer (anno calcolato automaticamente) |
+Cambiare font richiede **tre modifiche coordinate** — dimenticarne una causa font fallback silenzioso:
 
-Testi aggiuntivi della pagina album (opzionali):
+1. **`theme/tokens.css`:** aggiorna `--font-body` e/o `--font-heading` con il nome del nuovo font
 
-| Campo | Descrizione |
-|---|---|
-| `album.loading` | Testo mostrato mentre le foto si caricano |
-| `album.empty` | Testo mostrato se la cartella Drive è vuota |
-| `album.notFound` | Testo mostrato se lo slug non corrisponde a nessun album |
-| `album.notFoundLink` | Testo del link "torna alla home" nella pagina not found |
+```css
+/* Prima */
+--font-body: 'Sora', sans-serif;
+--font-heading: 'Fraunces', serif;
 
-I messaggi di errore Drive (`album.error.*`) sono tecnici — modificarli solo se vuoi testi personalizzati per cartella non pubblica, errori di rete, ecc.
+/* Dopo: per esempio, Poppins per body, Playfair Display per heading */
+--font-body: 'Poppins', sans-serif;
+--font-heading: 'Playfair Display', serif;
+```
 
----
+2. **In tutti e tre gli HTML** (`index.html`, `album.html`, `contatti.html`): sostituisci il tag `<link>` Google Fonts
 
-## Colori e spaziature (`theme/tokens.css`)
+```html
+<!-- Prima -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300&family=Fraunces:wght@400&family=IBM+Plex+Mono:wght@400&display=swap">
 
-Tutti i valori CSS sono custom properties — cambiarli qui si propaga automaticamente a tutto il sito.
+<!-- Dopo: includi solo i font che usi, con i pesi che usi -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400&family=Playfair+Display:wght@600&family=IBM+Plex+Mono:wght@400&display=swap">
+```
 
-| Token | Descrizione |
-|---|---|
-| `--color-bg` | Sfondo principale |
-| `--color-text` | Testo principale |
-| `--color-accent` | Colore accento (link, bordi attivi) |
-| `--color-muted` | Testo secondario / sottotitoli |
-| `--color-surface` | Sfondo card e superfici rialzate |
-| `--font-body` | Nome font per il body (deve corrispondere a quello caricato) |
-| `--font-heading` | Nome font per i titoli |
-| `--font-mono` | Nome font monospazio |
-| `--space-xs/sm/md/lg/xl` | Scala spaziature (0.25 / 0.5 / 1 / 2 / 4 rem) |
+3. **`theme/typography.css`:** se il nuovo font ha pesi diversi, aggiorna gli `font-weight` nelle regole CSS
+
+```css
+/* Se il nuovo font ha pesi non standard */
+body {
+  font-family: var(--font-body);
+  font-weight: 400;  /* Cambia qui se necessario */
+}
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;  /* Cambia qui se il font non ha 400 di default */
+}
+```
 
 ---
 
-## Font (`theme/typography.css` + HTML)
+## Cosa non va toccato per personalizzare
 
-Cambiare font richiede **tre passi** — dimenticarne uno causa font fallback silenzioso:
+### Comportamento (`src/`)
 
-1. In `theme/tokens.css`: aggiorna `--font-body` e/o `--font-heading` con il nome del nuovo font
-2. In **tutti e tre** gli HTML (`index.html`, `album.html`, `contatti.html`): sostituisci il tag `<link>` Google Fonts con l'URL del nuovo font
-3. In `theme/typography.css`: aggiorna i `font-weight` se il nuovo font ha pesi diversi
+I file in `src/` sono il comportamento dell'applicazione: se li modifichi, avrai conflitti ai futuri merge dal template. Tieni le personalizzazioni in `config/` e `theme/`, che sono i soli punti di estensione designati.
 
-Font attuale (tema Cinematic): **Fraunces** (heading) + **Sora** (body, weight 300) + **IBM Plex Mono** (mono).
+Eccezione: se vuoi correggere un bug o aggiungere una feature al template stesso, fallo pure in `src/`, ma contribuiscilo di nuovo al repository da cui hai forkato — così il prossimo fork della tua copia lo avrà già.
+
+### `wrangler.json`
+
+Ha segnaposti ed è destinato a essere compilato a mano o con `npm run infra:sync`. Non deve stare nel commit, ma siccome il deploy di Cloudflare lo legge dal repository, deve starci. Se lo modifichi manualmente, ricorda che `npm run infra:sync` lo riscriveà completamente.
 
 ---
 
-## Compressione foto
+## Dopo ogni modifica ai file
 
-Prima di caricare le foto su Google Drive, usa lo script di compressione locale per ridurre il peso e convertire in WebP:
+Ogni volta che modifichi `config/` o `theme/`:
 
 ```bash
-# Struttura attesa:
-# /percorso/cartella/originali/   ← foto originali (JPEG, PNG, HEIC, TIFF, WebP)
-# /percorso/cartella/optimized/   ← generato dallo script → da caricare su Drive
+npm test && npm run build
+git add config/ theme/
+git commit -m "personalizzazione: descrivi cosa hai cambiato"
+git push
+```
 
+Il deploy parte in automatico via Cloudflare Git integration. Le modifiche sono online in pochi minuti, senza intervento manuale.
+
+Le modifiche fatte dalla dashboard (`/admin`) sono già online e non richiedono alcun deploy — sono solo dati su R2.
+
+---
+
+## Asset statici
+
+### Favicon
+
+Modifica il file in `public/favicon.svg` e rideploya.
+
+### Compressione foto
+
+Prima di caricare foto sulla dashboard, comprimile localmente per ridurre il peso e convertirle in WebP:
+
+```bash
 npm run compress -- --input "/percorso/cartella"
 ```
 
-> ⚠️ Se il percorso contiene spazi, le virgolette sono obbligatorie.
+Struttura attesa:
 
-Lo script genera WebP a 1900px (lato lungo) con qualità 85. La cartella `optimized/` viene svuotata e rigenerata ad ogni run. Caricare su Drive solo `optimized/`.
+```
+/percorso/cartella/
+  originali/        ← foto originali (JPEG, PNG, HEIC, TIFF, WebP)
+  optimized/        ← generato dallo script → da caricare via dashboard
+```
+
+Lo script genera WebP a 1900px (lato lungo) con qualità 85. La cartella `optimized/` viene svuotata e rigenerata a ogni run.
 
 ---
 
-## Deploy su Cloudflare Workers
+## Anteprime social (Open Graph)
 
-### Primo deploy
+Titolo, descrizione e immagine delle anteprime (WhatsApp, Instagram DM, LinkedIn, iMessage…) vengono iniettati nell'HTML **a build time** da `site.config.js`: non serve toccare i file HTML.
 
-1. GitHub → nuovo repo privato da questo template
-2. Cloudflare dashboard → Workers & Pages → Create → **Import a repository**
-3. Seleziona il repo, imposta:
-   - Build command: `npm test && npm run build`
-   - Deploy command: `npx wrangler deploy` (la directory `dist` è già configurata in `wrangler.jsonc`)
-4. Build variables:
-   - `VITE_DRIVE_API_KEY` = la tua API key Google Drive
-   - `VITE_WEB3FORMS_ACCESS_KEY` = la tua access key Web3Forms
-   - `NODE_VERSION` = `22`
-5. Deploy — il sito esce su `https://<nome-progetto>.<tuo-subdominio>.workers.dev`; ogni push su main rideploya in automatico (se i test falliscono, il deploy si blocca)
+Due limiti da conoscere:
 
-### Whitelist domini (obbligatorio)
+- Qualsiasi link del sito venga condiviso — inclusi i link ai singoli album — mostra sempre l'anteprima generica del sito (titolo e hero image di `site.config.js`). I crawler social non eseguono JavaScript, quindi non possono conoscere il contenuto dell'album. È un limite dell'hosting statico puro, accettato per scelta.
+- Se `heroImage` è vuoto, l'anteprima esce senza immagine.
 
-**Google Cloud Console** → APIs & Services → Credentials → la tua API key → HTTP referrers:
-- `http://localhost:5173/*`
-- `https://<nome-progetto>.<tuo-subdominio>.workers.dev/*`
-- `https://*.<tuo-subdominio>.workers.dev/*` (preview deployments)
+---
 
-**Web3Forms** → Dashboard → Access Keys → Allowed Domains:
-- `localhost`
-- `<nome-progetto>.<tuo-subdominio>.workers.dev`
+## Riferimento veloce `config/`
 
-Senza queste whitelist: 403 in locale e form non funzionante in produzione.
+### `site.config.js` (seed della home)
+
+| Campo | Descrizione | Esempio |
+|---|---|---|
+| `name` | Nome fotografo | `'Mario Rossi Fotografia'` |
+| `bio` | Testo hero e meta description | `'Fotografo di matrimoni a Milano.'` |
+| `heroImage` | Foto hero — referenziale (album + nome file, non URL) | `{ album: 'matrimoni', name: 'hero.webp' }` |
+| `social` | Link social | `{ instagram: 'https://instagram.com/...' }` |
+
+### `albums.config.js` (seed degli album)
+
+| Campo | Descrizione | Esempio |
+|---|---|---|
+| `slug` | Identificatore URL | `'matrimoni-2024'` |
+| `title` | Titolo card e pagina | `'Matrimoni 2024'` |
+| `description` | Testo sotto titolo | `'Reportage emozionali.'` |
+| `coverName` | Nome file copertina — va cercato nell'album dal dashboard, non URL | `'copertina.webp'` |
+
+### `texts.config.js` (testi UI)
+
+Modifica i messaggi di caricamento, errore, form, nav, footer. Tutti i testi della pagina album (loading, error, not found) sono qui — non in HTML.
+
+### `admin.config.js` (stile dashboard)
+
+| Campo | Descrizione |
+|---|---|
+| `backgroundImageUrl` | URL foto già su R2 per sfondo dashboard | |
+
+---
+
+## Infrastruttura — Una sola volta
+
+Se usi **Terraform**: modifica `infra/variables.tf` e rilancia `terraform apply`. Vedi il [runbook sezione 3](docs/runbook-cloudflare.md#3-percorso-terraform).
+
+Se usi il **percorso manuale**: segui il [runbook sezione 5](docs/runbook-cloudflare.md#5-percorso-manuale--creare-le-risorse-da-cloudflare-dashboard) per creare bucket R2, domini gestiti e applicazioni Access dalla dashboard Cloudflare.
+
+In entrambi i casi, la CSP si genera automaticamente da `wrangler.json` durante la build.
