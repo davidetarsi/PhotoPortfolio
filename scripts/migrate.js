@@ -14,7 +14,7 @@ export function albumsToRuntime(legacyAlbums) {
       slug: a.slug,
       title: a.title,
       description: a.description ?? '',
-      coverName: a.coverUrl ? a.coverUrl.split('/').filter(Boolean).at(-1) : null,
+      coverName: a.coverName ?? null,
     })),
   };
 }

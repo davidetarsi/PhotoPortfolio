@@ -6,6 +6,6 @@ export const albums = [
     slug: 'nome-album',
     title: 'Titolo Album',
     description: 'Descrizione breve dell\'album.',
-    coverUrl: '',  // dopo l'upload: 'https://pub-xxxxxxxx.r2.dev/nome-album/nome-copertina.webp'
+    coverName: '',  // nome del file della copertina dentro l'album, es. 'copertina.webp'
   },
 ];
