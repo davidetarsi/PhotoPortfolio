@@ -528,3 +528,40 @@ Il template non ha più il codice Google Drive. Se qualcuno ci fosse arrivato in
 **Coerenza dei nomi.** Branch `bootstrap-architettura-r2` in tutti i task. Remote `sito` (nel template, Task 2) e `upstream` (nel sito, Task 6): nomi diversi perché puntano in direzioni opposte, ed è voluto. File `wrangler.example.json` e `wrangler.json` usati con la stessa grafia nei Task 4, 5 e 6.
 
 **Un limite dichiarato.** Il Task 4 Step 5 esclude `docs/` dal controllo dei dati personali, e il Task 7 Step 2 chiede di decidere cosa farne. È una consegna voluta, non una dimenticanza: la scelta ha conseguenze che spettano alla persona.
+
+---
+
+## Esito dell'esecuzione — 2026-09-20
+
+Task 1–6 eseguiti. Task 7 in attesa della persona.
+
+**Scostamenti dal piano, tutti deliberati:**
+
+1. **Mergiato `analisi-template-distribuibile` invece di `staging`.** Contiene staging per intero più quattro commit di documentazione non pushabili su `photoportfolio`, dove la chiave di questa VPS ha accesso in sola lettura. Mergiare `staging` li avrebbe lasciati irraggiungibili.
+2. **Il Task 4 riguardava 6 file, non 3.** Il censimento ha trovato anche `config/admin.config.js`, `.env.example` (nome reale del bucket) e `public/_headers`. I due file di test e `package.json` erano falsi positivi: usano già fixture finte e un nome generico.
+3. **`public/_headers` neutralizzato subito**, anche se il piano proponeva di rimandarlo al punto 1. Lasciare gli URL reali avrebbe dato a ogni fork una CSP che punta al bucket di qualcun altro, bloccandogli le foto senza spiegare perché.
+4. **Il numero atteso dei test era sbagliato**: 264, non 268. Il 268 veniva da un conteggio `grep` che includeva quattro occorrenze di `makeJwtTestKit(`.
+5. **Aggiunto un avviso nel README** sopra la checklist di setup, che descrive ancora l'architettura Google Drive. Non era nel piano, ma il repo è destinato a diventare pubblico.
+
+### Il primo merge sito ← template richiede cautela
+
+La prova a vuoto del Task 6 dà `Automatic merge went well`, zero conflitti. Va letto al contrario di come sembra: il merge è pulito perché il sito **non è divergente**, quindi non negozia nulla e accetta in blocco ciò che il template ha cambiato.
+
+| Cosa cambierebbe nel sito | Gravità |
+|---|---|
+| `config/*` torna al seed neutro | innocuo — a runtime la verità è su R2 (spec §4.2). Ma non rilanciare `npm run migrate` dopo, o si sovrascrive R2 col seed vuoto |
+| `wrangler.json` **cancellato dal disco** (nel template è stato rimosso dal tracking) | serio — contiene bucket, team Access e AUD reali |
+| `public/_headers` prende i segnaposto | serio — romperebbe la CSP in produzione |
+
+Procedura per il primo merge:
+
+```bash
+cd photoportfolio
+cp wrangler.json /tmp/wrangler.json.bak
+cp public/_headers /tmp/_headers.bak
+git fetch upstream && git merge upstream/main
+cp /tmp/wrangler.json.bak wrangler.json        # ora non più versionato
+cp /tmp/_headers.bak public/_headers           # finché non è generato a build time
+```
+
+Dal secondo merge in poi il problema sparisce per `wrangler.json`, che resta ignorato da git. Resta per `public/_headers` finché il punto 1 della spec non lo farà generare dalla configurazione.
