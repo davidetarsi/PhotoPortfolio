@@ -1,5 +1,15 @@
+# ATTENZIONE — da personalizzare prima del deploy.
+# I due URL pub-xxxxxxxx.r2.dev / pub-yyyyyyyy.r2.dev qui sotto sono segnaposto:
+# sostituiscili con l'URL pubblico del TUO bucket (produzione e staging), lo
+# stesso valore che metti in R2_PUBLIC_URL dentro wrangler.json. Finché restano
+# segnaposto il browser bloccherà il caricamento delle foto, perché la CSP non
+# autorizza il dominio da cui arrivano.
+#
+# Questo file è destinato a essere generato a build time dai valori della
+# configurazione, così da non doverlo tenere allineato a mano. Finché non lo è,
+# va modificato qui.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev https://pub-a7de17dec08048a281f2c978f99ed4ca.r2.dev; connect-src 'self' https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev https://pub-a7de17dec08048a281f2c978f99ed4ca.r2.dev https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://pub-xxxxxxxx.r2.dev https://pub-yyyyyyyy.r2.dev; connect-src 'self' https://pub-xxxxxxxx.r2.dev https://pub-yyyyyyyy.r2.dev https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY
   X-XSS-Protection: 0

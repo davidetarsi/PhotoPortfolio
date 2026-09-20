@@ -1,8 +1,11 @@
+// Seed iniziale dell'identità del sito: serve solo al primo `npm run migrate`.
+// Da quel momento nome, bio, hero e social si modificano dalla dashboard e la
+// fonte di verità è R2.
 export const siteConfig = {
-  name: 'Davide Tarsi',
-  bio: 'Fotografo sportivo e di viaggio.',
+  name: 'Nome Fotografo',
+  bio: 'Una breve descrizione del fotografo.',
   language: 'it',
-  heroImageUrl: 'https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev/sport/4x5-crop-7302.webp',
+  heroImageUrl: '',  // dopo l'upload: 'https://pub-xxxxxxxx.r2.dev/nome-album/nome-foto.webp'
   social: {
     // instagram: 'https://instagram.com/...',
   },

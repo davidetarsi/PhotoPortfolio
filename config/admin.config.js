@@ -1,3 +1,5 @@
+// Sfondo della dashboard admin. Lasciare stringa vuota per nessuno sfondo;
+// altrimenti l'URL di una foto già caricata sul proprio bucket.
 export const adminConfig = {
-  backgroundImageUrl: 'https://pub-a7de17dec08048a281f2c978f99ed4ca.r2.dev/_config/admin_background.webp',
+  backgroundImageUrl: '',  // es. 'https://pub-xxxxxxxx.r2.dev/_config/admin_background.webp'
 };
