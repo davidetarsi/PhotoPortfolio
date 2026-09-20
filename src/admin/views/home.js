@@ -1,6 +1,7 @@
 import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
 import { texts } from '../../../config/texts.config.js';
+import { formatText } from '../../utils/formatText.js';
 import { createStatus } from '../status.js';
 import { createAlbum } from '../album-creation.js';
 import { topBarHtml } from './top-bar.js';
@@ -21,28 +22,28 @@ export function renderAdminHome(container, ctx) {
   container.innerHTML = `
     <section class="admin-panel">
       ${topBarHtml({ showBackLink: false })}
-      <h2>Sito</h2>
-      <label>Nome <input name="site-name" type="text"></label>
-      <label>Bio <textarea name="site-bio" rows="2"></textarea></label>
-      <label>Instagram <input name="site-instagram" type="url" placeholder="https://instagram.com/…"></label>
+      <h2>${texts.admin.site.sectionTitle}</h2>
+      <label>${texts.admin.site.nameLabel} <input name="site-name" type="text"></label>
+      <label>${texts.admin.site.bioLabel} <textarea name="site-bio" rows="2"></textarea></label>
+      <label>${texts.admin.site.instagramLabel} <input name="site-instagram" type="url" placeholder="https://instagram.com/…"></label>
       <div class="admin-hero">
         <span>HeroImage:</span>
         ${heroSrc ? `<img class="admin-hero__thumb" alt="">` : '<em>nessuna</em>'}
-        <select name="hero-album"><option value="">Scegli album…</option></select>
+        <select name="hero-album"><option value="">${texts.admin.site.heroChooseAlbum}</option></select>
         <div class="admin-hero__picker"></div>
       </div>
     </section>
     <section class="admin-panel">
-      <h2>Album</h2>
+      <h2>${texts.admin.albums.sectionTitle}</h2>
       <div class="admin-album-list"></div>
       <div class="admin-new-album">
         <input name="new-album-title" type="text" placeholder="Titolo nuovo album">
-        <button class="admin-create-album">Nuovo album</button>
+        <button class="admin-create-album">${texts.admin.albums.create}</button>
       </div>
     </section>
     <div class="admin-actions">
-      <button class="admin-preview-btn" type="button">Anteprima</button>
-      <button class="admin-save-site">Salva sito</button>
+      <button class="admin-preview-btn" type="button">${texts.admin.site.preview}</button>
+      <button class="admin-save-site">${texts.admin.site.save}</button>
       <p class="admin-status" role="status">
         <span class="admin-status__badge"></span>
         <span class="admin-status__text"></span>
@@ -69,7 +70,7 @@ export function renderAdminHome(container, ctx) {
     }, site);
     await api.putSite(updated);
     ctx.site = updated;
-    say('Sito salvato.');
+    say(texts.admin.site.saved);
   }));
 
   q('.admin-preview-btn').addEventListener('click', () => {
@@ -94,7 +95,7 @@ export function renderAdminHome(container, ctx) {
     picker.innerHTML = '';
     if (!heroSelect.value) return;
     const res = await deps.fetchManifest(heroSelect.value);
-    if (!res.ok) { say('Impossibile leggere le foto di questo album.', true); return; }
+    if (!res.ok) { say(texts.admin.site.heroReadError, true); return; }
     for (const entry of res.data) {
       const img = document.createElement('img');
       img.className = 'admin-hero__choice';
@@ -107,7 +108,7 @@ export function renderAdminHome(container, ctx) {
         // Il re-render sopra ricrea .admin-status da zero: say() del closure
         // precedente scriverebbe su un nodo ormai smontato. Va ri-agganciato
         // al nuovo nodo per far comparire il messaggio.
-        createStatus(container.querySelector('.admin-status')).say('Hero aggiornata.');
+        createStatus(container.querySelector('.admin-status')).say(texts.admin.site.heroUpdated);
       }));
       picker.appendChild(img);
     }
@@ -127,7 +128,7 @@ export function renderAdminHome(container, ctx) {
     row.querySelector('.admin-album-row__title').textContent = a.title;
     row.querySelector('.admin-delete-album').addEventListener('click', () => run(async () => {
       const typed = deps.prompt(`Per eliminare scrivi il nome esatto dell'album: "${a.title}"`);
-      if (typed !== a.title) { say('Nome non corrispondente: cancellazione annullata.', true); return; }
+      if (typed !== a.title) { say(texts.admin.albums.deleteNameMismatch, true); return; }
       await api.deleteAlbum(a.slug);
       ctx.albums = ctx.albums.filter(x => x.slug !== a.slug);
       renderAdminHome(container, ctx);

@@ -4,6 +4,7 @@
 // parallela che può disallinearsi. L'header (titolo + Chiudi) resta fisso:
 // solo .admin-preview__content cambia tra vista landing e vista album.
 import '../styles/main.css'; // .container, .section-heading (layout condiviso con index.html/album.html)
+import { texts } from '../../config/texts.config.js';
 import { renderHero } from '../components/Hero.js';
 import { renderFooter } from '../components/Footer.js';
 import { createAlbumCard } from '../components/AlbumCard.js';
@@ -68,22 +69,22 @@ function ensureKeyboardHandling() {
   });
 }
 
-export function showPreview(container, data, texts, deps) {
+export function showPreview(container, data, textsArg, deps) {
   ensureKeyboardHandling();
   container.innerHTML = `
     <div class="admin-preview__header">
-      <h2>Anteprima</h2>
-      <button class="admin-preview__close" type="button">Chiudi</button>
+      <h2>${textsArg.admin.site.preview}</h2>
+      <button class="admin-preview__close" type="button">${textsArg.admin.site.previewClose}</button>
     </div>
     <div class="admin-preview__content"></div>
   `;
   container.querySelector('.admin-preview__close').addEventListener('click', () => hidePreview(container));
-  renderLandingView(container, data, texts, deps);
+  renderLandingView(container, data, textsArg, deps);
   container.hidden = false;
   container.querySelector('.admin-preview__close').focus();
 }
 
-function renderLandingView(container, data, texts, deps) {
+function renderLandingView(container, data, textsArg, deps) {
   _renderToken++;
   teardownLightbox();
   const { name, bio, heroUrl, social, albums = [], r2PublicUrl } = data;
@@ -96,21 +97,21 @@ function renderLandingView(container, data, texts, deps) {
     </div>
     <div class="admin-preview__footer"></div>
   `;
-  renderHero(content.querySelector('.admin-preview__hero'), { name, bio, heroUrl }, texts);
-  content.querySelector('.section-heading').textContent = texts.landing.albumsSectionHeading;
+  renderHero(content.querySelector('.admin-preview__hero'), { name, bio, heroUrl }, textsArg);
+  content.querySelector('.section-heading').textContent = textsArg.landing.albumsSectionHeading;
   const cardsEl = content.querySelector('.admin-preview__albums');
   albumsToCards(albums, r2PublicUrl).forEach(card => {
     const cardEl = createAlbumCard(card);
     cardEl.addEventListener('click', e => {
       e.preventDefault(); // dentro l'anteprima non si naviga davvero: si cambia solo il contenuto
-      renderAlbumView(container, card.slug, data, texts, deps);
+      renderAlbumView(container, card.slug, data, textsArg, deps);
     });
     cardsEl.appendChild(cardEl);
   });
-  renderFooter(content.querySelector('.admin-preview__footer'), texts, social);
+  renderFooter(content.querySelector('.admin-preview__footer'), textsArg, social);
 }
 
-async function renderAlbumView(container, slug, data, texts, deps) {
+async function renderAlbumView(container, slug, data, textsArg, deps) {
   const token = ++_renderToken;
   teardownLightbox();
   const { albums = [], r2PublicUrl, social } = data;
@@ -123,8 +124,8 @@ async function renderAlbumView(container, slug, data, texts, deps) {
     </div>
     <div class="admin-preview__footer"></div>
   `;
-  content.querySelector('.admin-preview__back').addEventListener('click', () => renderLandingView(container, data, texts, deps));
-  renderFooter(content.querySelector('.admin-preview__footer'), texts, social);
+  content.querySelector('.admin-preview__back').addEventListener('click', () => renderLandingView(container, data, textsArg, deps));
+  renderFooter(content.querySelector('.admin-preview__footer'), textsArg, social);
 
   const gridEl = content.querySelector('.admin-preview__photo-grid');
   renderSkeletons(gridEl, 12);
@@ -137,13 +138,13 @@ async function renderAlbumView(container, slug, data, texts, deps) {
 
   if (page.kind === 'not_found') {
     titleEl.textContent = '';
-    gridEl.innerHTML = `<p class="photo-grid__error">${texts.album.notFound}</p>`;
+    gridEl.innerHTML = `<p class="photo-grid__error">${textsArg.album.notFound}</p>`;
   } else {
     titleEl.textContent = page.album.title;
     if (page.kind === 'empty') {
-      gridEl.innerHTML = `<p class="photo-grid__error">${texts.album.empty}</p>`;
+      gridEl.innerHTML = `<p class="photo-grid__error">${textsArg.album.empty}</p>`;
     } else if (page.kind === 'error') {
-      gridEl.innerHTML = `<p class="photo-grid__error">${page.code === 'network' ? texts.album.error.network : texts.album.error.unknown}</p>`;
+      gridEl.innerHTML = `<p class="photo-grid__error">${page.code === 'network' ? textsArg.album.error.network : textsArg.album.error.unknown}</p>`;
     } else {
       const photos = photosFromManifest(page.entries, slug, r2PublicUrl);
       const lb = createLightbox(photos);

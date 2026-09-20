@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { texts } from '../../../config/texts.config.js';
 import { renderAdminHome, buildPendingSite } from './home.js';
 
 const SITE = { name: 'Davide', bio: 'Bio', hero: null, social: { instagram: '' } };
@@ -135,8 +136,8 @@ describe('renderAdminHome', () => {
     expect(ctx.api.putSite.mock.calls[0][0].hero).toEqual({ album: 'sport', name: 'b.webp' });
 
     // Il re-render ricrea .admin-status: il messaggio deve comparire sul nodo nuovo, non perdersi.
-    expect(container.querySelector('.admin-status__text').textContent).toBe('Hero aggiornata.');
-    expect(container.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+    expect(container.querySelector('.admin-status__text').textContent).toBe(texts.admin.site.heroUpdated);
+    expect(container.querySelector('.admin-status__badge').textContent).toBe(texts.admin.status.lastAction);
   });
 
   it('salvataggio riuscito mostra il badge "Ultima azione eseguita", non errore', async () => {
@@ -144,7 +145,7 @@ describe('renderAdminHome', () => {
     renderAdminHome(container, ctx);
     container.querySelector('.admin-save-site').click();
     await vi.waitFor(() => expect(ctx.api.putSite).toHaveBeenCalled());
-    expect(container.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+    expect(container.querySelector('.admin-status__badge').textContent).toBe(texts.admin.status.lastAction);
     expect(container.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(false);
   });
 

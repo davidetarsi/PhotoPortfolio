@@ -1,5 +1,7 @@
 import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
+import { texts } from '../../../config/texts.config.js';
+import { formatText } from '../../utils/formatText.js';
 import { createStatus } from '../status.js';
 import { topBarHtml } from './top-bar.js';
 
@@ -27,7 +29,7 @@ export function renderAdminAlbum(container, ctx) {
         </div>
         <button class="admin-sort-date" type="button">
           <span class="admin-sort-date__label">Ordina per:</span>
-          <span class="admin-sort-date__value">Data</span>
+          <span class="admin-sort-date__value">${texts.admin.album.date}</span>
         </button>
       </div>
       <div class="admin-photo-grid"></div>
@@ -39,7 +41,7 @@ export function renderAdminAlbum(container, ctx) {
         <p class="admin-dropzone__constraints">JPG, PNG, WebP fino a 20MB</p>
       </div>
       <ul class="admin-progress"></ul>
-      <button class="admin-save-album">Salva</button>
+      <button class="admin-save-album">${texts.admin.album.save}</button>
       <p class="admin-status" role="status">
         <span class="admin-status__badge"></span>
         <span class="admin-status__text"></span>
@@ -94,12 +96,12 @@ export function renderAdminAlbum(container, ctx) {
     pending.coverName = entry.name;
     markDirty();
     renderPhotos();
-    say(`Cover selezionata: ${entry.name} (premi Salva per confermare).`);
+    say(formatText(texts.admin.album.coverSelected, { nome: entry.name }));
   }
 
   function handleDeleteClick(entry) {
     return run(async () => {
-      if (!deps.confirm(`Eliminare ${entry.name}?`)) return;
+      if (!deps.confirm(formatText(texts.admin.album.confirmDeletePhoto, { nome: entry.name }))) return;
       await api.deletePhoto(slug, entry.name);
       manifest = manifest.filter(e => e.name !== entry.name);
       renderPhotos();
@@ -113,8 +115,8 @@ export function renderAdminAlbum(container, ctx) {
     cell.innerHTML = `
       <img class="admin-photo__img" alt="" loading="lazy">
       <div class="admin-photo__actions">
-        <button class="admin-photo__cover${isCover ? ' admin-photo__cover--selected' : ''}" title="Usa come cover">Cover</button>
-        <button class="admin-photo__delete" title="Elimina">✕</button>
+        <button class="admin-photo__cover${isCover ? ' admin-photo__cover--selected' : ''}" title="${texts.admin.album.coverAsButton}">Cover</button>
+        <button class="admin-photo__delete" title="${texts.admin.album.deletePhoto}">✕</button>
       </div>
     `;
     cell.querySelector('.admin-photo__img').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
@@ -132,8 +134,8 @@ export function renderAdminAlbum(container, ctx) {
       <span class="admin-photo-row__name"></span>
       <span class="admin-photo-row__date"></span>
       <div class="admin-photo-row__actions">
-        <button class="admin-photo-row__cover${isCover ? ' admin-photo-row__cover--selected' : ''}" title="Usa come cover">Cover</button>
-        <button class="admin-photo-row__delete" title="Elimina">✕</button>
+        <button class="admin-photo-row__cover${isCover ? ' admin-photo-row__cover--selected' : ''}" title="${texts.admin.album.coverAsButton}">Cover</button>
+        <button class="admin-photo-row__delete" title="${texts.admin.album.deletePhoto}">✕</button>
       </div>
     `;
     row.querySelector('.admin-photo-row__thumb').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
@@ -174,14 +176,14 @@ export function renderAdminAlbum(container, ctx) {
             rows.set(name, li);
             progress.appendChild(li);
           }
-          rows.get(name).textContent = `${name} — ${phase}`;
+          rows.get(name).textContent = formatText(texts.admin.album.uploadProgress, { nome: name, fase: phase });
         },
       });
       manifest = result.manifest;
       renderPhotos();
       say(result.failed.length === 0
-        ? `Caricate ${result.uploaded.length} foto.`
-        : `Caricate ${result.uploaded.length}, fallite ${result.failed.length}: riprova trascinandole di nuovo.`,
+        ? formatText(texts.admin.album.uploadSuccess, { n: result.uploaded.length })
+        : formatText(texts.admin.album.uploadPartial, { uploaded: result.uploaded.length, failed: result.failed.length }),
       result.failed.length > 0);
     });
   }
@@ -213,7 +215,7 @@ export function renderAdminAlbum(container, ctx) {
     await api.putManifest(slug, sorted);
     manifest = sorted;
     renderPhotos();
-    say('Foto ordinate per data.');
+    say(texts.admin.album.sortedByDate);
   }));
 
   q('.admin-save-album').addEventListener('click', () => run(async () => {
@@ -222,7 +224,7 @@ export function renderAdminAlbum(container, ctx) {
     await api.putAlbums(updatedAlbums);
     ctx.albums = updatedAlbums;
     clearDirty();
-    say('Album salvato.');
+    say(texts.admin.album.saved);
   }));
 
   // detachGuard è non-null solo quando c'è una modifica pending: usato
@@ -230,7 +232,7 @@ export function renderAdminAlbum(container, ctx) {
   // tenere sincronizzato.
   q('.admin-back').addEventListener('click', e => {
     if (!detachGuard) return; // niente pending, naviga libero
-    if (!deps.confirm('Ci sono modifiche non salvate. Uscire comunque?')) {
+    if (!deps.confirm(texts.admin.album.unsavedChanges)) {
       e.preventDefault();
     } else {
       clearDirty();
@@ -252,7 +254,7 @@ export function renderAdminAlbum(container, ctx) {
   run(async () => {
     const res = await deps.fetchManifest(slug);
     if (res.ok) manifest = res.data;
-    else if (res.error !== 'NOT_FOUND') { say('Impossibile caricare il manifest.', true); return; }
+    else if (res.error !== 'NOT_FOUND') { say(texts.admin.album.manifestError, true); return; }
     renderPhotos();
   });
 }
