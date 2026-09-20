@@ -57,3 +57,9 @@ variable "photo_domain_zone_id" {
   default     = ""
   description = "Zone ID del dominio custom delle foto. Obbligatorio se custom_photo_domain e valorizzato."
 }
+
+variable "keep_managed_domain" {
+  type        = bool
+  default     = true
+  description = "Tiene acceso il dominio r2.dev di produzione. Va messo a false SOLO dopo aver verificato che il dominio custom serve le foto: spegnerlo prima lascia il sito senza immagini."
+}

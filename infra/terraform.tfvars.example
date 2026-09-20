@@ -12,3 +12,7 @@ admin_emails = ["tu@esempio.it"]
 # Consigliato prima di andare in produzione: r2.dev e rate-limited.
 # custom_photo_domain  = "img.iltuodominio.com"
 # photo_domain_zone_id = "incolla-qui-lo-zone-id"
+
+# Dopo aver verificato che le foto arrivano dal dominio custom, metti false
+# per chiudere la porta r2.dev sul bucket di produzione.
+# keep_managed_domain = false

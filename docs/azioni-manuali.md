@@ -16,15 +16,19 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 | # | Azione | Blocca | Urgenza |
 |---|---|---|---|
-| 1 | Aprire e mergiare la PR del bootstrap | niente — ma vedi nota | consigliata prima del punto 1 |
+| 1 | ~~Aprire e mergiare la PR del bootstrap~~ | — | **fatta** |
 | 2 | Decidere cosa fare di `docs/` prima della pubblicazione | la pubblicazione | prima di rendere pubblico |
 | 3 | Rendere pubblico il repo template | la condivisione con gli amici | prima di distribuire |
 | 4 | Togliere la spunta "Template repository" | niente | insieme al punto 3 |
 | 5 | Primo merge sito ← template, con precauzioni | niente | quando vuoi aggiornare il sito |
 | 6 | Accesso in scrittura alla deploy key di `photoportfolio` | niente | opzionale |
+| 7 | **`terraform apply`: applicare l'infrastruttura del punto 1** | la verifica di punto 1 e punto 2 | **la più urgente** |
+| 8 | Attivare il dominio custom delle foto (punto 2) | niente d'altro | dopo la 7 |
 
-**Nessuna di queste blocca il punto 1** (Terraform, CSP generata a build time,
-`wrangler.json` parametrico, runbook). Il punto 1 si può iniziare subito.
+**Nessuna blocca la scrittura di altro codice**, ma la voce 7 è diversa dalle altre:
+finché non viene eseguita, la configurazione Terraform dei punti 1 e 2 è **scritta e
+validata ma mai provata contro l'API vera**. Ogni punto costruito sopra aumenta ciò
+che si scoprirebbe tutto insieme al primo `apply`.
 
 ---
 
@@ -157,6 +161,47 @@ servire quasi mai.
 
 ---
 
+### 7. `terraform apply`: applicare l'infrastruttura
+
+**Dove:** sul tuo computer, non su questa VPS: serve un token API Cloudflare che
+l'agente non deve possedere.
+
+È il Task 8 del [piano del punto 1](superpowers/plans/2026-09-20-punto1-terraform-e-configurazione.md).
+La procedura completa, con i permessi esatti del token, sta nel
+[runbook](runbook-cloudflare.md) sezioni 2 e 3.
+
+**Perché è la più urgente.** `terraform validate` verifica che la configurazione sia
+sintatticamente valida e che i nomi dei campi esistano nello schema del provider. Non
+verifica che l'API Cloudflare accetti quei valori, che i permessi del token bastino,
+che le risorse si creino davvero. Quella prova è solo l'`apply`.
+
+**Attenzione al `plan` prima dell'`apply`:** la tua infrastruttura **esiste già**
+(bucket e applicazioni Access create a mano a luglio). Se il piano propone di
+**creare** risorse che già esistono, servono gli `import` della sezione 7 del
+runbook. Applicare senza guardare produrrebbe risorse duplicate e un sito che punta
+a quella sbagliata.
+
+**Fatto quando:** `terraform plan` risponde `No changes`, e `npm run infra:sync`
+rigenera un `wrangler.json` con i valori reali.
+
+---
+
+### 8. Attivare il dominio custom delle foto
+
+Task 4 del [piano del punto 2](superpowers/plans/2026-09-20-punto2-dominio-custom-foto.md).
+Richiede la voce 7 e un dominio su una zona Cloudflare.
+
+In sintesi: scegliere il sottodominio (es. `img.tuodominio.com`), riscrivere il
+`heroImage` nel tuo `config/site.config.js` nella nuova forma `{ album, name }`,
+applicare seguendo i sette passi della sezione 8 del runbook, **verificare
+l'anteprima social** condividendo il link in una chat, e solo alla fine spegnere
+`r2.dev` con `keep_managed_domain = false`.
+
+La verifica dell'anteprima social non è un vezzo: `og:image` è l'unico percorso che
+non si vede navigando il sito, ed è proprio quello che il punto 2 serviva a sistemare.
+
+---
+
 ## Decisioni ancora aperte
 
 Non sono azioni, ma scelte che serviranno lungo la strada. Da
@@ -174,4 +219,8 @@ Non sono azioni, ma scelte che serviranno lungo la strada. Da
 
 ## Fatte
 
-Nulla, per ora.
+- **Voce 1 — PR del bootstrap**, mergiata il 2026-09-20. Ha richiesto una
+  seconda PR perché la prima era stata unita con uno squash, che aveva
+  scartato la parentela git col sito.
+
+---

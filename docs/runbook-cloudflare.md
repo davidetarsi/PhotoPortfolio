@@ -201,7 +201,69 @@ Se procedi manualmente:
 3. Digita `img.mario.com`
 4. Copia il target CNAME mostrato e completalo nel DNS di mario.com
 
-Una volta che il DNS propaga (pochi minuti), aggiorna `wrangler.json` e `buildHeaders()` leggerà il dominio custom al posto di `r2.dev`.
+### Procedura d'ordine: attivare il custom e poi spegnere r2.dev
+
+Una volta che il DNS propaga (pochi minuti), segui questi passi **nell'ordine esatto**: l'ordine non è arbitrario, poiché spegnere r2.dev prima di aver verificato il custom lascerebbe il sito senza foto.
+
+1. **Verifica che il dominio custom sia disponibile** sulla zona Cloudflare che lo contiene. Sulla dashboard R2 → seleziona il bucket prod → Settings → Public access → dovresti vedere il dominio custom accanto a `r2.dev`.
+
+2. **Abilita il dominio custom in Terraform** (se usi Terraform) — valorizza `custom_photo_domain` e `photo_domain_zone_id` in `terraform.tfvars`:
+   ```hcl
+   custom_photo_domain  = "img.mario.com"
+   photo_domain_zone_id = "il-tuo-zone-id"
+   # Ancora true — verifichiamo il custom prima di spegnere r2.dev
+   keep_managed_domain = true
+   ```
+
+   **Se usi il percorso manuale,** salta questo passo — il custom esiste già dalla sezione precedente.
+
+3. **Applica le modifiche** e sincronizza il config:
+   ```bash
+   cd infra
+   terraform apply
+   cd ..
+   terraform -chdir=infra output -json > infra/outputs.json
+   npm run infra:sync
+   ```
+   
+   Questo aggiorna `wrangler.json` e la build inizia a includere il dominio custom nella CSP di `dist/_headers`.
+
+4. **Attendi il DNS e verifica che il dominio custom serva le foto**, con un test dal terminale:
+   ```bash
+   curl -sI https://img.mario.com/sport/foto.webp
+   # Atteso: HTTP/2 200 (non 404, non 403)
+   ```
+   
+   Se vedi `404 Not Found`, il DNS non è ancora propagato o Cloudflare non sa dove trovare il bucket. Attendi e riprova.
+
+5. **Deployare e verificare i meta social** (og:image, og:title):
+   ```bash
+   # Build locale per verificare che og:image usi il dominio custom
+   npm run build
+   # Se il sito ha un eroe configurato, il meta og:image contiene il dominio custom.
+   # Se l'eroe è vuoto (template seed), il meta og:image non esiste (comportamento atteso).
+   grep -o 'og:image[^>]*' dist/index.html
+   ```
+   
+   Condividi l'URL del sito su una chat o usa un [validatore Open Graph](https://www.opengraphcheck.com/) per verificare che i crawler vedano titolo e immagine. È il percorso che questo punto ha sistemato.
+
+6. **Solo dopo aver verificato che il custom funziona**, spegni il dominio `r2.dev` in Terraform:
+   ```hcl
+   keep_managed_domain = false
+   ```
+   
+   Applica:
+   ```bash
+   cd infra
+   terraform apply
+   cd ..
+   ```
+   
+   Da questo momento il dominio `r2.dev` sul bucket di produzione non è più raggiungibile. **Attenzione:** qualsiasi URL `r2.dev` già condiviso (su social, email, forum) smetterà di funzionare.
+
+7. **Se hai link r2.dev che circolano**, valuta di rimandare il passo 6 fino a quando non è sicuro lasciarli morire (per es. dopo 1-3 mesi). Puoi tenerlo acceso fin quando ti pare — `keep_managed_domain` lo permette.
+
+Lo staging non cambia: non ha un dominio custom, quindi il suo `r2.dev` resta sempre acceso.
 
 ---
 
