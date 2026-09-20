@@ -1,11 +1,11 @@
 import '../styles/album-card.css';
 
-export function createAlbumCard({ slug, title, description, cover }) {
+export function createAlbumCard({ slug, title, description, coverUrl }) {
   const a = document.createElement('a');
   a.className = 'album-card';
-  a.href = `/album.html?album=${encodeURIComponent(slug)}`;
+  a.href = `/${slug}`;
 
-  const imgHtml = cover ? `<img class="album-card__img" alt="" loading="lazy">` : '';
+  const imgHtml = coverUrl ? `<img class="album-card__img" alt="" loading="lazy">` : '';
   const descHtml = description ? `<p class="album-card__desc"></p>` : '';
 
   a.innerHTML = `
@@ -16,7 +16,7 @@ export function createAlbumCard({ slug, title, description, cover }) {
     </div>
   `;
 
-  if (cover) a.querySelector('.album-card__img').setAttribute('src', cover);
+  if (coverUrl) a.querySelector('.album-card__img').setAttribute('src', coverUrl);
   a.querySelector('.album-card__title').textContent = title;
   if (description) a.querySelector('.album-card__desc').textContent = description;
 

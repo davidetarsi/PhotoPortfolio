@@ -21,8 +21,8 @@ describe('renderNav', () => {
     expect(links[0].textContent).toBe('Scrivimi');
   });
 
-  it('contatti link points to /contatti.html', () => {
+  it('contatti link points to /contatti', () => {
     renderNav(container, { name: 'F' }, { nav: { contattiLabel: 'C' } });
-    expect(container.querySelector('.site-nav__links a').getAttribute('href')).toBe('/contatti.html');
+    expect(container.querySelector('.site-nav__links a').getAttribute('href')).toBe('/contatti');
   });
 });

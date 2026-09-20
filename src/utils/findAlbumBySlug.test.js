@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { findAlbumBySlug } from './findAlbumBySlug.js';
 
 const albums = [
-  { slug: 'natura', title: 'Natura', driveFolderId: 'abc' },
-  { slug: 'street', title: 'Street', driveFolderId: 'def' },
+  { slug: 'natura', title: 'Natura' },
+  { slug: 'street', title: 'Street' },
 ];
 
 describe('findAlbumBySlug', () => {

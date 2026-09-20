@@ -1,22 +1,36 @@
+/*
+ * Layout a muro di foto via CSS multi-column.
+ * - 1 colonna su mobile, 2 su desktop (breakpoint 640px)
+ * - Il browser gestisce larghezze, gap e resize: nessun calcolo di pixel in JS,
+ *   quindi niente crop né margini asimmetrici.
+ * - `--grid-gap` è l'unico valore da toccare per stringere/allargare la spaziatura.
+ */
 .photo-grid {
-  columns: 3 180px;
-  column-gap: var(--space-sm);
+  --grid-gap: 6px;
+  column-count: 1;
+  column-gap: var(--grid-gap);
+}
+
+@media (min-width: 640px) {
+  .photo-grid {
+    column-count: 2;
+  }
 }
 
 .photo-grid__item {
-  break-inside: avoid;
-  margin: 0 0 var(--space-sm);
-  border-radius: var(--radius-md);
+  break-inside: avoid; /* una foto non si spezza mai fra due colonne */
+  margin: 0 0 var(--grid-gap);
+  position: relative;
   overflow: hidden;
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   cursor: pointer;
-  position: relative;
 }
 
 .photo-grid__item img {
   display: block;
   width: 100%;
-  height: auto;
+  height: auto; /* mantiene l'aspect ratio: la foto non viene mai croppata */
   opacity: 0;
   transition: opacity 0.5s ease;
 }
@@ -27,8 +41,8 @@
 
 @media (hover: hover) {
   .photo-grid__item:hover img {
-    transform: scale(1.03);
-    transition: opacity 0.5s ease, transform 0.35s ease;
+    transform: scale(1.02);
+    transition: opacity 0.5s ease, transform 0.3s ease;
   }
 }
 
@@ -46,18 +60,21 @@
   pointer-events: none;
 }
 
-.photo-grid__item:hover .photo-grid__caption {
-  opacity: 1;
+/* La caption compare solo su device con hover reale: su mobile non spunta il filename. */
+@media (hover: hover) {
+  .photo-grid__item:hover .photo-grid__caption {
+    opacity: 1;
+  }
 }
 
 .photo-grid__skeleton {
   break-inside: avoid;
+  margin: 0 0 var(--grid-gap);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-sm);
   background: linear-gradient(
     100deg,
     var(--color-surface) 40%,
-    rgba(30, 28, 26) 50%,
+    #2e3235 50%,
     var(--color-surface) 60%
   );
   background-size: 200% 100%;

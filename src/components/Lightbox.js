@@ -46,6 +46,16 @@ export function createLightbox(photos) {
     if (_triggerEl) { _triggerEl.focus(); _triggerEl = null; }
   }
 
+  // Per chi crea più lightbox nella vita di una stessa pagina (es. l'anteprima
+  // admin, che cambia foto ad ogni album aperto): rimuove il nodo dal body.
+  // Non c'è un modo per staccare il keydown su document da qui, ma una volta
+  // chiusa e rimossa resta innocua (la guardia "classList.contains('lightbox--open')"
+  // in cima al listener non scatta più).
+  function destroy() {
+    close();
+    el.remove();
+  }
+
   function step(d) {
     current = (current + d + photos.length) % photos.length;
     update();
@@ -86,5 +96,5 @@ export function createLightbox(photos) {
     touchX = null;
   }, { passive: true });
 
-  return { open, close };
+  return { open, close, destroy };
 }
