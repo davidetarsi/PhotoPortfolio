@@ -10,7 +10,6 @@ export const texts = {
     empty: 'Nessuna foto trovata in questo album.',
     error: {
       notFound: 'Album non trovato.',
-      forbidden: 'Cartella non accessibile. Verifica che sia condivisa pubblicamente.',
       network: 'Errore di rete. Controlla la connessione.',
       unknown: 'Errore durante il caricamento. Riprova più tardi.',
     },
