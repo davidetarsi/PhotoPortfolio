@@ -37,6 +37,14 @@ export async function handleContactRequest(request, env, deps = {}) {
   const notify = deps.notify ?? inviaNotifica;
   const verify = deps.verify ?? ((token) => verifyTurnstile(token, env.TURNSTILE_SECRET ?? ''));
 
+  // Content-Length prima di leggere: un corpo enorme va respinto senza
+  // caricarlo in memoria. L'intestazione puo' mancare o mentire, quindi
+  // il controllo sulla lunghezza reale resta come seconda rete.
+  const dichiarata = Number(request.headers.get('Content-Length'));
+  if (Number.isFinite(dichiarata) && dichiarata > MAX_BODY) {
+    return jsonResponse({ error: 'TOO_LARGE' }, 400);
+  }
+
   const raw = await request.text();
   if (raw.length > MAX_BODY) return jsonResponse({ error: 'TOO_LARGE' }, 400);
 
@@ -58,8 +66,12 @@ export async function handleContactRequest(request, env, deps = {}) {
   const esito = validateContactShape(data);
   if (!esito.ok) return jsonResponse({ error: 'INVALID', detail: esito.error }, 400);
 
-  const messaggio = buildMessage(data, now());
-  await env.BUCKET.put(messageKey(now(), rand()), JSON.stringify(messaggio), {
+  // Un solo now(): chiamarlo due volte fa dichiarare alla chiave un
+  // istante diverso da quello dentro il messaggio. Con il tempo
+  // congelato dai test non si vedrebbe mai.
+  const ts = now();
+  const messaggio = buildMessage(data, ts);
+  await env.BUCKET.put(messageKey(ts, rand()), JSON.stringify(messaggio), {
     httpMetadata: { contentType: 'application/json' },
   });
 
