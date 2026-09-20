@@ -25,6 +25,7 @@ export function renderWrangler(example, outputs) {
   out.vars.R2_PUBLIC_URL = outputs.r2_public_url_prod;
   out.vars.ACCESS_AUD = outputs.access_aud_prod;
   out.vars.ACCESS_TEAM_DOMAIN = outputs.access_team_domain;
+  out.vars.TURNSTILE_SITEKEY = outputs.turnstile_sitekey ?? '';
 
   const st = out.env.staging;
   st.name = `${outputs.project_name}-staging`;
@@ -32,6 +33,7 @@ export function renderWrangler(example, outputs) {
   st.vars.R2_PUBLIC_URL = outputs.r2_public_url_staging;
   st.vars.ACCESS_AUD = outputs.access_aud_staging;
   st.vars.ACCESS_TEAM_DOMAIN = outputs.access_team_domain;
+  st.vars.TURNSTILE_SITEKEY = outputs.turnstile_sitekey ?? '';
 
   return out;
 }
