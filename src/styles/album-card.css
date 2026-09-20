@@ -6,52 +6,14 @@
 
 .album-card {
   display: block;
-  position: relative;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  aspect-ratio: 4 / 5;
-  background: var(--color-surface);
   text-decoration: none;
   color: var(--color-text);
 }
 
-.album-card__cover {
-  position: absolute;
-  inset: 0;
-}
-
 .album-card__img {
   width: 100%;
-  height: 100%;
   object-fit: cover;
   transition: transform 0.4s;
-}
-
-.album-card:hover .album-card__img {
-  transform: scale(1.04);
-}
-
-.album-card__info {
-  position: absolute;
-  inset: auto 0 0 0;
-  padding: 36px var(--space-md) var(--space-md);
-  background: linear-gradient(transparent, var(--color-overlay));
-}
-
-.album-card__title {
-  font-family: var(--font-heading);
-  font-weight: 500;
-  font-size: 1.25rem;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.album-card__desc {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  color: var(--color-muted);
-  margin: 4px 0 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
