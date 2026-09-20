@@ -58,3 +58,24 @@
   .album-card__img { transition: none; }
   .album-card:hover .album-card__img { transform: none; }
 }
+
+/* Skeleton mostrato durante il fetch runtime di albums.json */
+.album-card__skeleton {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  background: linear-gradient(100deg, var(--color-surface) 40%, #2e3235 50%, var(--color-surface) 60%);
+  background-size: 200% 100%;
+  animation: album-card-shimmer 1.4s infinite;
+}
+@keyframes album-card-shimmer {
+  to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .album-card__skeleton { animation: none; }
+}
+.page-error {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: var(--space-xl) 0;
+}

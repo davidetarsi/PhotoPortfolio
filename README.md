@@ -1,6 +1,35 @@
 # Photo Portfolio — Boilerplate
 
-Sito portfolio fotografico statico multipagina. Le foto vengono lette da cartelle Google Drive condivise via Drive API v3 — nessun backend, nessun database. Personalizza `config/` e `theme/`, poi deploya su Cloudflare Workers.
+Sito portfolio fotografico multipagina servito da un Worker Cloudflare. Le foto stanno su un bucket R2 e si caricano da una dashboard protetta da Cloudflare Access. Personalizza `config/` e `theme/`, poi deploya su Cloudflare Workers.
+
+## Come partire, e come restare aggiornati
+
+**Fai un fork**, non usare "Use this template". Il fork conserva la storia git, e solo così potrai ricevere le migliorie future con un merge. "Use this template" crea un repo senza antenati comuni: comodo il primo giorno, definitivo per sempre.
+
+Dopo il fork:
+
+```bash
+git clone git@github.com:TUO-UTENTE/TUO-REPO.git
+cd TUO-REPO
+git remote add upstream git@github.com:davidetarsi/PhotoPortfolioTemplate.git
+cp wrangler.example.json wrangler.json   # poi compila i tuoi valori
+npm install
+```
+
+Per ricevere gli aggiornamenti, quando vuoi:
+
+```bash
+git fetch upstream
+git merge upstream/main
+```
+
+I conflitti, se ci sono, cadranno su `config/` e `theme/` — cioè su ciò che hai personalizzato tu. Tieni le tue modifiche dentro quelle cartelle e gli aggiornamenti resteranno indolori. `wrangler.json` non è versionato proprio per questo motivo.
+
+> Preferisci un repo privato e slegato dal fork? Allora `git clone` di questo repo, poi ripunta `origin` sul tuo e aggiungi `upstream` come sopra: il risultato per gli aggiornamenti è identico.
+
+---
+
+> ⚠️ **Le istruzioni di setup qui sotto sono superate.** Descrivono l'architettura Google Drive, sostituita da R2 + Worker + dashboard admin. Vanno riscritte insieme a `CUSTOMIZING.md`: non seguirle alla lettera per ora.
 
 ## Quick start
 

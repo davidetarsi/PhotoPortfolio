@@ -1,52 +1,64 @@
 import '../styles/main.css';
 import { siteConfig } from '../../config/site.config.js';
-import { albums } from '../../config/albums.config.js';
 import { texts } from '../../config/texts.config.js';
-import { validateConfig } from '../utils/validateConfig.js';
-import { listPhotos } from '../providers/googleDrive.js';
+import { validateSiteConfig } from '../utils/validateConfig.js';
+import { fetchSite, fetchAlbums, fetchManifest, fetchConfig } from '../providers/data.js';
+import { photosFromManifest } from '../providers/r2.js';
+import { resolveSiteContent } from './home-logic.js';
+import { resolveAlbumPage } from './album-logic.js';
 import { renderNav } from '../components/Nav.js';
 import { renderFooter } from '../components/Footer.js';
 import { renderSkeletons, renderGrid } from '../components/PhotoGrid.js';
 import { createLightbox } from '../components/Lightbox.js';
-import { findAlbumBySlug } from '../utils/findAlbumBySlug.js';
 
-validateConfig(siteConfig, albums);
+validateSiteConfig(siteConfig);
 
 const gridEl = document.getElementById('photo-grid');
+renderSkeletons(gridEl, 12);
 
-renderNav(document.getElementById('site-nav'), siteConfig, texts);
-renderFooter(document.getElementById('site-footer'), texts);
+const slug = window.location.pathname.replace(/^\/|\/$/g, '');
 
-const params = new URLSearchParams(window.location.search);
-const slug = params.get('album');
-const album = findAlbumBySlug(albums, slug);
+// Lo slug è già noto dall'URL: nessun waterfall, tutte le fetch in volo insieme.
+const [siteRes, albumsRes, manifestRes, configRes] = await Promise.all([
+  fetchSite(),
+  fetchAlbums(),
+  fetchManifest(slug),
+  fetchConfig(),
+]);
+const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2PublicUrl;
 
-if (!album) {
+const site = resolveSiteContent(siteRes, { ...siteConfig, r2PublicUrl });
+renderNav(document.getElementById('site-nav'), { name: site.name }, texts);
+renderFooter(document.getElementById('site-footer'), texts, site.social);
+
+const page = resolveAlbumPage(slug, albumsRes, manifestRes);
+
+function showMessage(text, withHomeLink = false) {
   const p = document.createElement('p');
   p.className = 'photo-grid__error';
-  p.textContent = texts.album.notFound;
-  const link = document.createElement('a');
-  link.href = '/';
-  link.textContent = texts.album.notFoundLink;
-  gridEl.replaceChildren(p, link);
+  p.textContent = text;
+  gridEl.replaceChildren(p);
+  if (withHomeLink) {
+    const link = document.createElement('a');
+    link.href = '/';
+    link.textContent = texts.album.notFoundLink;
+    gridEl.appendChild(link);
+  }
+}
+
+if (page.kind === 'not_found') {
+  document.getElementById('album-title').textContent = '';
+  showMessage(texts.album.notFound, true);
+} else if (page.kind === 'error') {
+  showMessage(page.code === 'network' ? texts.album.error.network : texts.album.error.unknown);
 } else {
-  document.title = `${album.title} — ${siteConfig.name}`;
-  document.getElementById('album-title').textContent = album.title;
-  renderSkeletons(gridEl, 12);
-  listPhotos(album.driveFolderId, siteConfig.driveApiKey)
-    .then(photos => {
-      const lb = createLightbox(photos);
-      renderGrid(gridEl, photos, (i, triggerEl) => lb.open(i, triggerEl));
-    })
-    .catch(err => {
-      const code = err.code;
-      const msg = code === 'INVALID_KEY' ? texts.album.error.forbidden
-        : code === 'NOT_FOUND' ? texts.album.error.notFound
-        : code === 'NETWORK' ? texts.album.error.network
-        : texts.album.error.unknown;
-      const p = document.createElement('p');
-      p.className = 'photo-grid__error';
-      p.textContent = msg;
-      gridEl.replaceChildren(p);
-    });
+  document.title = `${page.album.title} — ${site.name}`;
+  document.getElementById('album-title').textContent = page.album.title;
+  if (page.kind === 'empty') {
+    showMessage(texts.album.empty);
+  } else {
+    const photos = photosFromManifest(page.entries, slug, r2PublicUrl);
+    const lb = createLightbox(photos);
+    renderGrid(gridEl, photos, (i, triggerEl) => lb.open(i, triggerEl));
+  }
 }

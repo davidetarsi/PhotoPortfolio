@@ -1,46 +1,22 @@
-const KNOWN_PROVIDERS = ['googleDrive'];
+// Valida SOLO la config di build (fallback): gli album vivono a runtime su R2
+// e sono validati da content-rules.js (client) e dal Worker (scritture).
+const KNOWN_PROVIDERS = ['r2'];
 
-export function validateConfig(siteConfig, albums) {
+export function validateSiteConfig(siteConfig) {
   if (!siteConfig || typeof siteConfig !== 'object') {
-    throw new Error('[validateConfig] siteConfig non valido');
+    throw new Error('[validateSiteConfig] siteConfig non valido');
   }
   if (!siteConfig.name?.trim()) {
-    throw new Error('[validateConfig] siteConfig.name è obbligatorio');
+    throw new Error('[validateSiteConfig] siteConfig.name è obbligatorio');
   }
   if (!KNOWN_PROVIDERS.includes(siteConfig.provider)) {
     throw new Error(
-      `[validateConfig] siteConfig.provider "${siteConfig.provider}" non riconosciuto. Valori validi: ${KNOWN_PROVIDERS.join(', ')}`
+      `[validateSiteConfig] siteConfig.provider "${siteConfig.provider}" non riconosciuto. Valori validi: ${KNOWN_PROVIDERS.join(', ')}`
     );
   }
-  if (siteConfig.provider === 'googleDrive' && !siteConfig.driveApiKey?.trim()) {
+  if (siteConfig.provider === 'r2' && !siteConfig.r2PublicUrl?.trim()) {
     throw new Error(
-      '[validateConfig] siteConfig.driveApiKey è obbligatorio quando provider è "googleDrive". Controlla il file .env.'
+      '[validateSiteConfig] siteConfig.r2PublicUrl è obbligatorio quando provider è "r2". Controlla VITE_R2_PUBLIC_URL nel file .env.'
     );
-  }
-  if (!Array.isArray(albums) || albums.length === 0) {
-    throw new Error('[validateConfig] albums deve essere un array non vuoto');
-  }
-
-  const slugs = new Set();
-  for (let i = 0; i < albums.length; i++) {
-    const a = albums[i];
-    if (!a.slug?.trim()) {
-      throw new Error(`[validateConfig] albums[${i}].slug è obbligatorio`);
-    }
-    if (!/^[a-z0-9-]+$/.test(a.slug)) {
-      throw new Error(
-        `[validateConfig] albums[${i}].slug "${a.slug}" non valido: solo lettere minuscole, numeri e trattini`
-      );
-    }
-    if (slugs.has(a.slug)) {
-      throw new Error(`[validateConfig] slug duplicato: "${a.slug}"`);
-    }
-    slugs.add(a.slug);
-    if (!a.driveFolderId?.trim()) {
-      throw new Error(`[validateConfig] albums[${i}].driveFolderId è obbligatorio`);
-    }
-    if (!a.title?.trim()) {
-      throw new Error(`[validateConfig] albums[${i}].title è obbligatorio`);
-    }
   }
 }

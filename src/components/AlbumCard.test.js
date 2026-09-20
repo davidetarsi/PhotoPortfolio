@@ -5,7 +5,7 @@ const album = {
   slug: 'paesaggi',
   title: 'Paesaggi',
   description: 'Montagne e mari.',
-  cover: 'https://example.com/cover.jpg',
+  coverUrl: 'https://example.com/cover.jpg',
 };
 
 describe('createAlbumCard', () => {
@@ -14,9 +14,9 @@ describe('createAlbumCard', () => {
     expect(el.tagName).toBe('A');
   });
 
-  it('href links to the album page with encoded slug', () => {
-    const el = createAlbumCard(album);
-    expect(el.getAttribute('href')).toBe('/album.html?album=paesaggi');
+  it('genera un link con href /<slug>', () => {
+    const card = createAlbumCard({ slug: 'sport', title: 'Sport', coverUrl: '' });
+    expect(card.getAttribute('href')).toBe('/sport');
   });
 
   it('renders the album title', () => {
@@ -35,8 +35,8 @@ describe('createAlbumCard', () => {
     expect(el.querySelector('.album-card__desc').textContent).toBe('Montagne e mari.');
   });
 
-  it('renders no img element when cover is null', () => {
-    const el = createAlbumCard({ ...album, cover: null });
+  it('renders no img element when coverUrl is null', () => {
+    const el = createAlbumCard({ ...album, coverUrl: null });
     expect(el.querySelector('.album-card__img')).toBeNull();
   });
 });

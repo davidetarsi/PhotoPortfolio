@@ -1,10 +1,24 @@
 import '../styles/footer.css';
 
-export function renderFooter(container, texts) {
+export function renderFooter(container, texts, social = {}) {
+  const links = Object.entries(social).filter(([, url]) => typeof url === 'string' && url.trim());
   container.innerHTML = `
     <footer class="site-footer">
       <span class="site-footer__copyright"></span>
+      ${links.length ? '<nav class="site-footer__links"></nav>' : ''}
     </footer>
   `;
   container.querySelector('.site-footer__copyright').textContent = texts.footer.copyright;
+  if (links.length) {
+    const nav = container.querySelector('.site-footer__links');
+    for (const [key, url] of links) {
+      const a = document.createElement('a');
+      a.className = 'site-footer__link';
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+      nav.appendChild(a);
+    }
+  }
 }

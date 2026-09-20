@@ -14,4 +14,22 @@ describe('renderFooter', () => {
     renderFooter(container, { footer: { copyright: '© 2026' } });
     expect(container.querySelector('footer')).not.toBeNull();
   });
+
+  it('senza social, nessun link viene renderizzato', () => {
+    renderFooter(container, { footer: { copyright: '© 2026' } });
+    expect(container.querySelector('.site-footer__links')).toBeNull();
+  });
+
+  it('con social valorizzati, renderizza un link per ciascuno con href corretto', () => {
+    renderFooter(container, { footer: { copyright: '© 2026' } }, { instagram: 'https://instagram.com/x' });
+    const links = container.querySelectorAll('.site-footer__link');
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute('href')).toBe('https://instagram.com/x');
+    expect(links[0].textContent).toBe('Instagram');
+  });
+
+  it('ignora chiavi social con valore vuoto o non-stringa', () => {
+    renderFooter(container, { footer: { copyright: '© 2026' } }, { instagram: '', twitter: '   ' });
+    expect(container.querySelector('.site-footer__links')).toBeNull();
+  });
 });

@@ -22,7 +22,7 @@ body {
 .container {
   max-width: var(--container-max-width);
   margin: 0 auto;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--space-md);
 }
 
 .section-heading {
