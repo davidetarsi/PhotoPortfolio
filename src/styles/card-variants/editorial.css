@@ -1,5 +1,5 @@
-/* Derivata da mockups/mockup-3-editoriale.html: impianto da rivista,
-   immagine e testo affiancati, filetto di separazione, niente riquadri. */
+/* From mockups/mockup-3-editoriale.html: magazine layout, image and text
+   side by side, a divider rule, no frames. */
 
 .album-cards {
   grid-template-columns: 1fr;

@@ -1,5 +1,5 @@
-/* Derivata da mockups/mockup-4-minimal.html: nessun riquadro, il testo
-   sotto l'immagine, molta aria. Niente overlay: l'immagine resta intera. */
+/* From mockups/mockup-4-minimal.html: no frame, text below the image,
+   plenty of breathing room. No overlay: the photo stays whole. */
 
 .album-card {
   display: block;

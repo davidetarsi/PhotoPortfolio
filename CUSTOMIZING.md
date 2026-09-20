@@ -50,7 +50,7 @@ Buckets, domains, Access applications: this configuration lives in `infra/variab
 Album cards have three ready-made styles, derived from mockups in `mockups/`:
 
 - **`cinematic`** (default, from `mockup-1-cinematic.html`) — 4:5 card, full-frame image, title and description over a gradient at bottom, subtle zoom on hover, rounded corners.
-- **`editorial`** (from `mockup-3-editorial.html`) — magazine-style layout: image and text side by side, uppercase title, divider line between albums, no rounding. Below 600px switches to single column.
+- **`editorial`** (from `mockup-3-editoriale.html`) — magazine-style layout: image and text side by side, uppercase title, divider line between albums, no rounding. Below 600px switches to single column.
 - **`minimal`** (from `mockup-4-minimal.html`) — no frame, no background: image keeps its natural aspect ratio and text sits below, centered, with plenty of space.
 
 Choose in `theme/card.css` by keeping one `@import` line active and commenting the others. Dev server reloads automatically.
@@ -73,7 +73,7 @@ Changing fonts requires **three coordinated changes** — skipping one causes si
 --font-heading: 'Playfair Display', serif;
 ```
 
-2. **In all four HTML files** (`index.html`, `album.html`, `contacts.html`, `admin.html`): replace the Google Fonts `<link>` tag.
+2. **In all four HTML files** (`index.html`, `album.html`, `contatti.html`, `admin.html`): replace the Google Fonts `<link>` tag.
    Forgetting `admin.html` is the easiest mistake: the site changes fonts and the dashboard lags behind.
 
 ```html
