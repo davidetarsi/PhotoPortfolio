@@ -1,216 +1,216 @@
-# Guida alla personalizzazione
+# Customization Guide
 
-Questo template gestisce tre ambiti diversi di personalizzazione: **contenuto**, **aspetto** e **infrastruttura**. Qui trovi dove modificare ogni cosa.
-
----
-
-## La distinzione che spiega tutto
-
-### Contenuto — Vive su R2, si cambia dalla dashboard
-
-Nome del fotografo, bio, hero image, album, foto: tutto questo **a runtime** la verità è su R2 e si modifica dalla **dashboard admin** `/admin`. I file in `config/site.config.js` e `config/albums.config.js` sono solo il **seed iniziale**, usati una volta da `npm run migrate` per popolare R2 al primo giro.
-
-**Attenzione:** rilanciare `npm run migrate` dopo aver usato la dashboard riporta nome, bio, hero e album ai valori del seed, **cancellando il lavoro fatto dalla dashboard**. Il comando ora si rifiuta di farlo senza `--force`, ma è importante capire perché.
-
-### Aspetto e testi d'interfaccia — Vivono nei file
-
-Colori, font, spaziature, testi UI (form, messaggi errore): questi cambiano nei file `theme/` e `config/texts.config.js`. Valgono sia per il sito che per la dashboard, che importa gli stessi token. Ogni modifica ai file richiede un rebuild e un deploy.
-
-### Infrastruttura — Configurazione Cloudflare
-
-Bucket, domini, applicazioni Access: questa configurazione vive in `infra/variables.tf` (se usi Terraform) e `wrangler.json`. Non ha a che fare con il contenuto o l'aspetto — una volta configurata, non la tocchi quasi mai.
+This template handles three distinct customization areas: **content**, **appearance**, and **infrastructure**. Here's where to change each thing.
 
 ---
 
-## Voglio cambiare X, tocco Y
+## The distinction that explains everything
 
-| Voglio cambiare | Dove | Note |
+### Content — Lives on R2, changed from the dashboard
+
+Photographer name, bio, hero image, albums, photos: all of this at **runtime** lives on R2 and is modified from the **admin dashboard** `/admin`. The files in `config/site.config.js` and `config/albums.config.js` are just the **initial seed**, used once by `npm run migrate` to populate R2 on first run.
+
+**Important:** running `npm run migrate` again after using the dashboard will reset the name, bio, hero, and albums to seed values, **erasing all dashboard changes**. The command now refuses to do this without `--force`, and it's crucial to understand why.
+
+### Appearance and UI text — Live in files
+
+Colors, fonts, spacing, UI text (forms, error messages): these change in `theme/` files and `config/texts.config.js`. They apply to both the site and dashboard, which imports the same tokens. Every file change requires a rebuild and deploy.
+
+### Infrastructure — Cloudflare configuration
+
+Buckets, domains, Access applications: this configuration lives in `infra/variables.tf` (if using Terraform) and `wrangler.json`. It has nothing to do with content or appearance — once configured, you rarely touch it.
+
+---
+
+## I want to change X, I touch Y
+
+| I want to change | Where | Notes |
 |---|---|---|
-| **Nome, bio, link social** | Dashboard `/admin` sezione "Sito" — oppure `config/site.config.js` prima di `npm run migrate` | La dashboard è il posto normale dopo il primo setup. `config/` è solo il seed. |
-| **Foto hero della home** | Dashboard sezione "Sito", selettore hero | Sempre senza rilanciare migrate |
-| **Aggiungere un album** | Dashboard `/admin`, oppure `config/albums.config.js` + `npm run migrate` | Come per il nome: dashboard dopo il primo setup, `config/` solo per il seed. |
-| **Riordinare album** | Dashboard (trascinamento), oppure `config/albums.config.js` + `npm run migrate` | |
-| **Aggiungere/eliminare foto in un album** | Dashboard `/admin`, vista album | Sempre tramite dashboard |
-| **Colori del sito** | `theme/tokens.css`, variabili `--color-*` | Richiede `npm test && npm run build` e deploy |
-| **Font** | `theme/tokens.css` (`--font-body`, `--font-heading`) + `theme/typography.css` + `<link>` Google Fonts negli HTML | Tre file, tre passi — ometterne uno causa un fallback silenzioso. Vedi sezione Font qui sotto. |
-| **Spaziature, raggi bordi** | `theme/tokens.css`, variabili `--space-*` e `--radius-*` | Richiede rebuild e deploy |
-| **Testi UI** (form, messaggi errore, nav) | `config/texts.config.js` | Richiede rebuild e deploy. I testi con valori variabili usano segnaposto `{nome}`: si traducono senza scrivere JavaScript |
-| **Testi della dashboard admin** | `config/texts.config.js`, sezione `admin` | Stesso meccanismo: la dashboard è traducibile quanto il sito |
-| **Lingua delle date** | `config/site.config.js`, campo `language` | Usato per formattare le date nella dashboard |
-| **Aspetto delle card degli album** | `theme/card.css`: attiva una delle tre `@import` | `cinematic` (default), `editoriale`, `minimal`. Vedi la sezione qui sotto |
-| **Sfondo dashboard admin** | `config/admin.config.js`, campo `backgroundImageUrl` | URL di una foto già caricata su R2 |
-| **Chi può accedere a `/admin`** | `infra/variables.tf`, campo `admin_emails` (Terraform) oppure dashboard Access per path `/admin` e `/api/admin` (manuale) | Richiede Terraform apply oppure modifica manuale in Access. Vedi [runbook](docs/runbook-cloudflare.md). |
-| **Dominio delle foto** | `infra/variables.tf`, `custom_photo_domain` (Terraform), oppure dashboard R2 (manuale) | Vedi [runbook sezione 8](docs/runbook-cloudflare.md#8-dominio-custom-per-le-foto). Da fare una sola volta prima di andare in produzione. |
-| **Intestazioni di sicurezza / CSP** | — Non si tocca — | Si genera da `wrangler.json` durante la build. Vedi il plugin CSP in `vite.config.js`. |
+| **Name, bio, social links** | Dashboard `/admin` "Site" section — or `config/site.config.js` before `npm run migrate` | Dashboard is the normal place after initial setup. `config/` is just the seed. |
+| **Home hero photo** | Dashboard "Site" section, hero selector | Always without rerunning migrate |
+| **Add an album** | Dashboard `/admin`, or `config/albums.config.js` + `npm run migrate` | Like name: dashboard after first setup, `config/` only for the seed. |
+| **Reorder albums** | Dashboard (drag and drop), or `config/albums.config.js` + `npm run migrate` | |
+| **Add/delete photos in an album** | Dashboard `/admin`, album view | Always via dashboard |
+| **Site colors** | `theme/tokens.css`, `--color-*` variables | Requires `npm test && npm run build` and deploy |
+| **Fonts** | `theme/tokens.css` (`--font-body`, `--font-heading`) + `theme/typography.css` + Google Fonts `<link>` in HTML | Three files, three steps — skipping one causes silent fallback. See Font section below. |
+| **Spacing, border radius** | `theme/tokens.css`, `--space-*` and `--radius-*` variables | Requires rebuild and deploy |
+| **UI text** (forms, error messages, nav) | `config/texts.config.js` | Requires rebuild and deploy. Text with variable values use placeholders `{name}`: translate without writing JavaScript |
+| **Admin dashboard text** | `config/texts.config.js`, `admin` section | Same mechanism: dashboard is translatable just like the site |
+| **Date language** | `config/site.config.js`, `language` field | Used to format dates in the dashboard |
+| **Album card appearance** | `theme/card.css`: activate one of three `@import` | `cinematic` (default), `editorial`, `minimal`. See section below |
+| **Admin dashboard background** | `config/admin.config.js`, `backgroundImageUrl` field | URL of a photo already uploaded to R2 |
+| **Who can access `/admin`** | `infra/variables.tf`, `admin_emails` field (Terraform) or dashboard Access for `/admin` and `/api/admin` paths (manual) | Requires Terraform apply or manual Access modification. See [runbook](docs/runbook-cloudflare.md). |
+| **Photo domain** | `infra/variables.tf`, `custom_photo_domain` (Terraform), or dashboard R2 (manual) | See [runbook section 8](docs/runbook-cloudflare.md#8-custom-domain-for-photos). Do once before production. |
+| **Security headers / CSP** | — Do not touch — | Generated from `wrangler.json` during build. See CSP plugin in `vite.config.js`. |
 
 ---
 
-## Le tre varianti di card
+## The three card variants
 
-Le card degli album hanno tre aspetti già pronti, derivati dai mockup in `mockups/`:
+Album cards have three ready-made styles, derived from mockups in `mockups/`:
 
-- **`cinematic`** (default, da `mockup-1-cinematic.html`) — card 4:5, immagine a pieno riquadro, titolo e descrizione sopra un gradiente in basso, zoom lieve allo hover, angoli arrotondati.
-- **`editoriale`** (da `mockup-3-editoriale.html`) — impianto da rivista: immagine e testo affiancati, titolo in maiuscolo, filetto di separazione fra un album e l'altro, nessun arrotondamento. Sotto i 600px passa a colonna singola.
-- **`minimal`** (da `mockup-4-minimal.html`) — nessun riquadro e nessuno sfondo: l'immagine conserva le sue proporzioni naturali e il testo sta sotto, centrato, con molta aria.
+- **`cinematic`** (default, from `mockup-1-cinematic.html`) — 4:5 card, full-frame image, title and description over a gradient at bottom, subtle zoom on hover, rounded corners.
+- **`editorial`** (from `mockup-3-editorial.html`) — magazine-style layout: image and text side by side, uppercase title, divider line between albums, no rounding. Below 600px switches to single column.
+- **`minimal`** (from `mockup-4-minimal.html`) — no frame, no background: image keeps its natural aspect ratio and text sits below, centered, with plenty of space.
 
-Si sceglie in `theme/card.css`, lasciando attiva una sola riga `@import` e commentando le altre. Il dev server ricarica da solo.
+Choose in `theme/card.css` by keeping one `@import` line active and commenting the others. Dev server reloads automatically.
 
-Le tre differiscono **solo per CSS**, sullo stesso HTML: `AlbumCard.js` non contiene alcuna condizione. Sono tre file indipendenti in `src/styles/card-variants/` — se una non ti convince, modificala o cancellala senza toccare nient'altro.
+The three differ **only in CSS**, on the same HTML: `AlbumCard.js` has no conditionals. They are three independent files in `src/styles/card-variants/` — if one doesn't suit you, modify or delete it without touching anything else.
 
-## Font: tre passi per non sbagliare
+## Font: three steps to get it right
 
-Cambiare font richiede **tre modifiche coordinate** — dimenticarne una causa font fallback silenzioso:
+Changing fonts requires **three coordinated changes** — skipping one causes silent font fallback:
 
-1. **`theme/tokens.css`:** aggiorna `--font-body` e/o `--font-heading` con il nome del nuovo font
+1. **`theme/tokens.css`:** update `--font-body` and/or `--font-heading` with the new font name
 
 ```css
-/* Prima */
+/* Before */
 --font-body: 'Sora', sans-serif;
 --font-heading: 'Fraunces', serif;
 
-/* Dopo: per esempio, Poppins per body, Playfair Display per heading */
+/* After: for example, Poppins for body, Playfair Display for heading */
 --font-body: 'Poppins', sans-serif;
 --font-heading: 'Playfair Display', serif;
 ```
 
-2. **In tutti e quattro gli HTML** (`index.html`, `album.html`, `contatti.html`, `admin.html`): sostituisci il tag `<link>` Google Fonts.
-   Dimenticare `admin.html` e' l'errore piu' facile: il sito cambia font e la dashboard resta indietro.
+2. **In all four HTML files** (`index.html`, `album.html`, `contacts.html`, `admin.html`): replace the Google Fonts `<link>` tag.
+   Forgetting `admin.html` is the easiest mistake: the site changes fonts and the dashboard lags behind.
 
 ```html
-<!-- Prima -->
+<!-- Before -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300&family=Fraunces:wght@400&family=IBM+Plex+Mono:wght@400&display=swap">
 
-<!-- Dopo: includi solo i font che usi, con i pesi che usi -->
+<!-- After: include only the fonts you use, with the weights you use -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400&family=Playfair+Display:wght@600&family=IBM+Plex+Mono:wght@400&display=swap">
 ```
 
-3. **`theme/typography.css`:** se il nuovo font ha pesi diversi, aggiorna gli `font-weight` nelle regole CSS
+3. **`theme/typography.css`:** if the new font has different weights, update the `font-weight` values in CSS rules
 
 ```css
-/* Se il nuovo font ha pesi non standard */
+/* If the new font has non-standard weights */
 body {
   font-family: var(--font-body);
-  font-weight: 400;  /* Cambia qui se necessario */
+  font-weight: 400;  /* Change here if needed */
 }
 
 h1, h2, h3 {
   font-family: var(--font-heading);
-  font-weight: 600;  /* Cambia qui se il font non ha 400 di default */
+  font-weight: 600;  /* Change here if font doesn't default to 400 */
 }
 ```
 
 ---
 
-## Cosa non va toccato per personalizzare
+## What not to touch when customizing
 
-### Comportamento (`src/`)
+### Behavior (`src/`)
 
-I file in `src/` sono il comportamento dell'applicazione: se li modifichi, avrai conflitti ai futuri merge dal template. Tieni le personalizzazioni in `config/` e `theme/`, che sono i soli punti di estensione designati.
+Files in `src/` are the application's behavior: modifying them creates conflicts on future template merges. Keep customizations in `config/` and `theme/`, the only designated extension points.
 
-Eccezione: se vuoi correggere un bug o aggiungere una feature al template stesso, fallo pure in `src/`, ma contribuiscilo di nuovo al repository da cui hai forkato — così il prossimo fork della tua copia lo avrà già.
+Exception: if you fix a bug or add a feature to the template itself, do it in `src/`, but contribute it back to the repository you forked from — so the next fork of your copy has it already.
 
 ### `wrangler.json`
 
-Il template lo distribuisce coi segnaposto; tu ci metti i tuoi valori, **e lo committi**. Non è una svista: il deploy di Cloudflare legge la configurazione del Worker dal repository, quindi un `wrangler.json` che resta sul tuo computer significa un deploy che fallisce.
+The template ships it with placeholders; you fill in your values **and commit it**. Not an oversight: Cloudflare's deploy reads Worker configuration from the repository, so a `wrangler.json` that stays on your computer means a failed deploy.
 
-I valori che contiene non sono segreti — nomi di bucket, team domain, AUD e URL pubblico del bucket sono tutti già visibili dall'esterno. Le vere credenziali stanno in `.env`, che non è versionato.
+The values it contains aren't secrets — bucket names, team domain, AUD, and public bucket URL are all already visible externally. Real credentials live in `.env`, which isn't versioned.
 
-Due conseguenze pratiche: andrà in conflitto a ogni `git merge upstream/main` (risolvi con `git checkout --ours wrangler.json`), e `npm run infra:sync` lo riscrive daccapo dagli output di Terraform, quindi eventuali modifiche a mano vanno rifatte o riportate nel `.tf`.
+Two practical consequences: it will conflict on every `git merge upstream/main` (resolve with `git checkout --ours wrangler.json`), and `npm run infra:sync` rewrites it from Terraform outputs, so any manual changes need to be redone or moved to `.tf`.
 
 ---
 
-## Dopo ogni modifica ai file
+## After every file change
 
-Ogni volta che modifichi `config/` o `theme/`:
+Whenever you modify `config/` or `theme/`:
 
 ```bash
 npm test && npm run build
 git add config/ theme/
-git commit -m "personalizzazione: descrivi cosa hai cambiato"
+git commit -m "customization: describe what you changed"
 git push
 ```
 
-Il deploy parte in automatico via Cloudflare Git integration. Le modifiche sono online in pochi minuti, senza intervento manuale.
+Deploy starts automatically via Cloudflare Git integration. Changes are live in minutes, no manual work.
 
-Le modifiche fatte dalla dashboard (`/admin`) sono già online e non richiedono alcun deploy — sono solo dati su R2.
+Changes made from the dashboard (`/admin`) are already live and need no deploy — they're just data on R2.
 
 ---
 
-## Asset statici
+## Static assets
 
 ### Favicon
 
-Modifica il file in `public/favicon.svg` e rideploya.
+Edit the file in `public/favicon.svg` and redeploy.
 
-### Compressione foto
+### Photo compression
 
-Prima di caricare foto sulla dashboard, comprimile localmente per ridurre il peso e convertirle in WebP:
+Before uploading photos to the dashboard, compress them locally to reduce size and convert to WebP:
 
 ```bash
-npm run compress -- --input "/percorso/cartella"
+npm run compress -- --input "/path/to/folder"
 ```
 
-Struttura attesa:
+Expected structure:
 
 ```
-/percorso/cartella/
-  originali/        ← foto originali (JPEG, PNG, HEIC, TIFF, WebP)
-  optimized/        ← generato dallo script → da caricare via dashboard
+/path/to/folder/
+  originals/        ← original photos (JPEG, PNG, HEIC, TIFF, WebP)
+  optimized/        ← generated by script → upload via dashboard
 ```
 
-Lo script genera WebP a 1900px (lato lungo) con qualità 85. La cartella `optimized/` viene svuotata e rigenerata a ogni run.
+The script generates WebP at 1900px (long side) with quality 85. The `optimized/` folder is cleared and regenerated on each run.
 
 ---
 
-## Anteprime social (Open Graph)
+## Social previews (Open Graph)
 
-Titolo, descrizione e immagine delle anteprime (WhatsApp, Instagram DM, LinkedIn, iMessage…) vengono iniettati nell'HTML **a build time** da `site.config.js`, con l'URL dell'immagine costruito dal dominio delle foto dichiarato in `wrangler.json`: non serve toccare i file HTML.
+Title, description, and preview image (WhatsApp, Instagram DM, LinkedIn, iMessage…) are injected into HTML **at build time** by `site.config.js`, with the image URL built from the photo domain declared in `wrangler.json`: no need to touch HTML files.
 
-Due limiti da conoscere:
+Two limits to know:
 
-- Qualsiasi link del sito venga condiviso — inclusi i link ai singoli album — mostra sempre l'anteprima generica del sito (titolo e hero image di `site.config.js`). I crawler social non eseguono JavaScript, quindi non possono conoscere il contenuto dell'album. È un limite dell'hosting statico puro, accettato per scelta.
-- Se `heroImage` è vuoto, l'anteprima esce senza immagine.
+- Any link on the site shared — including links to individual albums — always shows the generic site preview (title and hero image from `site.config.js`). Social crawlers don't run JavaScript, so they can't know the album's content. This is a limit of pure static hosting, accepted by design.
+- If `heroImage` is empty, the preview has no image.
 
 ---
 
-## Riferimento veloce `config/`
+## Quick reference `config/`
 
-### `site.config.js` (seed della home)
+### `site.config.js` (home seed)
 
-| Campo | Descrizione | Esempio |
+| Field | Description | Example |
 |---|---|---|
-| `name` | Nome fotografo | `'Mario Rossi Fotografia'` |
-| `bio` | Testo hero e meta description | `'Fotografo di matrimoni a Milano.'` |
-| `heroImage` | Foto hero — referenziale (album + nome file, non URL) | `{ album: 'matrimoni', name: 'hero.webp' }` |
-| `social` | Link social | `{ instagram: 'https://instagram.com/...' }` |
+| `name` | Photographer name | `'Mario Rossi Photography'` |
+| `bio` | Hero text and meta description | `'Wedding photographer in Milan.'` |
+| `heroImage` | Hero photo — referential (album + filename, not URL) | `{ album: 'weddings', name: 'hero.webp' }` |
+| `social` | Social links | `{ instagram: 'https://instagram.com/...' }` |
 
-### `albums.config.js` (seed degli album)
+### `albums.config.js` (albums seed)
 
-| Campo | Descrizione | Esempio |
+| Field | Description | Example |
 |---|---|---|
-| `slug` | Identificatore URL | `'matrimoni-2024'` |
-| `title` | Titolo card e pagina | `'Matrimoni 2024'` |
-| `description` | Testo sotto titolo | `'Reportage emozionali.'` |
-| `coverName` | Nome file copertina — il nome del file dentro l'album, non un URL | `'copertina.webp'` |
+| `slug` | URL identifier | `'weddings-2024'` |
+| `title` | Card and page title | `'Weddings 2024'` |
+| `description` | Text below title | `'Emotional reportage.'` |
+| `coverName` | Cover filename — the file name inside the album, not a URL | `'cover.webp'` |
 
-### `texts.config.js` (testi UI)
+### `texts.config.js` (UI text)
 
-Modifica i messaggi di caricamento, errore, form, nav, footer. Tutti i testi della pagina album (loading, error, not found) sono qui — non in HTML.
+Edit loading messages, errors, forms, nav, footer. All album page text (loading, error, not found) lives here — not in HTML.
 
-### `admin.config.js` (stile dashboard)
+### `admin.config.js` (dashboard style)
 
-| Campo | Descrizione |
+| Field | Description |
 |---|---|
-| `backgroundImageUrl` | URL di una foto già su R2, usata come sfondo della dashboard. Vuoto = nessuno sfondo |
+| `backgroundImageUrl` | URL of a photo already on R2, used as dashboard background. Empty = no background |
 
 ---
 
-## Infrastruttura — Una sola volta
+## Infrastructure — One-time setup
 
-Se usi **Terraform**: modifica `infra/variables.tf` e rilancia `terraform apply`. Vedi il [runbook sezione 3](docs/runbook-cloudflare.md#3-percorso-terraform).
+If you use **Terraform**: modify `infra/variables.tf` and run `terraform apply`. See [runbook section 3](docs/runbook-cloudflare.md#3-terraform-path).
 
-Se usi il **percorso manuale**: segui il [runbook sezione 5](docs/runbook-cloudflare.md#5-percorso-manuale--creare-le-risorse-da-cloudflare-dashboard) per creare bucket R2, domini gestiti e applicazioni Access dalla dashboard Cloudflare.
+If you use the **manual path**: follow [runbook section 5](docs/runbook-cloudflare.md#5-manual-path--creating-resources-from-cloudflare-dashboard) to create R2 buckets, managed domains, and Access applications from the Cloudflare dashboard.
 
-In entrambi i casi, la CSP si genera automaticamente da `wrangler.json` durante la build.
+Either way, CSP is generated automatically from `wrangler.json` during build.
