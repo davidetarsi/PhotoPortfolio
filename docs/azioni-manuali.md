@@ -161,27 +161,6 @@ servire quasi mai.
 
 ---
 
-## Decisioni ancora aperte
-
-Non sono azioni, ma scelte che serviranno lungo la strada. Da
-[analisi §8.2](superpowers/specs/2026-09-20-template-distribuibile-analisi.md):
-
-- **Nome del repo template** una volta pubblico. `PhotoPortfolioTemplate` va bene,
-  ma è il momento buono per cambiarlo. Se lo cambi, vanno aggiornati gli URL nel
-  README (sezione fork).
-- **Quale dominio** per le foto, quando arriverà il punto 2 (`img.tuodominio.it` o
-  simile) e su quale zona Cloudflare. Serve al punto 2, non al punto 1.
-- **Stato Terraform**: locale (raccomandato in analisi §3.3) o backend su R2. Serve
-  al punto 1: in assenza di una tua indicazione si procede con lo stato locale.
-
----
-
-## Fatte
-
-Nulla, per ora.
-
----
-
 ### 7. `terraform apply`: applicare l'infrastruttura
 
 **Dove:** sul tuo computer, non su questa VPS: serve un token API Cloudflare che
@@ -220,3 +199,28 @@ l'anteprima social** condividendo il link in una chat, e solo alla fine spegnere
 
 La verifica dell'anteprima social non è un vezzo: `og:image` è l'unico percorso che
 non si vede navigando il sito, ed è proprio quello che il punto 2 serviva a sistemare.
+
+---
+
+## Decisioni ancora aperte
+
+Non sono azioni, ma scelte che serviranno lungo la strada. Da
+[analisi §8.2](superpowers/specs/2026-09-20-template-distribuibile-analisi.md):
+
+- **Nome del repo template** una volta pubblico. `PhotoPortfolioTemplate` va bene,
+  ma è il momento buono per cambiarlo. Se lo cambi, vanno aggiornati gli URL nel
+  README (sezione fork).
+- **Quale dominio** per le foto, quando arriverà il punto 2 (`img.tuodominio.it` o
+  simile) e su quale zona Cloudflare. Serve al punto 2, non al punto 1.
+- **Stato Terraform**: locale (raccomandato in analisi §3.3) o backend su R2. Serve
+  al punto 1: in assenza di una tua indicazione si procede con lo stato locale.
+
+---
+
+## Fatte
+
+- **Voce 1 — PR del bootstrap**, mergiata il 2026-09-20. Ha richiesto una
+  seconda PR perché la prima era stata unita con uno squash, che aveva
+  scartato la parentela git col sito.
+
+---
