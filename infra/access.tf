@@ -3,9 +3,11 @@ resource "cloudflare_zero_trust_access_policy" "solo_admin" {
   name       = "${var.project_name} — admin"
   decision   = "allow"
 
-  include = [{
-    email = { email = var.admin_emails[0] }
-  }]
+  # Una voce include per ogni email autorizzata. Prendere solo
+  # admin_emails[0] farebbe sparire in silenzio gli altri indirizzi,
+  # lasciando fuori dalla dashboard persone che la configurazione
+  # dichiara ammesse.
+  include = [for e in var.admin_emails : { email = { email = e } }]
 }
 
 # Produzione: zona reale, quindi Access si limita ai due percorsi admin
