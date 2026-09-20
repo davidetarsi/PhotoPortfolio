@@ -23,7 +23,7 @@ body.admin-body::before {
   height: 100vh;
   z-index: -1;
   background-image:
-    linear-gradient(var(--color-scrim), var(--color-scrim)),
+    linear-gradient(var(--color-scrim-soft), var(--color-scrim-medium)),
     var(--admin-bg-image);
   background-color: var(--color-bg);
   background-size: cover;
@@ -118,7 +118,7 @@ body.admin-body::before {
    vista lista (.admin-photo-row__*) — stesso aspetto in entrambe, un solo
    punto da aggiornare. */
 .admin-photo__actions button, .admin-photo-row__actions button { font-size: 0.7rem; padding: 2px 6px; }
-.admin-photo__delete, .admin-photo-row__delete { background: var(--color-overlay-soft); color: var(--color-text); }
+.admin-photo__delete, .admin-photo-row__delete { background: var(--color-overlay-button); color: var(--color-text); }
 .admin-photo__cover.admin-photo__cover--selected, .admin-photo-row__cover.admin-photo-row__cover--selected { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 .admin-view-toggle { display: inline-flex; border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }

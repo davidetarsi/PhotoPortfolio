@@ -11,9 +11,15 @@
      impossibile cambiare tema davvero. Qui si cambiano una volta sola. */
   --color-border: #2e3235;
   --color-shimmer: #2e3235;
+  /* Velature: tre intensita' diverse, che erano tre valori diversi nel CSS.
+     Unificarle cambierebbe l'aspetto, non solo il punto in cui si decide. */
+  --color-scrim-soft: rgba(16, 17, 18, 0.55);
+  --color-scrim-medium: rgba(16, 17, 18, 0.75);
   --color-scrim: rgba(16, 17, 18, 0.88);
   --color-overlay: rgba(0, 0, 0, 0.75);
   --color-overlay-soft: rgba(0, 0, 0, 0.65);
+  --color-overlay-button: rgba(0, 0, 0, 0.6);
+  --color-lightbox-backdrop: rgba(10, 9, 8, 0.96);
 
   /* Typography — Stile 1 Cinematic */
   --font-body: 'Sora', sans-serif;

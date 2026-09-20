@@ -34,13 +34,28 @@ Bucket, domini, applicazioni Access: questa configurazione vive in `infra/variab
 | **Colori del sito** | `theme/tokens.css`, variabili `--color-*` | Richiede `npm test && npm run build` e deploy |
 | **Font** | `theme/tokens.css` (`--font-body`, `--font-heading`) + `theme/typography.css` + `<link>` Google Fonts negli HTML | Tre file, tre passi — ometterne uno causa un fallback silenzioso. Vedi sezione Font qui sotto. |
 | **Spaziature, raggi bordi** | `theme/tokens.css`, variabili `--space-*` e `--radius-*` | Richiede rebuild e deploy |
-| **Testi UI** (form, messaggi errore, nav) | `config/texts.config.js` | Richiede rebuild e deploy |
+| **Testi UI** (form, messaggi errore, nav) | `config/texts.config.js` | Richiede rebuild e deploy. I testi con valori variabili usano segnaposto `{nome}`: si traducono senza scrivere JavaScript |
+| **Testi della dashboard admin** | `config/texts.config.js`, sezione `admin` | Stesso meccanismo: la dashboard è traducibile quanto il sito |
+| **Lingua delle date** | `config/site.config.js`, campo `language` | Usato per formattare le date nella dashboard |
+| **Aspetto delle card degli album** | `theme/card.css`: attiva una delle tre `@import` | `cinematic` (default), `editoriale`, `minimal`. Vedi la sezione qui sotto |
 | **Sfondo dashboard admin** | `config/admin.config.js`, campo `backgroundImageUrl` | URL di una foto già caricata su R2 |
 | **Chi può accedere a `/admin`** | `infra/variables.tf`, campo `admin_emails` (Terraform) oppure dashboard Access per path `/admin` e `/api/admin` (manuale) | Richiede Terraform apply oppure modifica manuale in Access. Vedi [runbook](docs/runbook-cloudflare.md). |
 | **Dominio delle foto** | `infra/variables.tf`, `custom_photo_domain` (Terraform), oppure dashboard R2 (manuale) | Vedi [runbook sezione 8](docs/runbook-cloudflare.md#8-dominio-custom-per-le-foto). Da fare una sola volta prima di andare in produzione. |
 | **Intestazioni di sicurezza / CSP** | — Non si tocca — | Si genera da `wrangler.json` durante la build. Vedi il plugin CSP in `vite.config.js`. |
 
 ---
+
+## Le tre varianti di card
+
+Le card degli album hanno tre aspetti già pronti, derivati dai mockup in `mockups/`:
+
+- **`cinematic`** (default, da `mockup-1-cinematic.html`) — card 4:5, immagine a pieno riquadro, titolo e descrizione sopra un gradiente in basso, zoom lieve allo hover, angoli arrotondati.
+- **`editoriale`** (da `mockup-3-editoriale.html`) — impianto da rivista: immagine e testo affiancati, titolo in maiuscolo, filetto di separazione fra un album e l'altro, nessun arrotondamento. Sotto i 600px passa a colonna singola.
+- **`minimal`** (da `mockup-4-minimal.html`) — nessun riquadro e nessuno sfondo: l'immagine conserva le sue proporzioni naturali e il testo sta sotto, centrato, con molta aria.
+
+Si sceglie in `theme/card.css`, lasciando attiva una sola riga `@import` e commentando le altre. Il dev server ricarica da solo.
+
+Le tre differiscono **solo per CSS**, sullo stesso HTML: `AlbumCard.js` non contiene alcuna condizione. Sono tre file indipendenti in `src/styles/card-variants/` — se una non ti convince, modificala o cancellala senza toccare nient'altro.
 
 ## Font: tre passi per non sbagliare
 
