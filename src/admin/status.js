@@ -1,4 +1,5 @@
 import { texts } from '../../config/texts.config.js';
+import { siteConfig } from '../../config/site.config.js';
 
 // Helper di stato condiviso tra home.js e album.js: un badge ("Ultima azione
 // eseguita" / "Errore") seguito dal messaggio e da un timestamp, così l'esito
@@ -12,7 +13,7 @@ export function createStatus(el) {
     badge.textContent = isError ? texts.admin.status.error : texts.admin.status.lastAction;
     badge.classList.toggle('admin-status__badge--error', isError);
     text.textContent = msg;
-    time.textContent = new Date().toLocaleString('it-IT', {
+    time.textContent = new Date().toLocaleString(siteConfig.language || 'it', {
       day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
   };

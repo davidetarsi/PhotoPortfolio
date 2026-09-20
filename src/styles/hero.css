@@ -20,7 +20,7 @@
   position: relative;
   width: 100%;
   padding: 28px 22px 46px;
-  background: linear-gradient(transparent, rgba(16, 17, 18, 0.88));
+  background: linear-gradient(transparent, var(--color-scrim));
 }
 
 .hero__title {

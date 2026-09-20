@@ -23,7 +23,7 @@ body.admin-body::before {
   height: 100vh;
   z-index: -1;
   background-image:
-    linear-gradient(rgba(16, 17, 18, 0.55), rgba(16, 17, 18, 0.75)),
+    linear-gradient(var(--color-scrim), var(--color-scrim)),
     var(--admin-bg-image);
   background-color: var(--color-bg);
   background-size: cover;
@@ -35,13 +35,13 @@ body.admin-body::before {
   display: flex; align-items: center; gap: var(--space-md);
   margin: calc(-1 * var(--space-lg)) calc(-1 * var(--space-lg)) var(--space-md);
   padding: var(--space-sm) var(--space-lg) var(--space-md);
-  border-bottom: 1px solid #2e3235;
+  border-bottom: 1px solid var(--color-border);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .admin-topbar__icon { font-size: 1.2rem; }
 
 .admin-root { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
-.admin-panel { background: var(--color-bg); border: 1px solid #2e3235; border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
+.admin-panel { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-lg); }
 .admin-panel h2 { margin: 0 0 var(--space-md); font-weight: 400; }
 .admin-album-header { display: flex; align-items: flex-start; gap: var(--space-md); margin-bottom: var(--space-lg); }
 .admin-album-header__icon {
@@ -60,7 +60,7 @@ body.admin-body::before {
 .admin-panel input, .admin-panel textarea, .admin-panel select {
   width: 100%; margin-top: var(--space-xs); padding: var(--space-sm);
   background: var(--color-bg); color: var(--color-text);
-  border: 1px solid #2e3235; border-radius: var(--radius-sm); font: inherit;
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm); font: inherit;
 }
 .admin-panel textarea { resize: none; }
 .admin-panel button, .admin-actions button {
@@ -95,7 +95,7 @@ body.admin-body::before {
 }
 .admin-album-row__handle { color: var(--color-muted); }
 .admin-album-row__title { color: var(--color-text); text-decoration: none; flex: 1; }
-.admin-delete-album { background: transparent; color: var(--color-muted); border: 1px solid #2e3235; }
+.admin-delete-album { background: transparent; color: var(--color-muted); border: 1px solid var(--color-border); }
 .admin-new-album { display: flex; gap: var(--space-sm); margin-top: var(--space-md); }
 .admin-new-album input { flex: 1; margin-top: 0; }
 
@@ -105,7 +105,7 @@ body.admin-body::before {
 .admin-album-toolbar .admin-sort-date {
   display: flex; align-items: center; gap: var(--space-xs);
   background: var(--color-surface); color: var(--color-text);
-  border: 1px solid #2e3235; border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
   padding: var(--space-xs) var(--space-md); cursor: pointer; font: inherit;
   flex-shrink: 0; white-space: nowrap;
 }
@@ -118,10 +118,10 @@ body.admin-body::before {
    vista lista (.admin-photo-row__*) — stesso aspetto in entrambe, un solo
    punto da aggiornare. */
 .admin-photo__actions button, .admin-photo-row__actions button { font-size: 0.7rem; padding: 2px 6px; }
-.admin-photo__delete, .admin-photo-row__delete { background: rgba(0,0,0,0.6); color: var(--color-text); }
+.admin-photo__delete, .admin-photo-row__delete { background: var(--color-overlay-soft); color: var(--color-text); }
 .admin-photo__cover.admin-photo__cover--selected, .admin-photo-row__cover.admin-photo-row__cover--selected { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
-.admin-view-toggle { display: inline-flex; border: 1px solid #2e3235; border-radius: var(--radius-sm); overflow: hidden; }
+.admin-view-toggle { display: inline-flex; border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
 .admin-panel .admin-view-toggle__btn { background: var(--color-surface); color: var(--color-muted); border: 0; padding: var(--space-xs) var(--space-sm); cursor: pointer; font-size: 0.9rem; line-height: 1; }
 .admin-panel .admin-view-toggle__btn[aria-pressed="true"] { background: var(--color-accent); color: var(--color-bg); }
 
@@ -131,7 +131,7 @@ body.admin-body::before {
 .admin-photo-row__name { flex: 1; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin-photo-row__date { color: var(--color-muted); font-family: var(--font-mono); font-size: 0.75rem; }
 .admin-photo-row__actions { display: flex; gap: var(--space-xs); flex-shrink: 0; }
-.admin-dropzone { border: 2px dashed #2e3235; border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
+.admin-dropzone { border: 2px dashed var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; }
 .admin-dropzone--over { border-color: var(--color-accent); }
 .admin-dropzone__label { display: block; cursor: pointer; }
 .admin-dropzone__browse { color: var(--color-accent); text-decoration: underline; }
@@ -181,7 +181,7 @@ body.admin-body::before {
 
 .admin-preview__close {
   padding: var(--space-sm) var(--space-md);
-  border: 1px solid #2e3235;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text);

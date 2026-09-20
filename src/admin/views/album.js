@@ -1,6 +1,7 @@
 import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
 import { texts } from '../../../config/texts.config.js';
+import { siteConfig } from '../../../config/site.config.js';
 import { formatText } from '../../utils/formatText.js';
 import { createStatus } from '../status.js';
 import { topBarHtml } from './top-bar.js';
@@ -89,7 +90,7 @@ export function renderAdminAlbum(container, ctx) {
     // fuso orario associato, e senza forzare UTC il rendering dipende dal
     // fuso della macchina che esegue il codice (rischio concreto anche nei
     // test: una mezzanotte UTC può ricadere sul giorno prima in fusi < 0).
-    return new Date(ts).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+    return new Date(ts).toLocaleDateString(siteConfig.language || 'it', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
   }
 
   function handleCoverClick(entry) {
