@@ -12,8 +12,9 @@ Dopo il fork:
 git clone git@github.com:TUO-UTENTE/TUO-REPO.git
 cd TUO-REPO
 git remote add upstream git@github.com:davidetarsi/PhotoPortfolioTemplate.git
-cp wrangler.example.json wrangler.json   # poi compila i tuoi valori
 npm install
+# poi apri wrangler.json e sostituisci i segnaposto coi tuoi valori, e committalo:
+# il deploy di Cloudflare legge quel file dal repository, quindi deve starci dentro.
 ```
 
 Per ricevere gli aggiornamenti, quando vuoi:
@@ -26,6 +27,20 @@ git merge upstream/main
 I conflitti, se ci sono, cadranno su `config/` e `theme/` — cioè su ciò che hai personalizzato tu. Tieni le tue modifiche dentro quelle cartelle e gli aggiornamenti resteranno indolori. `wrangler.json` non è versionato proprio per questo motivo.
 
 > Preferisci un repo privato e slegato dal fork? Allora `git clone` di questo repo, poi ripunta `origin` sul tuo e aggiungi `upstream` come sopra: il risultato per gli aggiornamenti è identico.
+
+## Infrastruttura
+
+L'infrastruttura Cloudflare — bucket R2, domini pubblici, applicazioni Access — è descritta in [`infra/`](infra/) con Terraform. Da lì si genera `wrangler.json`:
+
+```bash
+export CLOUDFLARE_API_TOKEN=...        # mai scriverlo in un file
+cd infra && cp terraform.tfvars.example terraform.tfvars   # poi compila
+terraform init && terraform apply
+terraform -chdir=. output -json > outputs.json
+npm run infra:sync
+```
+
+Preferisci configurare a mano dalla dashboard? Va bene: segui il [runbook](docs/runbook-cloudflare.md), che porta allo stesso risultato. In entrambi i casi la CSP si genera da `wrangler.json` durante la build.
 
 ---
 

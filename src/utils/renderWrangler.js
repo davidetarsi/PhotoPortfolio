@@ -1,0 +1,37 @@
+const CHIAVI_RICHIESTE = [
+  'project_name', 'bucket_prod', 'bucket_staging',
+  'r2_public_url_prod', 'r2_public_url_staging',
+  'access_aud_prod', 'access_aud_staging', 'access_team_domain',
+];
+
+/**
+ * Rende wrangler.json dai valori emessi da Terraform (o compilati a mano
+ * seguendo il runbook). Funzione pura: non tocca l'oggetto ricevuto.
+ *
+ * @param {object} example - contenuto di wrangler.example.json
+ * @param {Record<string,string>} outputs - le chiavi di infra/outputs.tf
+ * @returns {object} configurazione pronta da scrivere
+ */
+export function renderWrangler(example, outputs) {
+  const mancanti = CHIAVI_RICHIESTE.filter(k => !outputs[k]);
+  if (mancanti.length > 0) {
+    throw new Error(`Valori mancanti negli output: ${mancanti.join(', ')}`);
+  }
+
+  const out = structuredClone(example);
+
+  out.name = outputs.project_name;
+  out.r2_buckets[0].bucket_name = outputs.bucket_prod;
+  out.vars.R2_PUBLIC_URL = outputs.r2_public_url_prod;
+  out.vars.ACCESS_AUD = outputs.access_aud_prod;
+  out.vars.ACCESS_TEAM_DOMAIN = outputs.access_team_domain;
+
+  const st = out.env.staging;
+  st.name = `${outputs.project_name}-staging`;
+  st.r2_buckets[0].bucket_name = outputs.bucket_staging;
+  st.vars.R2_PUBLIC_URL = outputs.r2_public_url_staging;
+  st.vars.ACCESS_AUD = outputs.access_aud_staging;
+  st.vars.ACCESS_TEAM_DOMAIN = outputs.access_team_domain;
+
+  return out;
+}

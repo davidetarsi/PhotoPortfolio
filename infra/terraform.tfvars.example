@@ -1,0 +1,14 @@
+account_id         = "incolla-qui-l-id-del-tuo-account"
+project_name       = "il-tuo-portfolio"
+access_team_domain = "il-tuo-team.cloudflareaccess.com"
+
+# Al primo apply puoi non conoscere ancora questi hostname: vedi il runbook,
+# che spiega come applicare prima i soli bucket.
+prod_hostname    = "iltuodominio.com"
+staging_hostname = "il-tuo-portfolio-staging.xxxxx.workers.dev"
+
+admin_emails = ["tu@esempio.it"]
+
+# Consigliato prima di andare in produzione: r2.dev e rate-limited.
+# custom_photo_domain  = "img.iltuodominio.com"
+# photo_domain_zone_id = "incolla-qui-lo-zone-id"
