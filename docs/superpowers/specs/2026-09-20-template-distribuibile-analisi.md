@@ -288,6 +288,13 @@ Tre conseguenze meritano di essere dette prima che diventino sorprese:
 
 3. **Le voci 1 e 4 dell'ordine dei lavori si svolgono nel template**, non in questo repo. Questa analisi è l'ultimo documento che nasce qui: da subito dopo il bootstrap, la documentazione di progetto vive nel template.
 
+### 8.1-bis Dove finiscono le azioni che spettano a una persona
+
+Le voci che richiedono i tuoi permessi o una tua scelta — aprire la PR, decidere cosa
+fare di `docs/`, rendere pubblico il repo, togliere la spunta "Template repository" —
+sono raccolte in [docs/azioni-manuali.md](../../azioni-manuali.md), con l'indicazione
+di cosa bloccano e cosa no. **Nessuna di esse blocca il punto 1.**
+
 ### 8.2 Domande che restano aperte davvero
 
 Non bloccano l'inizio dei lavori, ma vanno risolte lungo la strada:
