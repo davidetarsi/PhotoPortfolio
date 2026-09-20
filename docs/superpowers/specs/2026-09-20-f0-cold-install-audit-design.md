@@ -73,6 +73,10 @@ Per ogni intoppo registrare:
 
 L'ultima colonna è quella che separa le correzioni dalle annotazioni.
 
+**Due cloni, non uno.** Il primo clone misura lo stato attuale e produce la lista. Dopo le correzioni serve un **secondo clone**, da `HEAD` aggiornato, per verificare che i difetti strutturali siano davvero spariti dal punto di vista del destinatario e non solo dall'albero di lavoro — dove `SETUP.md` esiste comunque, tracciato o no. Senza il secondo clone la *definition of done* non è verificabile.
+
+**Cosa significa "funzionante" senza chiavi.** Il sito non può caricare foto senza una API key di Drive, quindi `npm run dev` non sarà mai "funzionante" nel senso pieno in questa fase. Il criterio è più utile: il dev server parte, le tre pagine rendono, e lo stato di errore per le chiavi mancanti è **comprensibile** — dice cosa manca e dove configurarlo. Se invece un destinatario che non ha ancora fatto il setup Drive vede una pagina bianca o un errore criptico in console, quello è un difetto strutturale a pieno titolo, e sopravvive a F1/F2: cambierà la sorgente dei dati, non il fatto che il primo avvio avvenga senza credenziali.
+
 ### 4.2 Correzioni
 
 Solo difetti strutturali:
@@ -87,13 +91,17 @@ Fuori: riscrittura delle istruzioni Drive, GCP, Web3Forms.
 
 ### 4.3 Guardie
 
-Due test, in vitest come il resto della suite.
+Due test, in vitest come il resto della suite. Il resto dei test è colocato accanto al modulo che verifica; questi due non verificano un modulo ma il repo, quindi hanno bisogno di una casa propria: **`tests/repo/`**, con `no-personal-data.test.js` e `docs-reference-existing-files.test.js`. Vitest li raccoglie senza configurazione aggiuntiva.
 
-**`no-personal-data`** — il repo non contiene nome, email, domini o ID personali.
-Allowlist ristretta ed esplicita per i riferimenti legittimi: il README cita `davidetarsi/PhotoPortfolio` come repo sorgente del template, ed è corretto che lo faccia. L'allowlist elenca percorso e stringa ammessa, non un pattern generico, così un nuovo riferimento personale non passa per somiglianza.
+**Superficie analizzata.** Entrambe le guardie guardano **ciò che viene consegnato come sito del destinatario**: `config/`, `src/`, `theme/`, `public/`, i file HTML di entry, `package.json`, `wrangler.jsonc`, `.env.example`, `README.md`, `SETUP.md`, `CUSTOMIZING.md`. Si basano sui file **tracciati** (`git ls-files`), così `node_modules/`, `dist/` e i file locali non entrano mai in gioco.
 
-**`docs-reference-existing-files`** — ogni percorso di file citato in `README.md`, `SETUP.md` e `CUSTOMIZING.md` esiste nel repo.
-Copre sia i file non tracciati sia quelli rinominati o spostati.
+**`docs/` è escluso, deliberatamente.** Contiene la pianificazione interna — piani, spec e questo stesso documento — che parla legittimamente dei repo di Davide e del sito personale. Una guardia che scansionasse `docs/` fallirebbe subito, anche sulla spec che la definisce. Resta però una domanda vera, che la simulazione deve registrare come attrito: *ha senso che un destinatario riceva venti file di pianificazione di un altro progetto?* Non si decide qui.
+
+**`no-personal-data`** — la superficie sopra non contiene nome, email, domini o ID personali.
+Allowlist ristretta ed esplicita: oggi `davidetarsi/PhotoPortfolio` compare in `SETUP.md`, come riferimento al repo sorgente del template, ed è corretto che ci sia — diventerà rilevante non appena `SETUP.md` sarà tracciato. L'allowlist elenca coppie percorso + stringa ammessa, non pattern generici, così un nuovo riferimento personale non passa per somiglianza con uno legittimo.
+
+**`docs-reference-existing-files`** — ogni percorso di file citato in `README.md`, `SETUP.md` e `CUSTOMIZING.md` esiste fra i file tracciati.
+Copre sia i file non tracciati sia quelli rinominati o spostati. È il test che avrebbe trovato `SETUP.md` da solo.
 
 ### 4.4 Output
 
@@ -110,8 +118,8 @@ Il resto della verifica è la simulazione stessa: `npm install`, `npm test`, `np
 
 ## 6. Definition of done
 
-- Un clone pulito arriva a `npm run dev` funzionante seguendo **solo** la documentazione tracciata.
-- `npm test` e `npm run build` sono verdi dal clone pulito.
+- Da un **secondo clone**, fatto dopo le correzioni, si arriva a `npm run dev` seguendo **solo** la documentazione tracciata: il server parte, le tre pagine rendono, e lo stato di errore per le chiavi mancanti dice cosa manca e dove configurarlo.
+- `npm test` e `npm run build` sono verdi da quel clone.
 - Le due guardie passano, e ognuna è stata vista fallire per il motivo giusto.
 - `docs/cold-install-audit.md` esiste, ordinato per gravità, con la colonna di sopravvivenza compilata.
 - I difetti strutturali sono corretti; quelli Drive-era sono registrati e **non** corretti.
