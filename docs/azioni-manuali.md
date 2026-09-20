@@ -107,30 +107,38 @@ Il README spiega di forkare, ma un bottone verde vince su un paragrafo.
 
 **Dove:** sul tuo computer, nel repo `photoportfolio`.
 
-Il merge passa senza conflitti, e **proprio per questo è rischioso**: il sito non è
-divergente, quindi non negozia nulla e accetta in blocco ciò che il template ha
-cambiato. Senza precauzioni cancellerebbe `wrangler.json` dal disco (contiene bucket,
-team Access e AUD reali) e riporterebbe `public/_headers` ai segnaposto, rompendo la
-CSP in produzione.
+Il merge non è pericoloso come sembrava in una versione precedente di questo
+documento, ma due file vanno guardati a mano.
 
 ```bash
 cd photoportfolio
-cp wrangler.json /tmp/wrangler.json.bak
-cp public/_headers /tmp/_headers.bak
 git remote add upstream git@github.com:davidetarsi/PhotoPortfolioTemplate.git
 git fetch upstream && git merge upstream/main
-cp /tmp/wrangler.json.bak wrangler.json        # ora non più versionato
-cp /tmp/_headers.bak public/_headers           # finché non è generato a build time
-npm test && npm run build
 ```
+
+**`wrangler.json` andrà in conflitto**, ed è voluto: il template porta i segnaposto,
+tu hai i tuoi valori reali. Risolvi **tenendo la tua versione**:
+
+```bash
+git checkout --ours wrangler.json && git add wrangler.json
+```
+
+**`public/_headers` viene eliminato**, ed è giusto: dal punto 1 la CSP si genera a
+build time da `wrangler.json`. Non ripristinarlo — se resta, Vite lo copierebbe
+sopra quello generato, rimettendo in produzione URL fissi.
 
 I file in `config/` torneranno al seed neutro: **è innocuo**, perché a runtime la
 verità è su R2. Ma non rilanciare `npm run migrate` dopo, o sovrascriveresti i
 contenuti reali col seed vuoto.
 
-Dal secondo merge in poi `wrangler.json` non dà più problemi, perché resta ignorato
-da git. `public/_headers` smetterà di darne quando il punto 1 lo farà generare a
-build time.
+Chiudi verificando che il sito regga ancora:
+
+```bash
+npm test && npm run build && head -2 dist/_headers
+```
+
+La riga CSP deve contenere i tuoi URL R2 veri. Se contiene `pub-xxxxxxxx`, la
+risoluzione del conflitto è andata storta.
 
 ---
 

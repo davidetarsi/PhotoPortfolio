@@ -12,8 +12,9 @@ Dopo il fork:
 git clone git@github.com:TUO-UTENTE/TUO-REPO.git
 cd TUO-REPO
 git remote add upstream git@github.com:davidetarsi/PhotoPortfolioTemplate.git
-cp wrangler.example.json wrangler.json   # poi compila i tuoi valori
 npm install
+# poi apri wrangler.json e sostituisci i segnaposto coi tuoi valori, e committalo:
+# il deploy di Cloudflare legge quel file dal repository, quindi deve starci dentro.
 ```
 
 Per ricevere gli aggiornamenti, quando vuoi:

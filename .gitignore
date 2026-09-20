@@ -26,5 +26,3 @@ mockups/*
 *.sw?
 .superpowers/
 
-# Configurazione locale: si genera da wrangler.example.json
-wrangler.json

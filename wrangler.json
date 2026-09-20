@@ -1,0 +1,30 @@
+{
+  "name": "il-tuo-portfolio",
+  "compatibility_date": "2026-07-07",
+  "main": "src/worker.js",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "r2_buckets": [
+    { "binding": "BUCKET", "bucket_name": "il-tuo-bucket" }
+  ],
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "il-tuo-team.cloudflareaccess.com",
+    "ACCESS_AUD": "incolla-qui-l-aud-della-tua-Access-application",
+    "R2_PUBLIC_URL": "https://pub-xxxxxxxx.r2.dev"
+  },
+  "env": {
+    "staging": {
+      "name": "il-tuo-portfolio-staging",
+      "r2_buckets": [
+        { "binding": "BUCKET", "bucket_name": "il-tuo-bucket-staging" }
+      ],
+      "vars": {
+        "ACCESS_TEAM_DOMAIN": "il-tuo-team.cloudflareaccess.com",
+        "ACCESS_AUD": "incolla-qui-l-aud-della-tua-Access-application-di-staging",
+        "R2_PUBLIC_URL": "https://pub-yyyyyyyy.r2.dev"
+      }
+    }
+  }
+}

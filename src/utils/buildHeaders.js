@@ -6,9 +6,13 @@ const FORM_ENDPOINT = 'https://api.web3forms.com';
  * seguendo il runbook ottiene la stessa CSP di chi usa Terraform.
  *
  * @param {object} config - oggetto wrangler.json
+ * @param {{allowPlaceholders?: boolean}} [options] - allowPlaceholders serve
+ *   solo a verificare che il template compili quando wrangler.json ha ancora
+ *   i segnaposto. Non usarlo mai per un sito destinato al deploy: produce una
+ *   CSP che non autorizza alcuna origine R2, cioe un sito senza foto.
  * @returns {string} contenuto del file _headers
  */
-export function buildHeaders(config) {
+export function buildHeaders(config, options = {}) {
   const prod = config?.vars?.R2_PUBLIC_URL;
   const staging = config?.env?.staging?.vars?.R2_PUBLIC_URL;
 
@@ -19,7 +23,7 @@ export function buildHeaders(config) {
   const origini = [...new Set([prod, staging].filter(Boolean))];
 
   const segnaposto = origini.filter(o => /pub-(x+|y+)\.r2\.dev/.test(o));
-  if (segnaposto.length > 0) {
+  if (segnaposto.length > 0 && !options.allowPlaceholders) {
     throw new Error(
       `wrangler.json contiene ancora un segnaposto (${segnaposto.join(', ')}). ` +
       'Compila i valori reali, o generalo con `npm run infra:sync`.',

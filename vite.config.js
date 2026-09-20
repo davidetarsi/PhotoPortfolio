@@ -24,10 +24,14 @@ const headersPlugin = () => ({
     if (!existsSync('wrangler.json')) {
       this.error('wrangler.json non trovato. Crealo con `cp wrangler.example.json wrangler.json` e compilalo, oppure genera tutto con `npm run infra:sync`.')
     }
+    // ALLOW_PLACEHOLDER_CSP=1 serve solo a verificare che il template
+    // compili prima che qualcuno ci metta i propri valori. Mai in un deploy.
     this.emitFile({
       type: 'asset',
       fileName: '_headers',
-      source: buildHeaders(JSON.parse(readFileSync('wrangler.json', 'utf8'))),
+      source: buildHeaders(JSON.parse(readFileSync('wrangler.json', 'utf8')), {
+        allowPlaceholders: process.env.ALLOW_PLACEHOLDER_CSP === '1',
+      }),
     })
   },
 })

@@ -46,4 +46,12 @@ describe('buildHeaders', () => {
     expect(() => buildHeaders({ vars: { R2_PUBLIC_URL: 'https://pub-xxxxxxxx.r2.dev' } }))
       .toThrow(/segnaposto/);
   });
+
+  it('con allowPlaceholders accetta il segnaposto, per verificare che il template compili', () => {
+    const h = buildHeaders(
+      { vars: { R2_PUBLIC_URL: 'https://pub-xxxxxxxx.r2.dev' } },
+      { allowPlaceholders: true },
+    );
+    expect(h).toContain('Content-Security-Policy');
+  });
 });
