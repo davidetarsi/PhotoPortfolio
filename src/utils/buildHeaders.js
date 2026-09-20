@@ -1,5 +1,3 @@
-const FORM_ENDPOINT = 'https://api.web3forms.com';
-
 /**
  * Costruisce il contenuto di _headers dalle origini R2 dichiarate in
  * wrangler.json. Sorgente unica: chi compila wrangler.json a mano
@@ -8,7 +6,7 @@ const FORM_ENDPOINT = 'https://api.web3forms.com';
  * @param {object} config - oggetto wrangler.json
  * @param {{allowPlaceholders?: boolean}} [options] - allowPlaceholders serve
  *   solo a verificare che il template compili quando wrangler.json ha ancora
- *   i segnaposto. Non usarlo mai per un sito destinato al deploy: produce una
+ *   i segnaposti. Non usarlo mai per un sito destinato al deploy: produce una
  *   CSP che non autorizza alcuna origine R2, cioe un sito senza foto.
  * @returns {string} contenuto del file _headers
  */
@@ -34,12 +32,13 @@ export function buildHeaders(config, options = {}) {
 
   const csp = [
     "default-src 'self'",
-    "script-src 'self'",
+    "script-src 'self' https://challenges.cloudflare.com",
     "style-src 'self' https://fonts.googleapis.com",
     'font-src https://fonts.gstatic.com',
     `img-src 'self' data: ${lista}`,
-    `connect-src 'self' ${lista} ${FORM_ENDPOINT}`,
-    `form-action 'self' ${FORM_ENDPOINT}`,
+    `connect-src 'self' ${lista} https://challenges.cloudflare.com`,
+    "form-action 'self'",
+    "frame-src https://challenges.cloudflare.com",
     "frame-ancestors 'none'",
     "object-src 'none'",
     "base-uri 'self'",

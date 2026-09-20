@@ -44,9 +44,10 @@ describe('GET /api/data/*', () => {
 });
 
 describe('GET /api/data/config', () => {
-  it('restituisce r2PublicUrl da env, con no-store; non accede mai a R2', async () => {
+  it('restituisce r2PublicUrl e turnstileSitekey da env, con no-store; non accede mai a R2', async () => {
     const env = makeEnv();
     env.R2_PUBLIC_URL = 'https://pub-xxxx.r2.dev';
+    env.TURNSTILE_SITEKEY = 'sitekey-123';
     let bucketTouched = false;
     const originalGet = env.BUCKET.get.bind(env.BUCKET);
     env.BUCKET.get = async (...args) => { bucketTouched = true; return originalGet(...args); };
@@ -54,15 +55,16 @@ describe('GET /api/data/config', () => {
     const res = await get(env, '/api/data/config');
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    expect(await res.json()).toEqual({ r2PublicUrl: 'https://pub-xxxx.r2.dev' });
+    expect(await res.json()).toEqual({ r2PublicUrl: 'https://pub-xxxx.r2.dev', turnstileSitekey: 'sitekey-123' });
     expect(bucketTouched).toBe(false);
   });
 
-  it('env.R2_PUBLIC_URL assente → r2PublicUrl null (200, non 404)', async () => {
+  it('turnstileSitekey assente o null quando non configurato', async () => {
     const env = makeEnv();
+    env.R2_PUBLIC_URL = 'https://pub-xxxx.r2.dev';
     const res = await get(env, '/api/data/config');
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ r2PublicUrl: null });
+    expect(await res.json()).toEqual({ r2PublicUrl: 'https://pub-xxxx.r2.dev', turnstileSitekey: null });
   });
 
   it('405 su metodo non-GET', async () => {

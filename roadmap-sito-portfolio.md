@@ -86,10 +86,10 @@ Principi ingegneristici applicati:
 
 - **Landing**: hero con identità del fotografo + griglia delle card album generate da `albums.config.js` (cover = immagine locale in `public/` o prima foto della cartella).
 - **Pagina album**: legge `?album=slug` con `URLSearchParams`, risolve l'album in config, carica le foto via provider. Slug inesistente → pagina 404 gentile con link alla landing.
-- **Contatti con form**: un sito statico non può ricevere dati da solo. Opzioni gratuite e sicure, in ordine di preferenza:
-  1. **Servizio form esterno** (es. Web3Forms o Formspree, piani free): il form fa POST al servizio, che inoltra via email. Endpoint/access key in config.
-  2. Fallback minimale: link `mailto:` ben fatto (zero dipendenze, ma UX peggiore).
-  - Anti-spam senza CAPTCHA invasivi: campo honeypot nascosto + validazione lato client. Non pubblicare mai l'email in chiaro nell'HTML (harvesting).
+- **Contatti con form**: il form scrive direttamente su R2 (Cloudflare storage).
+  - Anti-spam: honeypot nascosto + Turnstile (widget invisibile di Cloudflare) + validazione lato client.
+  - Notifiche via webhook facoltative (a un topic ntfy.sh, Discord, Telegram...), controllabili dalla dashboard.
+  - Non pubblicare mai l'email in chiaro nell'HTML (harvesting).
 - Navigazione (header/footer) condivisa come componente, generata dalla config.
 
 ## Fase 6 — Deploy gratuito (1 giorno)
@@ -130,9 +130,9 @@ Visto che le personalizzazioni le fai tu, il flusso è da sviluppatore:
 |---|---|
 | Tempo totale stimato | 5–8 settimane part-time |
 | Hosting | 0 € (Cloudflare Pages / GitHub Pages) |
-| Storage | 0 € (Drive incluso nell'account Google) |
+| Storage | 0 € (R2 incluso nell'account Cloudflare) |
 | API Drive | 0 € per questi volumi |
-| Form contatti | 0 € (piani free Web3Forms/Formspree) |
+| Spam protection | 0 € (Turnstile incluso nell'account Cloudflare) |
 | Unico costo opzionale | dominio personalizzato ~10 €/anno |
 
 **Prossimo passo concreto:** completare la Fase 2 collegando il proof of concept a una tua cartella Drive reale; poi impostare la struttura di Fase 1 e migrare il codice del PoC dentro `src/`.

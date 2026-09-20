@@ -25,9 +25,9 @@ describe('buildHeaders', () => {
     expect(csp.match(/pub-aaa\.r2\.dev/g)).toHaveLength(2); // una in img-src, una in connect-src
   });
 
-  it('mantiene l endpoint del form e le direttive di irrigidimento', () => {
+  it('mantiene l endpoint di Turnstile e le direttive di irrigidimento', () => {
     const h = buildHeaders(CONFIG);
-    expect(h).toContain('https://api.web3forms.com');
+    expect(h).toContain('https://challenges.cloudflare.com');
     expect(h).toContain("frame-ancestors 'none'");
     expect(h).toContain('X-Content-Type-Options: nosniff');
     expect(h).toContain('Strict-Transport-Security');
