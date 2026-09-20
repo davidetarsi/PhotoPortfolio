@@ -131,11 +131,40 @@ Il riferimento resta la forma già in uso, `{ album, name }`, con `_site` al pos
 È l'unica del sistema, e va trattata di conseguenza.
 
 - **Honeypot** — già presente, si mantiene.
-- **Cloudflare Turnstile** — il CAPTCHA di Cloudflare: gratuito, quasi sempre invisibile, e nativo allo stack. Nessun terzo in più, coerente con la scelta di internalizzare. Attivabile da configurazione, **acceso di default** nella documentazione.
+- **Cloudflare Turnstile** — il CAPTCHA di Cloudflare: gratuito, nativo allo stack, nessun terzo in più. Attivabile da configurazione, **acceso di default** nella documentazione. Vedi §6.1 per la configurazione e §6.2 per l'infrastruttura.
 - **Limiti di dimensione** — messaggio e campi hanno una lunghezza massima, verificata dal Worker prima di scrivere. Un corpo troppo grande viene respinto senza toccare R2.
 - **Validazione condivisa** — `validateContactShape` in `src/shared/content-rules.js`, accanto alle altre, così le stesse regole valgono per Worker e dashboard.
 
 Senza Turnstile il sistema resta usabile ma esposto: va detto esplicitamente a chi decide di non attivarlo, non lasciato capire.
+
+### 6.1 Turnstile: si configura per sparire, non per somigliare al sito
+
+Il widget vive in un iframe: colori, font e forma **non sono personalizzabili**. La via "CAPTCHA coerente con la grafica" non esiste. Quella che esiste è migliore: non mostrarlo.
+
+Configurazione scelta: **modalità `managed`, `appearance: interaction-only`, `theme: auto`**.
+
+Con `interaction-only` il widget **non compare affatto** per i visitatori legittimi: nessun riquadro, nessuna casella. Appare solo quando Cloudflare sospetta qualcosa.
+
+Perché non la modalità `invisible`, che pure esiste: lì un utente vero segnalato per errore **non ha nulla da cliccare, e l'invio fallisce senza spiegazione**. Con `interaction-only` quasi nessuno vede qualcosa, e il caso raro ha una via d'uscita. Su un form di contatto ogni messaggio perso è una persona che non ti ha scritto, e non lo saprai mai.
+
+`theme: auto` segue le preferenze del sistema: è l'unica leva estetica disponibile, e va usata.
+
+**Non si costruisce una sfida artigianale.** Le sfide creative che si vedono in giro sono graziose e deboli: un bot non le risolve ragionando, le risolve una volta e poi le scripta. Sarebbero peggio di Turnstile su ogni fronte tranne l'estetica — e l'estetica qui si risolve non mostrando nulla.
+
+### 6.2 Conseguenze sull'infrastruttura
+
+Turnstile **si dichiara in Terraform**, quindi non aggiunge un passaggio manuale: entra nella catena che esiste già.
+
+La risorsa è `cloudflare_turnstile_widget`, con account, nome, domini e modalità. Espone due valori, che vanno in due posti diversi:
+
+| Valore | Dove va | Perché |
+|---|---|---|
+| **sitekey** | pubblica, in `wrangler.json` come `var` | finisce nell'HTML, non è un segreto |
+| **secret** | `wrangler secret put TURNSTILE_SECRET` | serve al Worker per validare il token, **non deve finire in git** |
+
+È la stessa distinzione dell'URL di notifica (§4), e vale la stessa avvertenza: `wrangler.json` è versionato.
+
+Da aggiungere quindi a `infra/`: la risorsa, la variabile per accendere o spegnere Turnstile, e l'output della sitekey verso `renderWrangler`. Il runbook guadagna una sezione.
 
 ### Dati personali
 
