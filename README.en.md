@@ -1,6 +1,19 @@
-# Photo Portfolio
+<div align="center">
 
-**A photography portfolio that updates itself: you upload photos from a dashboard, and they're live.** No database, no server to maintain, nothing to pay every month.
+# 📷 Photo Portfolio
+
+**A photography portfolio that updates itself: you upload photos from a dashboard, and they're live.**
+
+No database. No server to maintain. Nothing to pay every month.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/Node-20%2B-brightgreen.svg)](https://nodejs.org)
+[![Runs on](https://img.shields.io/badge/runs%20on-Cloudflare%20Workers-f38020.svg)](https://workers.cloudflare.com/)
+[![Monthly cost](https://img.shields.io/badge/monthly%20cost-%E2%82%AC0-success.svg)](#-what-you-need)
+
+🔗 **Live demo:** *(coming soon)*
+
+</div>
 
 <!-- TODO: replace with a real screenshot of the home page, e.g. docs/screenshot-home.png
      A photography portfolio is judged by looking at it: this image is worth
@@ -8,9 +21,29 @@
 ![The site](docs/screenshot-home.png)
 -->
 
-> 🔗 **Live demo:** *(to be added)* · **Dashboard:** *(screenshot to be added)*
+---
 
-## Why it exists
+## 🗂️ Table of Contents
+
+- [🤔 Why it exists](#-why-it-exists)
+- [✨ What it does](#-what-it-does)
+- [📸 Screenshots](#-screenshots)
+- [🧰 What you need](#-what-you-need)
+- [🚀 Getting started, and staying up to date](#-getting-started-and-staying-up-to-date)
+- [⚡ Quick start](#-quick-start)
+- [⚙️ Setting up a new portfolio](#-setting-up-a-new-portfolio)
+- [🖼️ Using the site once it's live](#-using-the-site-once-its-live)
+- [🎨 Customizing](#-customizing)
+- [🏗️ Project structure](#-project-structure)
+- [🧱 Architecture](#-architecture)
+- [🤝 Contributing](#-contributing)
+- [☕ This is free, and it stays free](#-this-is-free-and-it-stays-free)
+- [🔮 Future development](#-future-development)
+- [⚖️ License](#-license)
+
+---
+
+## 🤔 Why it exists
 
 Portfolios for photographers usually end up in one of two places: a monthly subscription to a platform that decides how your work should look, or a static site that forces you to rebuild and redeploy every time you add a photo.
 
@@ -18,25 +51,31 @@ This template sits in between. The site is static and very fast, but the photos 
 
 It's meant for **photographers who can code**, or for anyone setting up a site for a friend who takes pictures: the initial setup asks you to know git and the Cloudflare console, nothing after that does.
 
-## What it does
+## ✨ What it does
 
-- **Pages**: home with the albums, album page with grid and lightbox, contact page with a working form.
-- **`/admin` dashboard**: upload photos (compressed in the browser before they're sent), reorder by dragging or by date, pick the cover, create and delete albums, edit name, bio and social links.
-- **Protected access** through Cloudflare Access: you sign in with a code sent by email, and no password lives in the code.
-- **Three ready-made looks** for the album cards, switched with a single line.
-- **Everything customizable from the config files**: colors, fonts, spacing and copy — the dashboard's copy too.
-- **Infrastructure described in Terraform**, or created by hand following the runbook.
-- **Security headers generated automatically**, matched to your own domain without you writing them.
+- 🏞️ **Pages** — home with the albums, album page with grid and lightbox, contact page with a working form.
+- 🎛️ **`/admin` dashboard** — upload photos (compressed in the browser before they're sent), reorder by dragging or by date, pick the cover, create and delete albums, edit name, bio and social links.
+- 🔐 **Protected access** through Cloudflare Access — you sign in with a code sent by email, and no password lives in the code.
+- 🎨 **Three ready-made looks** for the album cards, switched with a single line.
+- 🧩 **Everything customizable from the config files** — colors, fonts, spacing and copy, the dashboard's copy included.
+- 🏗️ **Infrastructure described in Terraform**, or created by hand following the runbook.
+- 🛡️ **Security headers generated automatically**, matched to your own domain without you writing them.
 
-## What you need
+## 📸 Screenshots
 
-- A **Cloudflare** account (the free plan is enough).
-- **Node.js 20+**.
-- A domain, if you want one: otherwise it runs on a free `workers.dev` subdomain.
+*(coming soon — home page, album view, and the upload dashboard)*
+
+## 🧰 What you need
+
+| | |
+|---|---|
+| ☁️ **Cloudflare account** | the free plan is enough |
+| 🟢 **Node.js 20+** | |
+| 🌐 **A domain** | optional — otherwise it runs on a free `workers.dev` subdomain |
 
 Recurring cost: **zero**, except the domain if you choose to have one.
 
-## Getting started, and staying up to date
+## 🚀 Getting started, and staying up to date
 
 **Fork it** — don't use "Use this template". A fork keeps the git history, and that's the only way you'll be able to pull in future improvements with a merge. "Use this template" creates a repository with no common ancestor: convenient on day one, permanent forever.
 
@@ -62,9 +101,9 @@ Conflicts, if any, will land on `config/`, `theme/` and `wrangler.json` — that
 
 `wrangler.json` in particular will conflict almost every time, because the template ships it with placeholders and you've put your own values in it: resolve by keeping your version, with `git checkout --ours wrangler.json`.
 
-> Prefer a private repository, unlinked from the fork? Then `git clone` this repo, point `origin` at your own, and add `upstream` as above: for updates the result is identical.
+> 💡 Prefer a private repository, unlinked from the fork? Then `git clone` this repo, point `origin` at your own, and add `upstream` as above: for updates the result is identical.
 
-## Quick start
+## ⚡ Quick start
 
 ```bash
 node --version   # requires v20+
@@ -78,7 +117,7 @@ npm test         # the full suite
 
 For the first deploy to Cloudflare, fill `wrangler.json` with your real values (not the placeholders).
 
-## Setting up a new portfolio
+## ⚙️ Setting up a new portfolio
 
 ### 1. Cloudflare infrastructure
 
@@ -129,12 +168,12 @@ These credentials must not go into git — `.env` is ignored, while the Cloudfla
 
 Fill in the configuration files that make up the site's seed:
 
-- **`config/site.config.js`**: name, bio, social links, hero
-- **`config/albums.config.js`**: albums, with slug, title, description and cover file name
-- **`config/texts.config.js`** (optional): UI copy
-- **`config/admin.config.js`** (optional): dashboard styling
-- **`theme/tokens.css`**: colors and font variables
-- **`theme/typography.css`**: type scale and Google Fonts links
+- **`config/site.config.js`** — name, bio, social links, hero
+- **`config/albums.config.js`** — albums, with slug, title, description and cover file name
+- **`config/texts.config.js`** *(optional)* — UI copy
+- **`config/admin.config.js`** *(optional)* — dashboard styling
+- **`theme/tokens.css`** — colors and font variables
+- **`theme/typography.css`** — type scale and Google Fonts links
 
 Then:
 
@@ -142,7 +181,7 @@ Then:
 npm run migrate
 ```
 
-`migrate` is a one-time bootstrap command: it turns the seed into the JSON files on R2. **Running it again after you've used the dashboard resets everything to the seed, wiping out the work you did there.** The command notices, stops and explains what you'd lose, and asks for `--force` if you insist.
+> ⚠️ `migrate` is a one-time bootstrap command: it turns the seed into the JSON files on R2. **Running it again after you've used the dashboard resets everything to the seed, wiping out the work you did there.** The command notices, stops and explains what you'd lose, and asks for `--force` if you insist.
 
 ### 5. Git integration
 
@@ -151,21 +190,21 @@ Connect the repository to Cloudflare Workers & Pages (see [runbook](docs/runbook
 - Build command: `npm test && npm run build`
 - Build output directory: `dist`
 - Production branch: `main`
-- Staging branch: `staging` (optional but recommended)
+- Staging branch: `staging` *(optional but recommended)*
 
 Cloudflare creates two Workers that deploy themselves on every push.
 
-## Using the site once it's live
+## 🖼️ Using the site once it's live
 
 The `/admin` dashboard is where you shape the site while it's running:
 
-- **Site section**: edit name, bio, hero, social links
-- **Albums section**: add albums, edit their title and description
-- **Album view**: upload photos, reorder them, delete them
+- **Site section** — edit name, bio, hero, social links
+- **Albums section** — add albums, edit their title and description
+- **Album view** — upload photos, reorder them, delete them
 
 The files in `config/` are only the initial seed — after `migrate`, R2 is the source of truth. Changes made from the dashboard are live immediately, with no deploy.
 
-## Customizing
+## 🎨 Customizing
 
 Read [`CUSTOMIZING.md`](CUSTOMIZING.md) to find out:
 
@@ -173,7 +212,7 @@ Read [`CUSTOMIZING.md`](CUSTOMIZING.md) to find out:
 - The distinction between content (R2 + dashboard) and appearance/copy (files)
 - What not to touch, to avoid conflicts on future merges from the template
 
-## Project structure
+## 🏗️ Project structure
 
 ```
 config/          ← initial seed: identity, albums, copy, admin styling
@@ -189,29 +228,52 @@ docs/            ← documentation: runbook, specs
 public/          ← static assets (favicon). `_headers` doesn't live here: it's generated into dist/
 ```
 
-## Architecture
+## 🧱 Architecture
 
-- **Hosting:** Cloudflare Workers (static assets + API for `/admin`)
-- **Photo storage:** Cloudflare R2 (public bucket via r2.dev or a custom domain)
-- **Admin authentication:** Cloudflare Access (Zero Trust) with JWT
-- **Bundler:** Vite 8.x, multi-page — entry points in `vite.config.js`
-- **CSP (Content Security Policy):** generated from `wrangler.json` during the build
-- **OpenGraph meta tags:** injected at build time from `site.config.js`, with the image URL built from the domain in `wrangler.json`
-- **Framework:** vanilla JS/HTML/CSS (no runtime framework)
-- **Photo compression:** `npm run compress -- --input <path>` (Sharp, WebP 1900px q85)
+| Layer | Technology |
+|---|---|
+| **Hosting** | Cloudflare Workers (static assets + API for `/admin`) |
+| **Photo storage** | Cloudflare R2 (public bucket via r2.dev or a custom domain) |
+| **Admin authentication** | Cloudflare Access (Zero Trust) with JWT |
+| **Bundler** | Vite 8.x, multi-page — entry points in `vite.config.js` |
+| **Security headers** | generated from `wrangler.json` at build time |
+| **OpenGraph meta tags** | injected at build time from `site.config.js` |
+| **Framework** | vanilla JS/HTML/CSS — no runtime framework |
+| **Photo compression** | `npm run compress -- --input <path>` (Sharp, WebP 1900px q85) |
 
-## License
+## 🤝 Contributing
 
-[MIT](LICENSE) — you can use it, modify it and redistribute it, commercially too, as long as you keep the copyright notice.
+Issues and pull requests are welcome. If you've built something with this template, opening an issue just to say so is genuinely useful: it tells me which parts people actually use.
 
-## Support the project
+If you fix something in `src/`, consider contributing it back upstream — that way the next person who forks it gets the fix for free, and you won't have to re-apply it on every merge.
 
-If this template has been useful to you — if you've put your portfolio online with it, or someone else's you care about — you can help keep it alive. Anything you give goes into maintaining it, answering issues, and adding what the people using it need.
+## ☕ This is free, and it stays free
 
-It isn't owed, and the project stays free either way: it's a way of saying it was good for something.
+It also took a lot of evenings.
 
-- **[GitHub Sponsors](https://github.com/sponsors/davidetarsi)** — also the *Sponsor* button at the top of this page
-- **Ko-fi** — *(to be added)*
-- **PayPal** — *(to be added)*
+If this template has been useful to you — if you've put your portfolio online with it, or someone else's you care about — you can chip in toward the next batch of evenings. It goes into maintaining it, answering issues, and building the things in the section right below.
 
-If you'd rather not contribute money: open an issue when you hit a problem, or tell me what you built with it. That counts for a lot too.
+Nothing here is paywalled, nothing ever will be, and nobody's counting who gave what. Consider it a way of saying it was good for something.
+
+- 💖 **[GitHub Sponsors](https://github.com/sponsors/davidetarsi)** — also the *Sponsor* button at the top of this page
+- ☕ **Ko-fi** — *(coming soon)*
+- 💸 **PayPal** — *(coming soon)*
+
+And if money isn't your thing: open an issue when something breaks, or tell me what you built. That counts for a lot too — and it's free for you as well.
+
+## 🔮 Future development
+
+Where this is likely to go next. These are intentions, not promises:
+
+- 👀 **Preview before publishing.** Today, uploading, reordering and deleting photos take effect immediately. The plan is to let those changes sit as a draft you can look at before they go live — the way editing name and bio already works.
+- 🔗 **Per-album social previews.** Right now every shared link shows the same site-wide preview image, because static hosting can't generate one per album. Solvable, but it needs the Worker to render the meta tags.
+- 🌓 **A light theme preset.** Now that every color lives in `theme/tokens.css`, shipping a second ready-made palette is mostly a matter of choosing good values.
+- 🃏 **More card variants**, if the three that ship turn out not to cover what people want.
+
+Got a different idea? Open an issue — the list above is shaped by what people ask for.
+
+## ⚖️ License
+
+[MIT](LICENSE) — use it, change it, redistribute it, commercially too. The only thing you have to keep is the copyright notice.
+
+You are not required to open-source your own site, and you never will be. That's deliberate: a personal portfolio is yours.
