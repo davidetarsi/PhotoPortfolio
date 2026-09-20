@@ -1,5 +1,6 @@
 import { handleDataRequest } from './worker/data-routes.js'
 import { handleAdminRequest } from './worker/admin-routes.js'
+import { handleContactRequest } from './worker/contact-routes.js'
 
 const STATIC_PAGES = {
   '/contatti': '/contatti.html',
@@ -20,6 +21,10 @@ export default {
 
     if (pathname.startsWith('/api/admin/')) {
       return handleAdminRequest(request, env)
+    }
+
+    if (pathname === '/api/contact') {
+      return handleContactRequest(request, env)
     }
 
     if (STATIC_PAGES[pathname]) {
