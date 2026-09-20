@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "compress": "node scripts/compress.js",
     "upload": "node --env-file=.env scripts/upload.js",
-    "migrate": "node --env-file=.env scripts/migrate.js"
+    "migrate": "node --env-file=.env scripts/migrate.js",
+    "infra:sync": "node scripts/gen-wrangler.js"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1083.0",
