@@ -98,7 +98,7 @@ Examples from this codebase that must be preserved:
 
 1. **Email validation in `contact-rules.js`** — why it's intentionally permissive.
 2. **Field copying in `buildMessage.js`** — why fields are copied manually instead of spread, and why keys lose the colon.
-3. **Message notification in `notifyBody.js`** — why it doesn't escape HTML.
+3. **Message notification in `notifyBody.js`** — why the message body and the sender's email are never included. A notification can land on a public channel, and what leaves there cannot be recalled.
 4. **Turnstile in CSP headers** — why it only appears when configured.
 5. **Text replacement in `formatText.js`** — why it's done in one pass, not multiple.
 6. **Album sorting in `album.js`** — why Sortable attaches once, not on every render, and why the `beforeunload` guard detaches on `hashchange`.
