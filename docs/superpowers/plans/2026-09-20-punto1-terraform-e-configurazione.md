@@ -970,7 +970,7 @@ Il percorso manuale, che la spec ha deciso di tenere come alternativa supportata
 `docs/runbook-cloudflare.md` deve coprire, in quest'ordine:
 
 1. **Prerequisiti** — account Cloudflare; per il dominio custom, una zona attiva.
-2. **Token API** — quali permessi servono (`Workers R2 Storage:Edit`, `Access: Apps and Policies:Edit`, `Zone:DNS:Edit` solo col dominio custom), e che si esporta come `CLOUDFLARE_API_TOKEN` senza finire in nessun file.
+2. **Token API** — quali permessi servono (`Workers R2 Storage:Edit`, `Access: Apps and Policies:Edit`, `Turnstile:Edit`, `Zone:DNS:Edit` solo col dominio custom), e che si esporta come `CLOUDFLARE_API_TOKEN` senza finire in nessun file.
 3. **Percorso Terraform** — `cp terraform.tfvars.example terraform.tfvars`, compilare, `terraform init`, `terraform apply`, poi `terraform -chdir=infra output -json > infra/outputs.json && npm run infra:sync`.
 4. **L'ordine ha un vincolo**: `staging_hostname` non si conosce prima del primo deploy. Al primo giro si applicano i soli bucket con `terraform apply -target=cloudflare_r2_bucket.prod -target=cloudflare_r2_bucket.staging`, si fa il primo deploy, si legge l'hostname `workers.dev` dalla dashboard, lo si mette nel tfvars e si rilancia `terraform apply` completo.
 5. **Percorso manuale** — le stesse risorse create dalla dashboard, con i passi già vissuti e verificati in [2026-07-12-prod-deploy-access.md](superpowers/plans/2026-07-12-prod-deploy-access.md): applicazione Access self-hosted, due public hostname per la produzione (`/admin` e `/api/admin`), policy Allow con le email, identity provider One-time PIN, e da dove si copia l'AUD. Poi `cp wrangler.example.json wrangler.json` e compilazione a mano.

@@ -18,6 +18,7 @@ Terraform operations require an API token with specific permissions. If you're n
 
 - **Workers R2 Storage: Edit** — allows creating and modifying R2 buckets.
 - **Access: Apps and Policies: Edit** — allows creating Access applications and policies.
+- **Turnstile: Edit** — required by the contact-form widget, enabled by default through `enable_turnstile = true`.
 - **Zone: DNS: Edit** (only if using a custom domain for photos) — allows configuring DNS records on the domain.
 
 Create the token in Cloudflare dashboard → **Account → API Tokens → Create Token** and assign these permissions. **Critical:** never write the token in a versioned file (never in `.env`, `wrangler.json`, or `terraform.tfvars`). Export it only as an environment variable in your shell:
