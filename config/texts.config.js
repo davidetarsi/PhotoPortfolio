@@ -74,6 +74,8 @@ export const texts = {
       unsavedChanges: 'Ci sono modifiche non salvate. Uscire comunque?',
       uploadProgress: '{nome} — {fase}',
       uploadSuccess: 'Caricate {n} foto.',
+      dropzoneConstraints: 'JPG, PNG, WebP fino a 20MB',
+      unsupportedFormat: 'Non caricabili dal browser ({elenco}): HEIC e TIFF vanno convertiti prima, con `npm run compress`.',
       uploadPartial: 'Caricate {uploaded}, fallite {failed}: riprova trascinandole di nuovo.',
     },
     status: {

@@ -240,7 +240,7 @@ public/          ← static assets (favicon). `_headers` doesn't live here: it's
 | **Security headers** | generated from `wrangler.json` at build time |
 | **OpenGraph meta tags** | injected at build time from `site.config.js` |
 | **Framework** | vanilla JS/HTML/CSS — no runtime framework |
-| **Photo compression** | `npm run compress -- --input <path>` (Sharp, WebP 1900px q85) |
+| **Photo compression** | `npm run compress -- --input <path>` — for HEIC, TIFF and bulk uploads (Sharp, WebP 1900px q85) |
 
 ## 🤝 Contributing
 

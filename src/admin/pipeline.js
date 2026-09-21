@@ -20,6 +20,34 @@ export function targetDimensions(width, height, max = MAX_DIMENSION) {
   return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
+/** @type {Set<string>} MIME types the browser can decode in a canvas. */
+const SUPPORTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+/**
+ * Splits files into those the browser can process and those it cannot.
+ *
+ * HEIC is the reason this exists. It is the default format of every iPhone,
+ * and Chrome and Firefox cannot decode it in a canvas — so it must be caught
+ * here, before the pipeline, or it fails at decode time and the user is told
+ * to "try again", which will never work. Those files need `npm run compress`,
+ * which uses sharp and handles HEIC and TIFF.
+ *
+ * The extension is checked as well as the MIME type: browsers that do not
+ * know HEIC leave `File.type` as an empty string.
+ *
+ * @param {Array<{name: string, type: string}>} files - Files chosen or dropped.
+ * @returns {{supported: Array, unsupported: Array}} Both lists keep the original order.
+ */
+export function partitionBySupport(files) {
+  const supported = [];
+  const unsupported = [];
+  for (const f of files) {
+    const estensioneNota = /\.(jpe?g|png|webp)$/i.test(f.name ?? '');
+    (SUPPORTED_TYPES.has(f.type) || (!f.type && estensioneNota) ? supported : unsupported).push(f);
+  }
+  return { supported, unsupported };
+}
+
 /**
  * Determines if a file should be uploaded as-is without reprocessing.
  * @param {string} fileType - The MIME type of the file.

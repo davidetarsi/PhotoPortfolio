@@ -79,28 +79,28 @@ describe('processImage', () => {
 
 describe('processDir', () => {
   let testRoot;
-  let originaliDir;
+  let sourceDir;
   let optimizedDir;
 
   beforeAll(async () => {
     testRoot = join(tmpdir(), `compress-dir-test-${Date.now()}`);
-    originaliDir = join(testRoot, 'originali');
+    sourceDir = join(testRoot, 'source');
     optimizedDir = join(testRoot, 'optimized');
-    await mkdir(originaliDir, { recursive: true });
+    await mkdir(sourceDir, { recursive: true });
 
     // Immagine 200×300 JPEG
     await sharp({
       create: { width: 200, height: 300, channels: 3, background: { r: 180, g: 100, b: 50 } },
     })
       .jpeg()
-      .toFile(join(originaliDir, 'test.jpg'));
+      .toFile(join(sourceDir, 'test.jpg'));
 
     // File non supportato — deve essere ignorato
     await sharp({
       create: { width: 50, height: 50, channels: 3, background: { r: 0, g: 0, b: 0 } },
     })
       .png()
-      .toFile(join(originaliDir, 'thumbs.db'));
+      .toFile(join(sourceDir, 'thumbs.db'));
   });
 
   afterAll(async () => {
@@ -108,7 +108,7 @@ describe('processDir', () => {
   });
 
   it('genera test.webp nella cartella optimized/ e il manifest.json', async () => {
-    const result = await processDir(originaliDir, optimizedDir);
+    const result = await processDir(sourceDir, optimizedDir);
     expect(result.ok).toBe(1);
     expect(result.errors).toBe(0);
     expect(result.manifest).toHaveLength(1);
@@ -139,7 +139,7 @@ describe('processDir', () => {
       .webp()
       .toFile(join(optimizedDir, 'vecchio.webp'));
 
-    await processDir(originaliDir, optimizedDir);
+    await processDir(sourceDir, optimizedDir);
 
     expect(existsSync(join(optimizedDir, 'test.webp'))).toBe(true);
     expect(existsSync(join(optimizedDir, 'vecchio.webp'))).toBe(false);

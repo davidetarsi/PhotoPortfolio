@@ -1,5 +1,6 @@
 import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
+import { partitionBySupport } from '../pipeline.js';
 import { texts } from '../../../config/texts.config.js';
 import { siteConfig } from '../../../config/site.config.js';
 import { formatText } from '../../utils/formatText.js';
@@ -51,7 +52,7 @@ export function renderAdminAlbum(container, ctx) {
           Trascina qui le foto o <span class="admin-dropzone__browse">scegli i file da caricare</span>
           <input class="admin-dropzone__input" type="file" multiple accept="image/jpeg,image/png,image/webp">
         </label>
-        <p class="admin-dropzone__constraints">JPG, PNG, WebP fino a 20MB</p>
+        <p class="admin-dropzone__constraints">${texts.admin.album.dropzoneConstraints}</p>
       </div>
       <ul class="admin-progress"></ul>
       <button class="admin-save-album">${texts.admin.album.save}</button>
@@ -171,6 +172,19 @@ export function renderAdminAlbum(container, ctx) {
 
   async function startUpload(files) {
     if (files.length === 0) return;
+
+    // Il trascinamento ignora l'attributo `accept` del selettore: un HEIC
+    // arriva fin qui. Va fermato adesso, perche' piu' avanti fallirebbe a
+    // decodifica e l'utente leggerebbe "riprova", che per un HEIC non
+    // funzionera' mai.
+    const { supported, unsupported } = partitionBySupport([...files]);
+    if (unsupported.length > 0) {
+      say(formatText(texts.admin.album.unsupportedFormat,
+        { elenco: unsupported.map(f => f.name).join(', ') }), true);
+    }
+    if (supported.length === 0) return;
+    files = supported;
+
     const progress = q('.admin-progress');
     progress.innerHTML = '';
     const rows = new Map();
