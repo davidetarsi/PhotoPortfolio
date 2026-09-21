@@ -27,10 +27,9 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
-**Stato noto all'inizio:** la chiave SSH di questa VPS ha accesso in **sola lettura** a `davidetarsi/photoportfolio` (push rifiutato il 2026-09-20). Il Task 1 verifica i permessi su `PhotoPortfolioTemplate` prima che qualunque lavoro ci si appoggi sopra.
+**Stato noto all'inizio:** la chiave SSH di questa VPS ha accesso in **sola lettura** a `your-github-user/your-portfolio` (push rifiutato il 2026-09-20). Il Task 1 verifica i permessi su `PhotoPortfolioTemplate` prima che qualunque lavoro ci si appoggi sopra.
 
 ---
 
@@ -100,7 +99,7 @@ Atteso: elenco vuoto.
 
 ```bash
 cd /srv/claude/workspaces/photoportfolio
-git grep -l -E 'davidetarsi|cloudflareaccess\.com|pub-[0-9a-f]{32}\.r2\.dev' -- \
+git grep -l -E 'your-github-user|cloudflareaccess\.com|pub-[0-9a-f]{32}\.r2\.dev' -- \
   . ':!node_modules' ':!package-lock.json' ':!docs' | sort -u
 ```
 
@@ -184,7 +183,7 @@ Sono i file che esistevano solo nel template: architettura Google Drive e docume
 git commit -F - <<'EOF'
 chore: adotta l'architettura R2 del sito e crea l'antenato comune
 
-Merge con --allow-unrelated-histories da davidetarsi/photoportfolio
+Merge con --allow-unrelated-histories da your-github-user/your-portfolio
 (branch staging). L'albero risultante e identico a quello del sito:
 il template era fermo all'8 luglio su architettura Google Drive, che
 non esiste piu.
@@ -197,7 +196,6 @@ File rimossi perche appartenenti all'era Google Drive o superati:
 <incollare qui l'elenco dello Step 6>
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -269,7 +267,7 @@ Separa ciò che è configurazione di chi installa da ciò che è codice del temp
 
 ```bash
 cd /srv/claude/workspaces/PhotoPortfolioTemplate
-git grep -c -E 'davidetarsi|cloudflareaccess\.com|pub-[0-9a-f]{32}\.r2\.dev' -- \
+git grep -c -E 'your-github-user|cloudflareaccess\.com|pub-[0-9a-f]{32}\.r2\.dev' -- \
   wrangler.json config/site.config.js config/albums.config.js
 ```
 
@@ -322,7 +320,7 @@ export const albums = [
 - [ ] **Step 5: Verificare che i valori personali siano spariti dall'albero tracciato**
 
 ```bash
-git grep -l -E 'davidetarsi|cloudflareaccess\.com|pub-[0-9a-f]{32}\.r2\.dev' -- \
+git grep -l -E 'your-github-user|cloudflareaccess\.com|pub-[0-9a-f]{32}\.r2\.dev' -- \
   . ':!node_modules' ':!package-lock.json' ':!docs' || echo "PULITO"
 ```
 
@@ -355,7 +353,6 @@ iniziale: a runtime la verita e su R2 (spec, sezione 4.2).
 wrangler.json resta sul disco, rimosso solo dall'indice.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -438,7 +435,6 @@ rispetto al sito. Chi parte da qui deve forkare, o clonare e ripuntare
 origin, per poter fare git merge upstream/main in futuro.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 

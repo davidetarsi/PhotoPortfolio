@@ -26,7 +26,6 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 | # | Azione | Blocca |
 |---|---|---|
-| 2 | Decidere cosa fare di `docs/` | la pubblicazione |
 | 3 | Rendere pubblico il repo | la condivisione con gli amici |
 | 4 | Togliere la spunta "Template repository" | niente, ma vanifica la scelta del fork |
 
@@ -55,33 +54,6 @@ finché non viene eseguita, tutto ciò che abbiamo costruito su Cloudflare — b
 Access, dominio custom, Turnstile — è **scritto e validato ma mai provato contro
 l'API vera**. Ogni lavoro aggiunto sopra allunga ciò che si scoprirebbe tutto insieme
 al primo `apply`.
-
----
-
-### 2. Decidere cosa fare di `docs/` prima della pubblicazione
-
-**Il fatto:** i documenti in `docs/superpowers/` citano il nome del tuo team Access,
-gli identificativi AUD delle due applicazioni Access e gli URL pubblici dei tuoi due
-bucket R2.
-
-**Non sono credenziali.** L'AUD è un identificativo pubblico e gli URL `r2.dev` sono
-endpoint già raggiungibili da chiunque. Nessuno di questi valori permette di fare
-qualcosa che non si potrebbe fare senza. Ma legano in modo permanente un repo
-pubblico al tuo account Cloudflare, e finiscono nei motori di ricerca.
-
-**Tre vie:**
-
-- **Lasciarli.** Zero lavoro. I documenti restano leggibili come storia del progetto,
-  che è parte del valore per chi clona.
-- **Sostituirli con segnaposto anche nei documenti.** Mezz'ora. I documenti perdono
-  un po' di concretezza (le spiegazioni citano valori veri come evidenza) ma restano
-  comprensibili.
-- **Tenere `docs/superpowers/` fuori dal template.** I documenti restano solo nel tuo
-  repo privato. Il template perde la sua storia progettuale, che per un pubblico di
-  sviluppatori è probabilmente la parte più interessante.
-
-**Da decidere prima del punto 3**, perché rendere pubblico non si annulla: ciò che è
-stato visto resta visto.
 
 ---
 
@@ -295,10 +267,6 @@ decidere che non ti importano.
   Cloudflare. Serve alla voce 8.
 - **Stato Terraform**: locale, come raccomandato, oppure backend su R2. Serve alla
   voce 7; in assenza di indicazioni si procede con quello locale.
-- **L'URL `/contatti` in un template inglese.** Chi forka si ritrova
-  `suosito.com/contatti`. Cambiarlo tocca routing, navigazione, testi e test — non è
-  una sostituzione di testo — e va deciso **prima** di distribuire: dopo, romperebbe i
-  link già condivisi.
 - **I commenti nel codice sono in italiano.** In un template rivolto a sviluppatori
   internazionali è una stonatura vera, ma tradurli tutti significa toccare codice
   funzionante per una ragione estetica. Se si fa, è un punto a sé con revisione seria.
@@ -313,6 +281,8 @@ decidere che non ti importano.
   stella, una segnalazione, e qualcuno che racconta cosa ci ha costruito. La sezione
   del README chiede quelli. Rimessi i link, se mai servirà, sono cinque minuti:
   `.github/FUNDING.yml` è stato rimosso e va ricreato.
+- **URL pubblico `/about`** (21 settembre 2026). `/contatti` resta un redirect 301
+  per i collegamenti esistenti; navigazione, testi e test usano `/about`.
 
 ---
 
@@ -321,5 +291,9 @@ decidere che non ti importano.
 - **Voce 1 — PR del bootstrap**, mergiata il 2026-09-20. Ha richiesto una
   seconda PR perché la prima era stata unita con uno squash, che aveva
   scartato la parentela git col sito.
+- **Voce 2 — documentazione pronta alla pubblicazione** (21 settembre 2026).
+  I riferimenti personali a domini, bucket, team Access, email, repository del sito
+  e sessioni di lavoro sono stati sostituiti da segnaposto; la storia tecnica resta
+  nel template. Il repository del template resta l'upstream canonico dei fork.
 
 ---

@@ -30,7 +30,6 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
 Vincoli tecnici specifici di questo punto:
@@ -43,7 +42,7 @@ Vincoli tecnici specifici di questo punto:
 ## Stato di partenza verificato
 
 - `terraform` **non è installato** su questa macchina: il Task 1 lo installa.
-- Produzione: zona reale `davidetarsi.com`, Access limita `/admin` e `/api/admin`, il resto è pubblico.
+- Produzione: zona reale `portfolio.example`, Access limita `/admin` e `/api/admin`, il resto è pubblico.
 - Staging: dominio `workers.dev`, Access non può fare path-scoping quindi protegge tutto il dominio.
 - Deploy: Git integration nativa Cloudflare, branch `main` → Worker `photo-portfolio`, branch `staging` → `photo-portfolio-staging`. **Non gestibile da Terraform**: va nel runbook.
 - `public/_headers` oggi è statico con due URL R2 segnaposto (li ha messi il bootstrap).
@@ -185,7 +184,6 @@ Stato locale come deciso nell'analisi: infra/.gitignore esclude
 tfstate, .terraform/ e ogni .tfvars tranne l'esempio.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -355,7 +353,6 @@ Cloudflare dichiara r2.dev rate-limited e solo per sviluppo, senza
 cache ne WAF.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -444,7 +441,6 @@ tutto il dominio. E lo stesso assetto gia in uso, ora descritto invece
 che configurato a mano dalla dashboard.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -521,7 +517,6 @@ r2_public_url_prod preferisce il dominio custom quando c'e: e l'unico
 adatto alla produzione.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -733,7 +728,6 @@ produrre un wrangler.json con dentro un "undefined" che poi sbaglia il
 deploy in modo oscuro.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -954,7 +948,6 @@ Rimosso public/_headers: era la seconda sorgente della stessa policy e
 Vite lo avrebbe copiato sopra quello generato.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -1031,7 +1024,6 @@ del primo deploy), la Git integration che Terraform non gestisce, e
 terraform import per chi ha gia creato le risorse a mano.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 

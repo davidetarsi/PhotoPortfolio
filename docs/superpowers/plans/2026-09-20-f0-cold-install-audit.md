@@ -32,8 +32,8 @@ Rilevato il 20 settembre 2026, prima di iniziare. Il piano si basa su questi fat
 | `engines` in `package.json` | **assente** |
 | `.env.example` | tracciato, e allineato alle due variabili lette dal codice (`VITE_DRIVE_API_KEY`, `VITE_WEB3FORMS_ACCESS_KEY`) — **nessun difetto** |
 | `config/site.config.js`, `config/albums.config.js` | valori segnaposto, **nessun dato personale** |
-| `davidetarsi` nei file tracciati | solo in `docs/` (pianificazione interna) |
-| `davidetarsi/PhotoPortfolio` in `SETUP.md` | presente e **legittimo** — diventa rilevante appena `SETUP.md` è tracciato |
+| `your-github-user` nei file tracciati | solo in `docs/` (pianificazione interna) |
+| `your-github-user/your-portfolio` in `SETUP.md` | presente e **legittimo** — diventa rilevante appena `SETUP.md` è tracciato |
 | Altri file non tracciati | `docs/superpowers/plans/2026-07-06-m1-google-drive-provider.md`, `...-m2-config-theming.md`, `...-m3-gallery-components.md` |
 
 ---
@@ -54,7 +54,7 @@ Non è un task TDD: produce una misura, non codice. Le correzioni arrivano dopo.
 ```bash
 CLONE_DIR=/tmp/pp-f0-clone-1
 rm -rf "$CLONE_DIR"
-git clone /Users/davide/Desktop/Personal/Progetti/PhotoPortfolioTemplate "$CLONE_DIR"
+git clone /path/to/PhotoPortfolioTemplate "$CLONE_DIR"
 cd "$CLONE_DIR" && ls -a
 ```
 
@@ -124,7 +124,7 @@ Attriti specifici del percorso Drive/GCP/Web3Forms, che F1/F2 sostituiranno.
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/davide/Desktop/Personal/Progetti/PhotoPortfolioTemplate
+cd /path/to/PhotoPortfolioTemplate
 git add docs/cold-install-audit.md
 git commit -m "docs: audit dell'installazione a freddo, stato pre-correzioni"
 ```
@@ -297,7 +297,7 @@ const SHIPPED_FILES = [
 ];
 
 const PERSONAL_PATTERNS = [
-  /davidetarsi/i,
+  /your-github-user/i,
   /davide\.tarsi/i,
   // Un bucket R2 pubblico reale: 32 esadecimali. Un segnaposto tipo
   // pub-XXXX.r2.dev non corrisponde, quindi non dà falsi positivi.
@@ -350,7 +350,7 @@ describe('superficie consegnata al destinatario', () => {
 npx vitest run tests/repo/no-personal-data.test.js
 ```
 
-Atteso: FAIL con `SETUP.md: davidetarsi` fra gli offenders. `SETUP.md`, tracciata nel Task 2, cita il repo sorgente del template — ed è corretto che lo faccia. Il fallimento dimostra che la guardia vede davvero la superficie consegnata.
+Atteso: FAIL con `SETUP.md: your-github-user` fra gli offenders. `SETUP.md`, tracciata nel Task 2, cita il repo sorgente del template — ed è corretto che lo faccia. Il fallimento dimostra che la guardia vede davvero la superficie consegnata.
 
 - [ ] **Step 3: Ammettere il riferimento legittimo**
 
@@ -358,7 +358,7 @@ Il riferimento al repo sorgente è lecito, quindi entra nell'allowlist — ora c
 
 ```js
 const ALLOWED = [
-  { file: 'SETUP.md', text: 'davidetarsi/PhotoPortfolio' },
+  { file: 'SETUP.md', text: 'your-github-user/your-portfolio' },
 ];
 ```
 
@@ -373,28 +373,28 @@ Atteso: PASS.
 In `config/site.config.js` la chiave `heroImageUrl` esiste già con valore `''`. Sostituirne **temporaneamente** il valore:
 
 ```js
-  heroImageUrl: 'https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev/sport/cover.webp',
+  heroImageUrl: 'https://pub-xxxxxxxx.r2.dev/sport/cover.webp',
 ```
 
 ```bash
 npx vitest run tests/repo/no-personal-data.test.js
 ```
 
-Atteso: FAIL con `config/site.config.js: pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev` fra gli offenders. Poi ripristinare `heroImageUrl: ''` e rieseguire: PASS.
+Atteso: FAIL con `config/site.config.js: pub-xxxxxxxx.r2.dev` fra gli offenders. Poi ripristinare `heroImageUrl: ''` e rieseguire: PASS.
 
 - [ ] **Step 5: Verificare che l'allowlist sia stretta e non generica**
 
 Aggiungere temporaneamente in `README.md`:
 
 ```markdown
-Contatto: davidetarsi.com
+Contatto: portfolio.example
 ```
 
 ```bash
 npx vitest run tests/repo/no-personal-data.test.js
 ```
 
-Atteso: FAIL con `README.md: davidetarsi`. La voce di allowlist per `SETUP.md` **non** deve coprire un'occorrenza in un altro file: è la verifica che l'allowlist sia per coppia file + stringa e non per pattern. Rimuovere la riga e rieseguire: PASS.
+Atteso: FAIL con `README.md: your-github-user`. La voce di allowlist per `SETUP.md` **non** deve coprire un'occorrenza in un altro file: è la verifica che l'allowlist sia per coppia file + stringa e non per pattern. Rimuovere la riga e rieseguire: PASS.
 
 - [ ] **Step 6: Eseguire l'intera suite**
 
@@ -504,7 +504,7 @@ Il primo clone ha misurato. Questo verifica che le correzioni siano visibili **a
 ```bash
 CLONE_DIR=/tmp/pp-f0-clone-2
 rm -rf "$CLONE_DIR"
-git clone /Users/davide/Desktop/Personal/Progetti/PhotoPortfolioTemplate "$CLONE_DIR"
+git clone /path/to/PhotoPortfolioTemplate "$CLONE_DIR"
 cd "$CLONE_DIR" && ls SETUP.md CUSTOMIZING.md README.md
 ```
 
@@ -559,7 +559,7 @@ rm -rf /tmp/pp-f0-clone-1 /tmp/pp-f0-clone-2
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/davide/Desktop/Personal/Progetti/PhotoPortfolioTemplate
+cd /path/to/PhotoPortfolioTemplate
 git add docs/cold-install-audit.md
 git commit -m "docs: chiude l'audit di F0 con la verifica dal secondo clone"
 ```

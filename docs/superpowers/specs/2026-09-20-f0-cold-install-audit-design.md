@@ -98,7 +98,7 @@ Due test, in vitest come il resto della suite. Il resto dei test è colocato acc
 **`docs/` è escluso, deliberatamente.** Contiene la pianificazione interna — piani, spec e questo stesso documento — che parla legittimamente dei repo di Davide e del sito personale. Una guardia che scansionasse `docs/` fallirebbe subito, anche sulla spec che la definisce. Resta però una domanda vera, che la simulazione deve registrare come attrito: *ha senso che un destinatario riceva venti file di pianificazione di un altro progetto?* Non si decide qui.
 
 **`no-personal-data`** — la superficie sopra non contiene nome, email, domini o ID personali.
-Allowlist ristretta ed esplicita: oggi `davidetarsi/PhotoPortfolio` compare in `SETUP.md`, come riferimento al repo sorgente del template, ed è corretto che ci sia — diventerà rilevante non appena `SETUP.md` sarà tracciato. L'allowlist elenca coppie percorso + stringa ammessa, non pattern generici, così un nuovo riferimento personale non passa per somiglianza con uno legittimo.
+Allowlist ristretta ed esplicita: oggi `your-github-user/your-portfolio` compare in `SETUP.md`, come riferimento al repo sorgente del template, ed è corretto che ci sia — diventerà rilevante non appena `SETUP.md` sarà tracciato. L'allowlist elenca coppie percorso + stringa ammessa, non pattern generici, così un nuovo riferimento personale non passa per somiglianza con uno legittimo.
 
 **`docs-reference-existing-files`** — ogni percorso di file citato in `README.md`, `SETUP.md` e `CUSTOMIZING.md` esiste fra i file tracciati.
 Copre sia i file non tracciati sia quelli rinominati o spostati. È il test che avrebbe trovato `SETUP.md` da solo.

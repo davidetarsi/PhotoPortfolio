@@ -24,7 +24,6 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
 Vincoli tecnici:
@@ -225,7 +224,6 @@ ricavare {album, name} da un URL assoluto, e ora il riferimento e'
 dichiarato direttamente.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -325,7 +323,6 @@ gia' letto dal plugin della CSP, e leggerlo due volte aprirebbe la
 porta a due valori diversi nello stesso build.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -418,7 +415,6 @@ Runbook: la procedura in sette passi, con la verifica curl prima di
 spegnere e l'avvertenza che gli URL r2.dev gia' condivisi moriranno.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 

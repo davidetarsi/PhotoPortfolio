@@ -24,7 +24,6 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
 Vincoli tecnici:
@@ -191,7 +190,6 @@ condivise, architettura che non esiste piu', e nessun file in src/ la
 leggeva. Verificato con grep prima di cancellarla.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -303,7 +301,6 @@ I test che asserivano su stringhe letterali ora leggono texts.admin.*,
 cosi cambiare un testo non fa fallire i test.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -393,7 +390,6 @@ non cambia, cambia dove si decide.
 Il locale delle date non e' piu' 'it-IT' scolpito ma siteConfig.language.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -569,7 +565,6 @@ theming, ed e' una scelta: l'analisi §4.4 l'ha scartato perche'
 moltiplica le combinazioni da testare e chi clona preferisce il CSS.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 

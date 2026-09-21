@@ -15,7 +15,7 @@ Due canali diversi, da non confondere:
 
 2. **CSP hardcodata** — [public/_headers](../../../public/_headers) contiene gli URL R2 reali (prod + staging) scolpiti nel file:
    ```
-   img-src ... https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev https://pub-a7de17dec08048a281f2c978f99ed4ca.r2.dev ...
+   img-src ... https://pub-xxxxxxxx.r2.dev https://pub-yyyyyyyy.r2.dev ...
    ```
    Ogni clone del template ha bucket/URL diversi. Da generare a build time (stesso meccanismo di `injectSiteMeta` in `vite.config.js` che già inietta i placeholder `{{SITE_*}}` negli HTML) invece di tenerlo statico. **~1h + test**
 

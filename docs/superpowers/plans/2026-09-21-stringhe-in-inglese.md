@@ -24,7 +24,6 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
 Vincoli di questo lavoro:
@@ -114,7 +113,6 @@ Conservati nomi tecnici, opzioni e valori interpolati: tradurre
 --input o optimized/ avrebbe prodotto istruzioni che non funzionano.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -192,7 +190,6 @@ Adeguate le due asserzioni di decideMigration.test.js che cercavano
 sovrascrittura, e in inglese quella parola e' un'altra.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -256,7 +253,6 @@ Non tradotti ma spostati: la lingua del copy predefinito e' una
 decisione a parte.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---

@@ -12,7 +12,7 @@ Prosegue [2026-07-12-boilerplate-template-audit.md](2026-07-12-boilerplate-templ
 
 ## 1. Stato reale, verificato
 
-Verificato sul branch `staging` di `davidetarsi/photoportfolio` (33 commit avanti rispetto a `main`) il 2026-09-20.
+Verificato sul branch `staging` di `your-github-user/your-portfolio` (33 commit avanti rispetto a `main`) il 2026-09-20.
 
 | Capacità | Stato | Dove |
 |---|---|---|

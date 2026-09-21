@@ -9,7 +9,7 @@ If you prefer Terraform, skip this document and follow the automated path in `RE
 You need:
 
 - **Active Cloudflare account** with dashboard access and permissions to create R2 buckets, public domains, and Access applications (Zero Trust).
-- **Production domain** (optional on first deploy, required before going live). In our example we use a custom domain like `davidetarsi.com`, already an active Cloudflare zone. If you don't have one, for initial testing you can use the `workers.dev` domain provided by Cloudflare (read-only, with rate limiting).
+- **Production domain** (optional on first deploy, required before going live). In our example we use a custom domain like `portfolio.example`, already an active Cloudflare zone. If you don't have one, for initial testing you can use the `workers.dev` domain provided by Cloudflare (read-only, with rate limiting).
 - **Zone ID** of the custom domain, if you use it for photos. Find it in Cloudflare dashboard → select the domain → copy Zone ID from the right sidebar.
 
 ## 2. Cloudflare API Token

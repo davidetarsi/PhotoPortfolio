@@ -24,7 +24,6 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
 Vincoli tecnici:
@@ -236,7 +235,6 @@ per "non esiste": con permessi mancanti o bucket sbagliato e' meglio
 fermarsi che sovrascrivere al buio.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -308,7 +306,6 @@ il punto 2 ha tolto da ogni altra parte.
 Ora e' coverName, e l'album e' gia' dato dallo slug.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -376,7 +373,6 @@ piu' oggetto.
 Conservata invariata la sezione sul fork, che era gia' corretta.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -461,7 +457,6 @@ Segue la tabella "voglio cambiare X, tocco Y", e l'avvertenza che
 toccare src/ produce conflitti ai futuri merge dal template.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 

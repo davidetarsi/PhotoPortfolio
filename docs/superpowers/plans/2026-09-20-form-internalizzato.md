@@ -26,7 +26,6 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
 Vincoli tecnici e di sicurezza, dalla spec:
@@ -236,7 +235,6 @@ davvero in una regex non si puo', e rifiutare un indirizzo valido e'
 peggio che accettarne uno finto, che tanto non ricevera' risposta.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -379,7 +377,6 @@ La chiave e' ordinabile per data, cosi' l'elenco della dashboard e' una
 list con prefix e non serve tenere un indice.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -487,7 +484,6 @@ un topic ntfy lo legge chiunque ne indovini il nome — e una garanzia di
 sicurezza non verificata scade alla prima modifica distratta.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -605,7 +601,6 @@ incertezza blocca — un errore di rete verso Cloudflare non e' un motivo
 per accettare un invio non verificato.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -860,7 +855,6 @@ e' gia' al sicuro, e un visitatore non deve vedere "invio fallito"
 perche' il telefono del proprietario era irraggiungibile.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -990,7 +984,6 @@ cancellerebbe altro: c'e' un test che prova proprio a raggiungere
 _site/site.json.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -1130,7 +1123,6 @@ bottone per eliminarlo: senza la cancellazione non si potrebbero
 conservare dati personali di altre persone.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -1241,7 +1233,6 @@ resoconto di decisioni prese allora, e riscriverli falsificherebbe la
 storia del progetto.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -1353,7 +1344,6 @@ non deve contenere credenziali. Va messo a mano con wrangler secret
 put, e il runbook lo dice.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 

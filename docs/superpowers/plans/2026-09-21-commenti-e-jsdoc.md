@@ -24,7 +24,6 @@ Ogni commit termina con:
 
 ```
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 ```
 
 Vincoli di questo lavoro, e sono la sua sostanza:
@@ -145,7 +144,6 @@ cui certi bug non tornano. Senza una regola scritta, il prossimo che
 passa vede trecento righe di commento e "pulisce".
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4
 EOF
 ```
 
@@ -223,7 +221,6 @@ uno a uno invece che con lo spread, Turnstile nella CSP solo quando c'e'.
 Impronta del bundle invariata: non e' cambiata una riga di codice.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -274,7 +271,6 @@ Tradotti, non riassunti.
 Impronta del bundle invariata.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -322,7 +318,6 @@ revisione, e quel commento e' cio' che impedisce di rimetterlo.
 Impronta del bundle invariata.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -376,7 +371,6 @@ sola, la guardia beforeunload staccata su hashchange.
 Impronta del bundle invariata.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
@@ -434,7 +428,6 @@ rilanciato sovrascrive il lavoro fatto dalla dashboard, e la ragione
 per cui coverName usa || e non ??.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01QQJajTchjenLmxtsSWNZD4"
 ```
 
 ---
