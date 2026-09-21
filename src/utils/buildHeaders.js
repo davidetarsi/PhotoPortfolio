@@ -30,15 +30,22 @@ export function buildHeaders(config, options = {}) {
 
   const lista = origini.join(' ');
 
+  // Turnstile carica uno script e disegna un iframe: senza queste tre
+  // direttive il browser lo blocca. Si aggiungono solo se il widget e'
+  // configurato: autorizzare un dominio che non si usa allarga la
+  // policy senza motivo.
+  const turnstile = config?.vars?.TURNSTILE_SITEKEY ? 'https://challenges.cloudflare.com' : '';
+  const conTurnstile = direttiva => (turnstile ? `${direttiva} ${turnstile}` : direttiva);
+
   const csp = [
     "default-src 'self'",
-    "script-src 'self' https://challenges.cloudflare.com",
+    conTurnstile("script-src 'self'"),
     "style-src 'self' https://fonts.googleapis.com",
     'font-src https://fonts.gstatic.com',
     `img-src 'self' data: ${lista}`,
-    `connect-src 'self' ${lista} https://challenges.cloudflare.com`,
+    conTurnstile(`connect-src 'self' ${lista}`),
     "form-action 'self'",
-    "frame-src https://challenges.cloudflare.com",
+    ...(turnstile ? [`frame-src ${turnstile}`] : []),
     "frame-ancestors 'none'",
     "object-src 'none'",
     "base-uri 'self'",

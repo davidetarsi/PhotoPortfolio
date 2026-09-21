@@ -64,7 +64,7 @@ Ogni task ha una **DoD** (Definition of Done): il criterio oggettivo per dirla c
 
 ## M4 — Pagine (grana grossa, dettagliare a fine M3)
 
-Landing (hero + card album) · Pagina album via `?album=slug` con 404 gentile · Contatti con form interno (scrive su R2, notifiche webhook, Turnstile + honeypot). 
+Landing (hero + card album) · Pagina album via `?album=slug` con 404 gentile · Contatti con form (Web3Forms/Formspree + honeypot). 
 
 ## M5 — Deploy
 
