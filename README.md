@@ -39,7 +39,7 @@ No database. No server to maintain. Nothing to pay every month.
 - [🏗️ Project structure](#-project-structure)
 - [🧱 Architecture](#-architecture)
 - [🤝 Contributing](#-contributing)
-- [☕ This is free, and it stays free](#-this-is-free-and-it-stays-free)
+- [⭐ If this was useful](#-if-this-was-useful)
 - [🔮 Future development](#-future-development)
 - [⚖️ License](#-license)
 
@@ -248,19 +248,17 @@ Issues and pull requests are welcome. If you've built something with this templa
 
 If you fix something in `src/`, consider contributing it back upstream — that way the next person who forks it gets the fix for free, and you won't have to re-apply it on every merge.
 
-## ☕ This is free, and it stays free
+## ⭐ If this was useful
 
-It also took a lot of evenings.
+This template is free, and it stays free. There is nothing to pay for and nothing to unlock.
 
-If this template has been useful to you — if you've put your portfolio online with it, or someone else's you care about — you can chip in toward the next batch of evenings. It goes into maintaining it, answering issues, and building the things in the section right below.
+What genuinely helps, and costs you nothing:
 
-Nothing here is paywalled, nothing ever will be, and nobody's counting who gave what. Consider it a way of saying it was good for something.
+- **Star the repository** — it is the only signal I get that someone found it worth keeping.
+- **Open an issue when something breaks.** Especially during setup: if you got stuck somewhere, so will the next person, and I would rather fix the instructions than let it happen twice.
+- **Tell me what you built with it.** An issue, a link, two lines. Knowing which parts people actually use is what decides what gets improved next.
 
-- **[GitHub Sponsors](https://github.com/sponsors/davidetarsi)** — also the *Sponsor* button at the top of this page
-- **Ko-fi** — *(coming soon)*
-- **PayPal** — *(coming soon)*
-
-And if money isn't your thing: open an issue when something breaks, or tell me what you built. That counts for a lot too — and it's free for you as well.
+If you fixed something in your own fork, consider opening a pull request — the next person gets it for free, and you stop re-applying it on every update.
 
 ## 🔮 Future development
 

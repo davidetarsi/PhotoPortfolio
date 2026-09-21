@@ -36,13 +36,12 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 |---|---|---|
 | 10 | Screenshot di home, album e dashboard | niente, ma è ciò che pesa di più |
 | 11 | Link alla demo dal vivo | niente |
-| 12 | Username Ko-fi e PayPal | i due link di donazione |
 
 ### 👀 Da guardare e decidere
 
 | # | Azione | Blocca |
 |---|---|---|
-| 13 | Guardare le tre varianti di card e scegliere il default | niente |
+| 12 | Guardare le tre varianti di card e scegliere il default | niente |
 
 ### 🔄 Il tuo sito
 
@@ -263,26 +262,7 @@ esempio funzionante convince più di qualsiasi elenco di funzionalità.
 
 ---
 
-### 12. Ko-fi e PayPal
-
-**Dove:** `.github/FUNDING.yml` e la sezione *È gratis, e resta gratis* dei due README.
-
-In `FUNDING.yml` le due righe sono già scritte e commentate, con le istruzioni dentro il
-file. Servono solo gli username:
-
-```yaml
-# ko_fi: IL-TUO-USERNAME-KOFI
-# custom: ["https://paypal.me/IL-TUO-USERNAME"]
-```
-
-> Uno username sbagliato non dà errore: produce un bottone *Sponsor* che porta a una
-> pagina inesistente. Meglio lasciarli spenti finché non sono verificati.
-
-GitHub Sponsors è già attivo e non richiede nulla.
-
----
-
-### 13. Guardare le tre varianti di card
+### 12. Guardare le tre varianti di card
 
 **Dove:** `npm run dev`, e una riga da cambiare in `theme/card.css`.
 
@@ -322,6 +302,17 @@ decidere che non ti importano.
 - **I commenti nel codice sono in italiano.** In un template rivolto a sviluppatori
   internazionali è una stonatura vera, ma tradurli tutti significa toccare codice
   funzionante per una ragione estetica. Se si fa, è un punto a sé con revisione seria.
+
+---
+
+## Decise, e chiuse
+
+- **Niente link di donazione, per ora** (21 settembre 2026). Un progetto senza
+  utenti e senza costi ricorrenti che elenca tre modi per donare dice di sé qualcosa
+  che non è ancora vero. In questa fase il segnale utile non sono i soldi: sono una
+  stella, una segnalazione, e qualcuno che racconta cosa ci ha costruito. La sezione
+  del README chiede quelli. Rimessi i link, se mai servirà, sono cinque minuti:
+  `.github/FUNDING.yml` è stato rimosso e va ricreato.
 
 ---
 

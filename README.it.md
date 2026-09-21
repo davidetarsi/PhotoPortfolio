@@ -39,7 +39,7 @@ Niente database. Nessun server da mantenere. Zero euro al mese.
 - [🏗️ Struttura del progetto](#-struttura-del-progetto)
 - [🧱 Architettura](#-architettura)
 - [🤝 Contribuire](#-contribuire)
-- [☕ È gratis, e resta gratis](#-è-gratis-e-resta-gratis)
+- [⭐ Se ti è stato utile](#-se-ti-è-stato-utile)
 - [🔮 Sviluppi futuri](#-sviluppi-futuri)
 - [⚖️ Licenza](#-licenza)
 
@@ -250,19 +250,17 @@ Segnalazioni e pull request sono benvenute. Se hai costruito qualcosa con questo
 
 Se correggi qualcosa in `src/`, valuta di riportarlo a monte — così chi forkerà dopo di te se lo ritrova già fatto, e tu non dovrai riapplicarlo a ogni merge.
 
-## ☕ È gratis, e resta gratis
+## ⭐ Se ti è stato utile
 
-Però è costato parecchie serate.
+Questo template è gratis, e resta gratis. Non c'è nulla da pagare e nulla da sbloccare.
 
-Se questo template ti è stato utile — se ci hai messo online il tuo portfolio, o quello di qualcuno a cui tieni — puoi contribuire al prossimo giro di serate. Va in manutenzione, risposte alle segnalazioni, e nelle cose elencate qui sotto.
+Quello che serve davvero, e non ti costa niente:
 
-Niente è a pagamento, niente lo sarà mai, e nessuno tiene il conto di chi ha dato cosa. Consideralo un modo per dire che è servito a qualcosa.
+- **Metti una stella al repository** — è l'unico segnale che mi dice che qualcuno l'ha trovato utile.
+- **Apri una segnalazione quando qualcosa si rompe.** Soprattutto durante il setup: se ti sei bloccato in un punto, ci si bloccherà anche il prossimo, e preferisco correggere le istruzioni piuttosto che lasciarlo succedere due volte.
+- **Raccontami cosa ci hai costruito.** Una issue, un link, due righe. Sapere quali parti la gente usa davvero è ciò che decide cosa migliorare dopo.
 
-- 💖 **[GitHub Sponsors](https://github.com/sponsors/davidetarsi)** — anche il bottone *Sponsor* in cima a questa pagina
-- ☕ **Ko-fi** — *(in arrivo)*
-- 💸 **PayPal** — *(in arrivo)*
-
-E se il denaro non fa per te: apri una segnalazione quando qualcosa si rompe, oppure raccontami cosa ci hai costruito. Vale parecchio anche quello — e a te non costa niente.
+Se hai corretto qualcosa nel tuo fork, valuta di aprire una pull request: chi arriva dopo se la ritrova già fatta, e tu smetti di riapplicarla a ogni aggiornamento.
 
 ## 🔮 Sviluppi futuri
 
