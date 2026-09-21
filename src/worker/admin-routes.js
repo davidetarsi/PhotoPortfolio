@@ -33,6 +33,14 @@ async function putValidatedJson(request, env, key, validate) {
   return jsonResponse({ ok: true });
 }
 
+/**
+ * Handles authenticated admin API requests for managing site data and photos.
+ * JWT is verified here, not in the router, so every admin handler is closed by construction.
+ * @param {Request} request - The HTTP request object.
+ * @param {Object} env - Cloudflare environment variables and bindings.
+ * @param {Object} [deps] - Optional dependencies for testing.
+ * @returns {Promise<Response>} HTTP response (JSON or error).
+ */
 export async function handleAdminRequest(request, env, deps = {}) {
   const auth = await verifyAccessJwt(request, env, deps);
   if (!auth.ok) return jsonResponse({ error: 'UNAUTHORIZED' }, 401);

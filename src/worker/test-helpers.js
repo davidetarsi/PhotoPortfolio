@@ -1,6 +1,11 @@
-// src/worker/test-helpers.js
-// Fake dei binding Cloudflare per i test (ambiente node).
+// Fake Cloudflare bindings for tests (node environment).
 
+/**
+ * Creates a fake R2 bucket implementation for testing.
+ * Mimics R2 get, put, delete, and paginated list operations.
+ * @param {Object} [initial] - Initial key-value pairs.
+ * @returns {Object} Fake bucket with store, get, put, delete, list methods.
+ */
 export function makeFakeBucket(initial = {}) {
   const store = new Map(); // key → { text, contentType }
   for (const [k, v] of Object.entries(initial)) {
@@ -10,7 +15,7 @@ export function makeFakeBucket(initial = {}) {
     if (typeof value === 'string') return value;
     if (value instanceof ArrayBuffer) return new TextDecoder().decode(value);
     if (ArrayBuffer.isView(value)) return new TextDecoder().decode(value);
-    // ReadableStream (request.body) → consuma
+    // ReadableStream (request.body) → consume by wrapping in Response.
     return await new Response(value).text();
   };
   return {
@@ -27,10 +32,9 @@ export function makeFakeBucket(initial = {}) {
       for (const k of Array.isArray(keys) ? keys : [keys]) store.delete(k);
     },
     async list({ prefix = '', cursor, limit = 1000 } = {}) {
-      // Cursor = ultima chiave della pagina precedente (come R2/S3 reali), non un offset
-      // numerico: deve restare valido anche se il chiamante cancella le chiavi già viste
-      // tra una list() e la successiva (è esattamente il pattern list→delete→list di
-      // admin-routes.js per la cancellazione album paginata).
+      // Cursor = last key from previous page (like real R2/S3), not numeric offset:
+      // must stay valid even if caller deletes already-seen keys between list() calls
+      // (exactly the list→delete→list pattern in admin-routes.js for paginated album deletion).
       const all = [...store.keys()].filter(k => k.startsWith(prefix)).sort();
       const startIdx = cursor ? all.findIndex(k => k > cursor) : 0;
       const from = startIdx === -1 ? all.length : startIdx;
@@ -41,13 +45,18 @@ export function makeFakeBucket(initial = {}) {
   };
 }
 
+/**
+ * Creates a fake Assets (Workers KV-like) binding for testing.
+ * Records fetch calls for verification.
+ * @returns {Object} Fake assets with calls array and fetch method.
+ */
 export function makeFakeAssets() {
   const calls = [];
   return {
     calls,
     async fetch(urlOrRequest) {
-      // urlOrRequest può essere string | URL | Request: il binding reale
-      // (Fetcher.fetch) accetta tutti e tre. URL non ha `.url` (solo `.href`).
+      // urlOrRequest can be string | URL | Request: the real binding (Fetcher.fetch)
+      // accepts all three. URL has no .url property (only .href).
       const href = typeof urlOrRequest === 'string' ? urlOrRequest : (urlOrRequest.url ?? urlOrRequest.href);
       const u = new URL(href);
       calls.push(u.pathname);
@@ -60,7 +69,12 @@ const te = new TextEncoder();
 const bytesToB64url = bytes =>
   btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-/** Genera una coppia RSA reale e firma JWT validi per i test. */
+/**
+ * Generates a real RSA keypair and creates valid signed JWTs for testing.
+ * @param {Object} [config] - Configuration object.
+ * @param {string} [config.kid] - Key ID for JWT header (default: 'test-key-1').
+ * @returns {Promise<{jwk: Object, signToken: Function, fetchJwks: Function}>} Test kit with key and sign method.
+ */
 export async function makeJwtTestKit({ kid = 'test-key-1' } = {}) {
   const { publicKey, privateKey } = await crypto.subtle.generateKey(
     { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
