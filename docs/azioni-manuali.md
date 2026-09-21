@@ -26,7 +26,6 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 | # | Azione | Blocca |
 |---|---|---|
-| 3 | Rendere pubblico il repo | la condivisione con gli amici |
 | 4 | Togliere la spunta "Template repository" | niente, ma vanifica la scelta del fork |
 
 ### 🖼️ Vetrina — quello che manca a chi arriva sul repo
@@ -295,5 +294,7 @@ decidere che non ti importano.
   I riferimenti personali a domini, bucket, team Access, email, repository del sito
   e sessioni di lavoro sono stati sostituiti da segnaposto; la storia tecnica resta
   nel template. Il repository del template resta l'upstream canonico dei fork.
+- **Voce 3 — repository pubblico** (21 settembre 2026). Completata da Davide;
+  il template può ora essere forkato da altri account GitHub.
 
 ---
