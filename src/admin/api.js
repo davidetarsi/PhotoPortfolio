@@ -1,5 +1,5 @@
-// Client REST verso /api/admin/*. Il JWT viaggia da solo: Cloudflare Access
-// inietta il cookie/header sulla stessa origin, nessuna gestione client.
+// REST client for /api/admin/*. The JWT travels on its own: Cloudflare Access
+// injects the cookie/header on the same origin, no client-side handling needed.
 
 async function send(path, options) {
   const res = await fetch(path, options);
@@ -9,6 +9,19 @@ async function send(path, options) {
 const putJson = (path, data) =>
   send(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
 
+/**
+ * Admin API client interface for managing portfolio content.
+ * Provides methods for updating site settings, albums, photos, messages, and manifests.
+ * @type {Object}
+ * @property {Function} putSite - Update site configuration.
+ * @property {Function} putAlbums - Update album list.
+ * @property {Function} putManifest - Update photo manifest for an album.
+ * @property {Function} uploadPhoto - Upload a photo to an album.
+ * @property {Function} deletePhoto - Delete a photo from an album.
+ * @property {Function} deleteAlbum - Delete an entire album.
+ * @property {Function} listMessages - Retrieve contact form messages.
+ * @property {Function} deleteMessage - Delete a contact form message.
+ */
 export const adminApi = {
   putSite: site => putJson('/api/admin/site', site),
   putAlbums: albums => putJson('/api/admin/albums', { albums }),

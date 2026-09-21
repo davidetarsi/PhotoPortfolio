@@ -6,6 +6,12 @@ import { createStatus } from '../status.js';
 import { createAlbum } from '../album-creation.js';
 import { topBarHtml } from './top-bar.js';
 
+/**
+ * Builds a pending site object with updated name, bio, and social info.
+ * @param {Object} changes - Pending changes {name, bio, instagram}.
+ * @param {Object} currentSite - Current site object.
+ * @returns {Object} New site object with merged changes.
+ */
 export function buildPendingSite({ name, bio, instagram }, currentSite) {
   return {
     name: name.trim(),
@@ -15,6 +21,12 @@ export function buildPendingSite({ name, bio, instagram }, currentSite) {
   };
 }
 
+/**
+ * Renders the admin home view for managing site settings and albums.
+ * Handles site info editing, hero image selection, album management, and preview.
+ * @param {HTMLElement} container - The container to render into.
+ * @param {Object} ctx - Admin context with site, albums, API, and dependencies.
+ */
 export function renderAdminHome(container, ctx) {
   const { site, albums, r2PublicUrl, api, navigate, deps } = ctx;
   const heroSrc = site.hero ? photoUrl(r2PublicUrl, site.hero.album, site.hero.name) : null;
@@ -56,7 +68,7 @@ export function renderAdminHome(container, ctx) {
   const q = sel => container.querySelector(sel);
   const { say, run } = createStatus(q('.admin-status'));
 
-  // --- form sito ---
+  // --- site form ---
   q('[name="site-name"]').value = site.name;
   q('[name="site-bio"]').value = site.bio;
   q('[name="site-instagram"]').value = site.social.instagram ?? '';
@@ -82,7 +94,7 @@ export function renderAdminHome(container, ctx) {
     deps.showPreview(q('.admin-preview'), { name: pending.name, bio: pending.bio, heroUrl: heroSrc, social: pending.social, albums, r2PublicUrl }, texts, deps);
   });
 
-  // --- hero picker: scegli album → thumbs → click imposta hero ---
+  // --- hero picker: choose album → thumbs → click sets hero ---
   const heroSelect = q('[name="hero-album"]');
   for (const a of albums) {
     const opt = document.createElement('option');
@@ -104,17 +116,17 @@ export function renderAdminHome(container, ctx) {
         const updated = { ...ctx.site, hero: { album: heroSelect.value, name: entry.name } };
         await api.putSite(updated);
         ctx.site = updated;
-        renderAdminHome(container, ctx); // re-render con la nuova hero
-        // Il re-render sopra ricrea .admin-status da zero: say() del closure
-        // precedente scriverebbe su un nodo ormai smontato. Va ri-agganciato
-        // al nuovo nodo per far comparire il messaggio.
+        renderAdminHome(container, ctx); // re-render with new hero
+        // The re-render above recreates .admin-status from scratch: the
+        // previous closure's say() would write to a now-unmounted node. Must
+        // re-attach to the new node for the message to appear.
         createStatus(container.querySelector('.admin-status')).say(texts.admin.site.heroUpdated);
       }));
       picker.appendChild(img);
     }
   }));
 
-  // --- lista album: riordino drag&drop, apri, cancella ---
+  // --- album list: drag&drop reorder, open, delete ---
   const list = q('.admin-album-list');
   for (const a of albums) {
     const row = document.createElement('div');
@@ -142,7 +154,6 @@ export function renderAdminHome(container, ctx) {
     renderAdminHome(container, ctx);
   }));
 
-  // --- nuovo album ---
   q('.admin-create-album').addEventListener('click', () => run(async () => {
     const result = await createAlbum(q('[name="new-album-title"]').value, ctx);
     if (!result.ok) { say(result.error, true); return; }

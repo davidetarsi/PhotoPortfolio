@@ -1,9 +1,17 @@
 import { texts } from '../../config/texts.config.js';
 import { siteConfig } from '../../config/site.config.js';
 
-// Helper di stato condiviso tra home.js e album.js: un badge ("Ultima azione
-// eseguita" / "Errore") seguito dal messaggio e da un timestamp, così l'esito
-// dell'ultima azione è distinguibile a colpo d'occhio e non solo dal testo.
+// Shared state helper between home.js and album.js: a badge ("Last action" /
+// "Error") followed by message and timestamp, so the result of the last action
+// is visually distinct at a glance, not just from text.
+
+/**
+ * Creates a status display interface for showing operation results.
+ * Returns functions to update status badge, message, and timestamp.
+ * Note: say() closure captures DOM refs that may be recreated on re-render.
+ * @param {HTMLElement} el - The status container element.
+ * @returns {{say: Function, run: Function}} Object with say(msg, isError) and run(fn) methods.
+ */
 export function createStatus(el) {
   const badge = el.querySelector('.admin-status__badge');
   const text = el.querySelector('.admin-status__text');

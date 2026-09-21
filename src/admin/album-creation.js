@@ -2,6 +2,14 @@ import { slugifyTitle, SLUG_RE, RESERVED_SLUGS } from '../shared/content-rules.j
 import { texts } from '../../config/texts.config.js';
 import { formatText } from '../utils/formatText.js';
 
+/**
+ * Creates a new album in the portfolio.
+ * @param {string} title - The album title to be slugified and validated.
+ * @param {Object} ctx - The admin context containing albums array and API.
+ * @param {Array} ctx.albums - List of existing albums.
+ * @param {Object} ctx.api - API interface for persisting albums.
+ * @returns {Promise<{ok: boolean, error?: string, slug?: string}>} Result object with success flag and either error message or slug.
+ */
 export async function createAlbum(title, ctx) {
   const trimmed = title.trim();
   const slug = slugifyTitle(trimmed);
