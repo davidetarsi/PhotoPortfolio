@@ -89,12 +89,12 @@ export async function buildManifest(optimizedDir) {
 
 /**
  * Processes all images in source directory and writes optimized .webp files with manifest.
- * @param {string} originaliDir - Absolute path to source image folder.
+ * @param {string} sourceDir - Absolute path to source image folder.
  * @param {string} optimizedDir - Absolute path for output folder.
  * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
-export async function processDir(originaliDir, optimizedDir) {
-  const files = (await readdir(originaliDir)).filter(isSupportedFile);
+export async function processDir(sourceDir, optimizedDir) {
+  const files = (await readdir(sourceDir)).filter(isSupportedFile);
 
   await rm(optimizedDir, { recursive: true, force: true });
   await mkdir(optimizedDir, { recursive: true });
@@ -111,7 +111,7 @@ export async function processDir(originaliDir, optimizedDir) {
         const outName = basename(file, extname(file)) + '.webp';
         process.stdout.write(`⚙  [${idx}/${files.length}] ${file} → ${outName}\n`);
         try {
-          const info = await processImage(join(originaliDir, file), join(optimizedDir, outName));
+          const info = await processImage(join(sourceDir, file), join(optimizedDir, outName));
           return { name: outName, width: info.width, height: info.height };
         } catch (err) {
           process.stderr.write(`  ✗ Error on ${file}: ${err.message}\n`);
@@ -138,7 +138,7 @@ async function main() {
     process.stdout.write(`
 Usage: npm run compress -- --input <path> [--manifest-only]
 
-  --input <path>       Root folder containing originali/ (and optimized/)
+  --input <path>       Root folder containing source/ (and optimized/)
   --manifest-only      Read dimensions from .webp files in optimized/ without recompressing
   --help               Show this message
 \n`);
@@ -174,18 +174,18 @@ Usage: npm run compress -- --input <path> [--manifest-only]
     return;
   }
 
-  const originaliDir = join(inputRoot, 'originali');
+  const sourceDir = join(inputRoot, 'source');
 
-  if (!existsSync(originaliDir)) {
-    process.stderr.write(`Error: folder "originali/" not found in "${inputRoot}".\n`);
+  if (!existsSync(sourceDir)) {
+    process.stderr.write(`Error: folder "source/" not found in "${inputRoot}".\n`);
     process.exit(1);
   }
 
-  const allFiles = (await readdir(originaliDir)).filter(isSupportedFile);
-  process.stdout.write(`📁 Input:  ${originaliDir}  (${allFiles.length} photos)\n`);
+  const allFiles = (await readdir(sourceDir)).filter(isSupportedFile);
+  process.stdout.write(`📁 Input:  ${sourceDir}  (${allFiles.length} photos)\n`);
   process.stdout.write('🗑  Clearing optimized/...\n');
 
-  const { ok, errors, elapsed } = await processDir(originaliDir, optimizedDir);
+  const { ok, errors, elapsed } = await processDir(sourceDir, optimizedDir);
 
   const secs = (elapsed / 1000).toFixed(1);
   process.stdout.write(

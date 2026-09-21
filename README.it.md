@@ -242,7 +242,7 @@ public/          ← asset statici (favicon). `_headers` non sta qui: si genera 
 | **Intestazioni di sicurezza** | generate da `wrangler.json` a build time |
 | **Meta tag OpenGraph** | iniettati a build time da `site.config.js` |
 | **Framework** | vanilla JS/HTML/CSS — nessun framework a runtime |
-| **Compressione foto** | `npm run compress -- --input <percorso>` (Sharp, WebP 1900px q85) |
+| **Compressione foto** | `npm run compress -- --input <percorso>` — per HEIC, TIFF e caricamenti massivi (Sharp, WebP 1900px q85) |
 
 ## 🤝 Contribuire
 
