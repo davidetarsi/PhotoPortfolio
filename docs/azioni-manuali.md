@@ -26,7 +26,6 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 | # | Azione | Blocca |
 |---|---|---|
-| 4 | Togliere la spunta "Template repository" | niente, ma vanifica la scelta del fork |
 
 ### 🖼️ Vetrina — quello che manca a chi arriva sul repo
 
@@ -296,5 +295,8 @@ decidere che non ti importano.
   nel template. Il repository del template resta l'upstream canonico dei fork.
 - **Voce 3 — repository pubblico** (21 settembre 2026). Completata da Davide;
   il template può ora essere forkato da altri account GitHub.
+- **Voce 4 — opzione Template repository disattivata** (21 settembre 2026).
+  Completata da Davide: il flusso presentato da GitHub resta il fork, che conserva
+  la parentela necessaria per ricevere aggiornamenti dall'upstream.
 
 ---
