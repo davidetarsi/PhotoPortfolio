@@ -248,6 +248,8 @@ Issues and pull requests are welcome. If you've built something with this templa
 
 If you fix something in `src/`, consider contributing it back upstream — that way the next person who forks it gets the fix for free, and you won't have to re-apply it on every merge.
 
+**How to contribute:** See [`CONTRIBUTING.md`](CONTRIBUTING.md) for conventions on code comments, commit messages, and the contribution workflow.
+
 ## ⭐ If this was useful
 
 This template is free, and it stays free. There is nothing to pay for and nothing to unlock.

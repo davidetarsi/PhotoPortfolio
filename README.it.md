@@ -250,6 +250,8 @@ Segnalazioni e pull request sono benvenute. Se hai costruito qualcosa con questo
 
 Se correggi qualcosa in `src/`, valuta di riportarlo a monte — così chi forkerà dopo di te se lo ritrova già fatto, e tu non dovrai riapplicarlo a ogni merge.
 
+**Come contribuire:** Vedi [`CONTRIBUTING.md`](CONTRIBUTING.md) per le convenzioni su commenti nel codice, messaggi di commit e il flusso di contribuzione.
+
 ## ⭐ Se ti è stato utile
 
 Questo template è gratis, e resta gratis. Non c'è nulla da pagare e nulla da sbloccare.
