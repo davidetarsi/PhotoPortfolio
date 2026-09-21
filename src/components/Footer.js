@@ -1,5 +1,11 @@
 import '../styles/footer.css';
 
+/**
+ * Renders the site footer with copyright and social links.
+ * @param {HTMLElement} container - Element to render into.
+ * @param {object} texts - UI text strings (copyright from texts.footer.copyright).
+ * @param {object} social - Social media links as {platform: url}.
+ */
 export function renderFooter(container, texts, social = {}) {
   const links = Object.entries(social).filter(([, url]) => typeof url === 'string' && url.trim());
   container.innerHTML = `

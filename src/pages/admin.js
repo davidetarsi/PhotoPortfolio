@@ -24,7 +24,7 @@ root.innerHTML = '<p class="admin-status">Caricamento…</p>';
 const [siteRes, albumsRes, configRes] = await Promise.all([fetchSite(), fetchAlbums(), fetchConfig()]);
 const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2PublicUrl;
 
-// Primo avvio: _site/site.json può non esistere ancora → base editabile dai default build.
+// First startup: _site/site.json may not exist yet → start with editable build defaults.
 const ctx = {
   site: siteRes.ok
     ? siteRes.data

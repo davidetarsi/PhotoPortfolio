@@ -1,5 +1,11 @@
 import '../styles/nav.css';
 
+/**
+ * Renders the site navigation bar.
+ * @param {HTMLElement} container - Element to render into.
+ * @param {object} siteConfig - Site config with name property.
+ * @param {object} texts - UI text strings.
+ */
 export function renderNav(container, siteConfig, texts) {
   container.innerHTML = `
     <nav class="site-nav">

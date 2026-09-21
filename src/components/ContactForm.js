@@ -19,6 +19,12 @@ async function loadTurnstile() {
   });
 }
 
+/**
+ * Creates a contact form element with optional Turnstile verification.
+ * @param {object} siteConfig - Site configuration with turnstileSitekey.
+ * @param {object} texts - UI text strings for form labels and messages.
+ * @returns {HTMLFormElement} The form element ready to append to the DOM.
+ */
 export function createContactForm(siteConfig, texts) {
   const form = document.createElement('form');
   form.className = 'contact-form';
@@ -56,18 +62,18 @@ export function createContactForm(siteConfig, texts) {
     feedbackEl.textContent = '';
     submitBtn.disabled = true;
     try {
-      // Prepara il payload
+      // Build the payload from form fields.
       const payload = {
         name: form.querySelector('[name="name"]').value,
         email: form.querySelector('[name="email"]').value,
         message: form.querySelector('[name="message"]').value,
       };
 
-      // Aggiunge subject se compilato
+      // Add subject if filled.
       const subjectVal = form.querySelector('[name="subject"]').value.trim();
       if (subjectVal) payload.subject = subjectVal;
 
-      // Aggiunge Turnstile token se disponibile
+      // Add Turnstile token if available.
       if (window.turnstile && hasTurnstile) {
         const token = window.turnstile.getResponse();
         if (token) payload['cf-turnstile-response'] = token;
@@ -82,7 +88,7 @@ export function createContactForm(siteConfig, texts) {
       if (data.ok) {
         feedbackEl.textContent = texts.about.form.successMessage;
         form.reset();
-        // Resetta Turnstile se disponibile
+        // Reset Turnstile if available.
         if (window.turnstile && hasTurnstile) {
           window.turnstile.reset();
         }
@@ -97,7 +103,7 @@ export function createContactForm(siteConfig, texts) {
     }
   });
 
-  // Carica Turnstile se necessario
+  // Load Turnstile script if configured.
   if (hasTurnstile) {
     loadTurnstile().then(() => {
       const turnstileDiv = form.querySelector('.contact-form__turnstile');
