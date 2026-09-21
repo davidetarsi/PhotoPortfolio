@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { texts } from '../../config/texts.config.js';
 import { createStatus } from './status.js';
 
 function makeEl() {
@@ -14,7 +15,7 @@ describe('createStatus', () => {
   it('say() senza flag: badge "Ultima azione eseguita", nessuna classe errore', () => {
     const { say } = createStatus(el);
     say('Sito salvato.');
-    expect(el.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+    expect(el.querySelector('.admin-status__badge').textContent).toBe(texts.admin.status.lastAction);
     expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(false);
     expect(el.querySelector('.admin-status__text').textContent).toBe('Sito salvato.');
   });
@@ -22,7 +23,7 @@ describe('createStatus', () => {
   it('say(msg, true): badge "Errore" con classe errore', () => {
     const { say } = createStatus(el);
     say('Titolo non valido.', true);
-    expect(el.querySelector('.admin-status__badge').textContent).toBe('Errore');
+    expect(el.querySelector('.admin-status__badge').textContent).toBe(texts.admin.status.error);
     expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(true);
     expect(el.querySelector('.admin-status__text').textContent).toBe('Titolo non valido.');
   });
@@ -31,7 +32,7 @@ describe('createStatus', () => {
     const { say } = createStatus(el);
     say('Titolo non valido.', true);
     say('Sito salvato.');
-    expect(el.querySelector('.admin-status__badge').textContent).toBe('Ultima azione eseguita');
+    expect(el.querySelector('.admin-status__badge').textContent).toBe(texts.admin.status.lastAction);
     expect(el.querySelector('.admin-status__badge').classList.contains('admin-status__badge--error')).toBe(false);
     expect(el.querySelector('.admin-status__text').textContent).toBe('Sito salvato.');
   });

@@ -1,4 +1,5 @@
 import '../styles/album-card.css';
+import '../../theme/card.css';
 
 export function createAlbumCard({ slug, title, description, coverUrl }) {
   const a = document.createElement('a');

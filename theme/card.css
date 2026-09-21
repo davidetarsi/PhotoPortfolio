@@ -1,0 +1,7 @@
+/* Album card variant. Pick ONE: leave the line you want active and
+   comment out the others.
+   The three variants differ only in CSS, on the same HTML. */
+
+@import '../src/styles/card-variants/cinematic.css';
+/* @import '../src/styles/card-variants/editorial.css'; */
+/* @import '../src/styles/card-variants/minimal.css'; */

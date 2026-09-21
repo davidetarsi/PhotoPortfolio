@@ -1,0 +1,16 @@
+# GitHub legge questo file e mostra un bottone "Sponsor" in cima al repository.
+# Accetta SOLO le chiavi previste qui sotto: qualsiasi frase scritta in questo
+# file resta un commento e non viene mostrata a nessuno. Il testo che spiega
+# perche' sostenere il progetto sta nel README, sezione "Sostieni il progetto".
+
+github: [davidetarsi]
+
+# Da attivare togliendo il cancelletto e mettendo lo username giusto.
+# Un nome sbagliato non da' errore: produce un bottone che porta a una
+# pagina inesistente, quindi meglio lasciarlo spento finche' non e' pronto.
+
+# ko_fi: IL-TUO-USERNAME-KOFI
+
+# PayPal non ha una chiave dedicata: si usa `custom`, che accetta fino a
+# quattro URL completi.
+# custom: ["https://paypal.me/IL-TUO-USERNAME"]

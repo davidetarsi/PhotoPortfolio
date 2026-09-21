@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
+import { texts } from '../../config/texts.config.js';
+import { formatText } from '../utils/formatText.js';
 import { createAlbum } from './album-creation.js';
 
 function makeCtx(albums = []) {
@@ -23,21 +25,21 @@ describe('createAlbum', () => {
   it('titolo vuoto (anche solo spazi) → ok:false, nessuna chiamata API', async () => {
     const ctx = makeCtx();
     const result = await createAlbum('   ', ctx);
-    expect(result).toEqual({ ok: false, error: 'Titolo non valido.' });
+    expect(result).toEqual({ ok: false, error: texts.admin.albums.titleInvalid });
     expect(ctx.api.putAlbums).not.toHaveBeenCalled();
   });
 
   it('slug riservato → ok:false con messaggio dedicato', async () => {
     const ctx = makeCtx();
     const result = await createAlbum('Admin', ctx);
-    expect(result).toEqual({ ok: false, error: '"admin" è un nome riservato.' });
+    expect(result).toEqual({ ok: false, error: formatText(texts.admin.albums.titleReserved, { slug: 'admin' }) });
     expect(ctx.api.putAlbums).not.toHaveBeenCalled();
   });
 
   it('slug già esistente → ok:false con messaggio dedicato', async () => {
     const ctx = makeCtx([{ slug: 'sport', title: 'Sport', description: '', coverName: null }]);
     const result = await createAlbum('Sport', ctx);
-    expect(result).toEqual({ ok: false, error: 'Esiste già un album "sport".' });
+    expect(result).toEqual({ ok: false, error: formatText(texts.admin.albums.exists, { slug: 'sport' }) });
     expect(ctx.api.putAlbums).not.toHaveBeenCalled();
   });
 

@@ -8,6 +8,7 @@ import { showPreview, hidePreview } from './preview.js';
 // '© 2026' allineato alla convenzione già usata in Footer.test.js.
 // album.* servono a renderAlbumView, che riusa resolveAlbumPage/texts esattamente
 // come src/pages/album.js.
+// admin.site.preview e admin.site.previewClose servono al Task 2 (stringhe della dashboard).
 const texts = {
   landing: { heroSubtitle: 'Sottotitolo statico.', albumsSectionHeading: 'Album' },
   footer: { copyright: '© 2026' },
@@ -16,6 +17,7 @@ const texts = {
     empty: 'Nessuna foto trovata in questo album.',
     error: { network: 'Errore di rete.', unknown: 'Errore sconosciuto.' },
   },
+  admin: { site: { preview: 'Anteprima', previewClose: 'Chiudi' } },
 };
 const ALBUMS = [
   { slug: 'sport', title: 'Sport', description: '', coverName: 'cover.webp' },
