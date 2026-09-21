@@ -1,7 +1,15 @@
-// Valida SOLO la config di build (fallback): gli album vivono a runtime su R2
-// e sono validati da content-rules.js (client) e dal Worker (scritture).
+/**
+ * Validates site configuration at build time (fallback only).
+ * Albums live at runtime on R2 and are validated separately by content-rules.js
+ * (client) and the Worker (for writes).
+ */
 const KNOWN_PROVIDERS = ['r2'];
 
+/**
+ * Validates the site configuration object required for the build.
+ * @param {object} siteConfig - Site configuration to validate.
+ * @throws {Error} If configuration is invalid.
+ */
 export function validateSiteConfig(siteConfig) {
   if (!siteConfig || typeof siteConfig !== 'object') {
     throw new Error('[validateSiteConfig] siteConfig non valido');

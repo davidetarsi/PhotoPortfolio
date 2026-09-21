@@ -1,14 +1,16 @@
 const MAX_NOME = 80;
 
 /**
- * Testo della notifica. Contiene chi ha scritto e dove andare a leggere,
- * MAI il messaggio ne' l'email di chi scrive: la notifica puo' finire su
- * un canale pubblico — un topic ntfy e' leggibile da chiunque ne indovini
- * il nome — e quello che esce di qui non si riprende piu'.
+ * Generates the text of the notification sent when a contact form is submitted.
+ * Contains only who wrote and where to read the full message.
  *
- * @param {{name: string}} message
- * @param {string} adminUrl
- * @returns {string}
+ * IMPORTANT: The message text and sender email are NEVER included here. A notification
+ * can land on a public channel (e.g., an ntfy topic is readable by anyone who guesses
+ * the name), and once data leaves here it cannot be recovered. This is by design.
+ *
+ * @param {{name: string}} message - The contact message metadata.
+ * @param {string} adminUrl - The admin dashboard URL where the full message is read.
+ * @returns {string} The notification text.
  */
 export function notifyBody(message, adminUrl) {
   const nome = String(message.name).slice(0, MAX_NOME);

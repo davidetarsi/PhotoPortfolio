@@ -1,14 +1,14 @@
 /**
- * Costruisce il contenuto di _headers dalle origini R2 dichiarate in
- * wrangler.json. Sorgente unica: chi compila wrangler.json a mano
- * seguendo il runbook ottiene la stessa CSP di chi usa Terraform.
+ * Builds the `_headers` file content from R2 origins declared in wrangler.json.
+ * Single source of truth: manual wrangler.json compilation following the runbook
+ * produces the same CSP as using Terraform.
  *
- * @param {object} config - oggetto wrangler.json
- * @param {{allowPlaceholders?: boolean}} [options] - allowPlaceholders serve
- *   solo a verificare che il template compili quando wrangler.json ha ancora
- *   i segnaposti. Non usarlo mai per un sito destinato al deploy: produce una
- *   CSP che non autorizza alcuna origine R2, cioe un sito senza foto.
- * @returns {string} contenuto del file _headers
+ * @param {object} config - The wrangler.json configuration object.
+ * @param {{allowPlaceholders?: boolean}} [options] - If allowPlaceholders is true,
+ *   allows placeholder values in R2 origins. Use only for build verification:
+ *   it produces a CSP that authorizes no R2 origin, making the site load no photos.
+ *   Never use for a production deploy.
+ * @returns {string} The complete `_headers` file content.
  */
 export function buildHeaders(config, options = {}) {
   const prod = config?.vars?.R2_PUBLIC_URL;
@@ -30,10 +30,9 @@ export function buildHeaders(config, options = {}) {
 
   const lista = origini.join(' ');
 
-  // Turnstile carica uno script e disegna un iframe: senza queste tre
-  // direttive il browser lo blocca. Si aggiungono solo se il widget e'
-  // configurato: autorizzare un dominio che non si usa allarga la
-  // policy senza motivo.
+  // Turnstile loads a script and renders an iframe: the browser blocks both without
+  // the matching CSP directives. We add them only if the widget is configured:
+  // authorizing a domain we don't use unnecessarily widens the policy.
   const turnstile = config?.vars?.TURNSTILE_SITEKEY ? 'https://challenges.cloudflare.com' : '';
   const conTurnstile = direttiva => (turnstile ? `${direttiva} ${turnstile}` : direttiva);
 

@@ -1,7 +1,12 @@
-// Ricostruisce l'URL del riferimento hero dal dominio pubblico R2 corrente.
-// Accoppia il riferimento {album, name} con r2PublicUrl per creare l'URL
-// finale, sciolto da qualsiasi dominio scolpito nella configurazione.
-
+/**
+ * Resolves a hero image reference to its public R2 URL.
+ * Pairs the reference `{album, name}` with the current R2 public URL to create
+ * the final URL, independent of any custom domain configured elsewhere.
+ *
+ * @param {object|null} heroImage - Object with `album` and `name` properties, or null.
+ * @param {string} r2PublicUrl - Public R2 bucket URL.
+ * @returns {string|null} The full public URL of the hero image, or null if reference is incomplete.
+ */
 export function resolveHeroUrl(heroImage, r2PublicUrl) {
   if (!heroImage?.album || !heroImage?.name) {
     return null;

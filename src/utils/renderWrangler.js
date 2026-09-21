@@ -5,12 +5,12 @@ const CHIAVI_RICHIESTE = [
 ];
 
 /**
- * Rende wrangler.json dai valori emessi da Terraform (o compilati a mano
- * seguendo il runbook). Funzione pura: non tocca l'oggetto ricevuto.
+ * Renders wrangler.json from Terraform outputs (or manual values following the runbook).
+ * Pure function: does not mutate the input object.
  *
- * @param {object} example - contenuto di wrangler.example.json
- * @param {Record<string,string>} outputs - le chiavi di infra/outputs.tf
- * @returns {object} configurazione pronta da scrivere
+ * @param {object} example - The content of wrangler.example.json template.
+ * @param {Record<string,string>} outputs - Terraform outputs from infra/outputs.tf.
+ * @returns {object} Complete wrangler.json configuration ready to write.
  */
 export function renderWrangler(example, outputs) {
   const mancanti = CHIAVI_RICHIESTE.filter(k => !outputs[k]);

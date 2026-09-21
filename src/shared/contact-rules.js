@@ -1,12 +1,15 @@
-// Regole del messaggio di contatto, condivise fra Worker e client.
-// La rotta /api/contact e' l'unica scrittura non autenticata del sistema:
-// i limiti di lunghezza servono a impedire che un corpo enorme arrivi a R2.
+/**
+ * Contact form validation rules, shared between Worker and client.
+ * The `/api/contact` route is the only unauthenticated write in the system:
+ * length limits prevent oversized bodies from reaching R2.
+ */
 
 export const LIMITS = { name: 100, email: 254, subject: 200, message: 5000 };
 
-// Volutamente permissiva: convalidare un'email secondo lo standard e'
-// impossibile in una regex, e rifiutare indirizzi validi e' peggio che
-// accettarne uno finto, che tanto non ricevera' mai la risposta.
+// Email validation is intentionally permissive: validating an email to spec
+// is impossible in regex, and rejecting valid addresses is worse than accepting
+// a fake one that won't receive a reply anyway. The real check happens when
+// the email server accepts the SMTP handshake.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const fail = error => ({ ok: false, error });
@@ -17,8 +20,9 @@ function stringaValida(v, max) {
 }
 
 /**
- * @param {unknown} data
- * @returns {{ok: true} | {ok: false, error: string}}
+ * Validates the shape and content of contact form data.
+ * @param {unknown} data - The form submission to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result with error message if invalid.
  */
 export function validateContactShape(data) {
   if (data === null || typeof data !== 'object' || Array.isArray(data)) {

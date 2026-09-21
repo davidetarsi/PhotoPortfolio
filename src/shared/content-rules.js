@@ -1,12 +1,19 @@
-// Regole condivise tra Worker (validazione scritture), sito pubblico (validazione
-// letture) e dashboard admin (naming/slug). Unica fonte di verità.
+/**
+ * Validation rules shared across Worker (write validation), public site (read validation),
+ * and admin dashboard (naming and slug generation). Single source of truth.
+ */
 
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 export const RESERVED_SLUGS = ['admin', 'api', 'assets', 'about'];
-// I nomi legacy caricati con upload.js contengono maiuscole: il server le accetta.
+// Legacy photo names uploaded by upload.js contain uppercase letters; the server accepts them.
 export const PHOTO_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*\.webp$/;
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
+/**
+ * Converts a title into a URL-safe slug.
+ * @param {string} title - The title to slugify.
+ * @returns {string} The slugified version: lowercase, hyphen-separated, no special chars.
+ */
 export function slugifyTitle(title) {
   return String(title)
     .toLowerCase()
@@ -22,6 +29,11 @@ const OK = { ok: true };
 const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const isPhotoName = v => typeof v === 'string' && PHOTO_NAME_RE.test(v);
 
+/**
+ * Validates the structure of site metadata (name, bio, hero image, social links).
+ * @param {unknown} data - The site configuration object to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateSiteShape(data) {
   if (!isObj(data)) return fail('site: non è un oggetto');
   if (typeof data.name !== 'string' || !data.name.trim()) return fail('site.name obbligatorio');
@@ -38,6 +50,12 @@ export function validateSiteShape(data) {
   return OK;
 }
 
+/**
+ * Validates the structure of the albums collection.
+ * Ensures slugs are unique, reserved names are not used, and all required fields are present.
+ * @param {unknown} data - The albums configuration object to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateAlbumsShape(data) {
   if (!isObj(data) || !Array.isArray(data.albums)) return fail('albums: shape invalida');
   const seen = new Set();
@@ -54,6 +72,12 @@ export function validateAlbumsShape(data) {
   return OK;
 }
 
+/**
+ * Validates the structure of the photo manifest (list of uploaded photos with metadata).
+ * Ensures names are unique and dimensions are valid.
+ * @param {unknown} data - The manifest array to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateManifestShape(data) {
   if (!Array.isArray(data)) return fail('manifest: non è un array');
   const seen = new Set();
@@ -70,6 +94,11 @@ export function validateManifestShape(data) {
   return OK;
 }
 
+/**
+ * Validates the structure of the runtime configuration (R2 URL and Turnstile sitekey).
+ * @param {unknown} data - The configuration object to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateConfigShape(data) {
   if (!isObj(data)) return fail('config: non è un oggetto');
   if (typeof data.r2PublicUrl !== 'string' || !data.r2PublicUrl.trim()) {

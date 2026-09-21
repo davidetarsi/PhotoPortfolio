@@ -1,12 +1,12 @@
 /**
- * Decide se `migrate` puo' scrivere su R2. Migrate e' un comando di
- * bootstrap: trasforma il seed di config/ nei JSON runtime una volta sola.
- * Dopo, la verita' e' cio' che la dashboard ha scritto, e rilanciarlo
- * significherebbe riportare indietro nome, bio, hero e album al seed.
+ * Determines whether the `migrate` command is safe to run.
+ * `migrate` is a one-time bootstrap command: it transforms the seed in config/ into
+ * runtime JSON files on R2. After that, the dashboard is the source of truth.
+ * Re-running it would reset name, bio, hero, and albums back to the seed values.
  *
- * @param {string[]} chiaviEsistenti - chiavi gia' presenti sul bucket
- * @param {boolean} force - l'utente ha passato --force
- * @returns {{procedi: boolean, messaggio: string}}
+ * @param {string[]} chiaviEsistenti - Object keys already present on the bucket.
+ * @param {boolean} force - Whether the user passed `--force`.
+ * @returns {{procedi: boolean, messaggio: string}} Decision and user-facing message.
  */
 export function decideMigration(chiaviEsistenti, force) {
   if (chiaviEsistenti.length === 0) {
