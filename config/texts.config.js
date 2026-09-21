@@ -14,7 +14,7 @@ export const texts = {
       unknown: 'Errore durante il caricamento. Riprova più tardi.',
     },
   },
-  contatti: {
+  about: {
     heading: 'Contatti',
     body: 'Scrivimi per informazioni su lavori e collaborazioni.',
     form: {
@@ -32,7 +32,7 @@ export const texts = {
   },
   nav: {
     homeLabel: 'Portfolio',
-    contattiLabel: 'Contatti',
+    aboutLabel: 'Contatti',
   },
   admin: {
     site: {

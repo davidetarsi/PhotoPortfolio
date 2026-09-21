@@ -3,7 +3,7 @@ import { createContactForm } from './ContactForm.js';
 
 const siteConfig = { turnstileSitekey: '' };
 const texts = {
-  contatti: {
+  about: {
     form: {
       namePlaceholder: 'Nome',
       emailPlaceholder: 'Email',
@@ -100,7 +100,7 @@ describe('createContactForm', () => {
     await new Promise(r => setTimeout(r, 0));
 
     expect(form.querySelector('.contact-form__feedback').textContent)
-      .toBe(texts.contatti.form.successMessage);
+      .toBe(texts.about.form.successMessage);
   });
 
   it('calls form.reset() on ok true', async () => {
@@ -134,16 +134,16 @@ describe('createContactForm', () => {
     await new Promise(r => setTimeout(r, 0));
 
     expect(form.querySelector('.contact-form__feedback').textContent)
-      .toBe(texts.contatti.form.errorMessage);
+      .toBe(texts.about.form.errorMessage);
   });
 
   it('inputs have aria-label attributes matching placeholders', () => {
     const form = createContactForm(siteConfig, texts);
     expect(form.querySelector('[name="name"]').getAttribute('aria-label'))
-      .toBe(texts.contatti.form.namePlaceholder);
+      .toBe(texts.about.form.namePlaceholder);
     expect(form.querySelector('[name="email"]').getAttribute('aria-label'))
-      .toBe(texts.contatti.form.emailPlaceholder);
+      .toBe(texts.about.form.emailPlaceholder);
     expect(form.querySelector('[name="message"]').getAttribute('aria-label'))
-      .toBe(texts.contatti.form.messagePlaceholder);
+      .toBe(texts.about.form.messagePlaceholder);
   });
 });

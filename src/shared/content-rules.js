@@ -2,7 +2,7 @@
 // letture) e dashboard admin (naming/slug). Unica fonte di verità.
 
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-export const RESERVED_SLUGS = ['admin', 'api', 'assets', 'contatti'];
+export const RESERVED_SLUGS = ['admin', 'api', 'assets', 'about'];
 // I nomi legacy caricati con upload.js contengono maiuscole: il server le accetta.
 export const PHOTO_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*\.webp$/;
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;

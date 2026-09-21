@@ -5,10 +5,10 @@ export function renderNav(container, siteConfig, texts) {
     <nav class="site-nav">
       <a href="/" class="site-nav__brand"></a>
       <div class="site-nav__links">
-        <a href="/contatti"></a>
+        <a href="/about"></a>
       </div>
     </nav>
   `;
   container.querySelector('.site-nav__brand').textContent = siteConfig.name;
-  container.querySelector('.site-nav__links a').textContent = texts.nav.contattiLabel;
+  container.querySelector('.site-nav__links a').textContent = texts.nav.aboutLabel;
 }

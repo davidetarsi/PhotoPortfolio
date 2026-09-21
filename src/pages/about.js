@@ -10,8 +10,8 @@ import { createContactForm } from '../components/ContactForm.js';
 
 validateSiteConfig(siteConfig);
 
-document.getElementById('contatti-heading').textContent = texts.contatti.heading;
-document.getElementById('contatti-body').textContent = texts.contatti.body;
+document.getElementById('about-heading').textContent = texts.about.heading;
+document.getElementById('about-body').textContent = texts.about.body;
 
 const [siteRes, configRes] = await Promise.all([fetchSite(), fetchConfig()]);
 const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2PublicUrl;
@@ -23,7 +23,7 @@ const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2Pub
 // solo il valore di build, e la catena terraform → wrangler.json → form
 // si sarebbe interrotta senza che nulla lo segnalasse.
 const turnstileSitekey = configRes.ok ? configRes.data.turnstileSitekey : siteConfig.turnstileSitekey;
-document.getElementById('contatti-form')
+document.getElementById('about-form')
   .appendChild(createContactForm({ ...siteConfig, turnstileSitekey }, texts));
 const site = resolveSiteContent(siteRes, { ...siteConfig, r2PublicUrl });
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);

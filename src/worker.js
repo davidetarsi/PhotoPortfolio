@@ -3,7 +3,7 @@ import { handleAdminRequest } from './worker/admin-routes.js'
 import { handleContactRequest } from './worker/contact-routes.js'
 
 const STATIC_PAGES = {
-  '/contatti': '/contatti.html',
+  '/about': '/about.html',
   '/admin': '/admin.html',
 }
 
@@ -25,6 +25,13 @@ export default {
 
     if (pathname === '/api/contact') {
       return handleContactRequest(request, env)
+    }
+
+    // La pagina si chiamava /contatti: il rename non deve trasformare in
+    // un 404 i link gia' condivisi. 301 e non 302 perche' il vecchio
+    // indirizzo non tornera'.
+    if (pathname === '/contatti') {
+      return Response.redirect(new URL('/about', url).toString(), 301)
     }
 
     if (STATIC_PAGES[pathname]) {

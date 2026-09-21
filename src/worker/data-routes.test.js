@@ -84,7 +84,7 @@ describe('routing worker', () => {
   it('slug album continua a servire album.html; statiche invariate', async () => {
     const env = makeEnv();
     expect(await (await get(env, '/sport')).text()).toBe('ASSET:/album.html');
-    expect(await (await get(env, '/contatti')).text()).toBe('ASSET:/contatti.html');
+    expect(await (await get(env, '/about')).text()).toBe('ASSET:/about.html');
     expect(await (await get(env, '/')).text()).toBe('ASSET:/');
   });
 });

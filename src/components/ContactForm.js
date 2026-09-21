@@ -38,16 +38,16 @@ export function createContactForm(siteConfig, texts) {
     <p class="contact-form__feedback" aria-live="polite"></p>
   `;
 
-  form.querySelector('[name="name"]').setAttribute('placeholder', texts.contatti.form.namePlaceholder);
-  form.querySelector('[name="email"]').setAttribute('placeholder', texts.contatti.form.emailPlaceholder);
-  form.querySelector('[name="subject"]').setAttribute('placeholder', texts.contatti.form.subjectPlaceholder);
-  form.querySelector('[name="message"]').setAttribute('placeholder', texts.contatti.form.messagePlaceholder);
-  form.querySelector('[name="name"]').setAttribute('aria-label', texts.contatti.form.namePlaceholder);
-  form.querySelector('[name="email"]').setAttribute('aria-label', texts.contatti.form.emailPlaceholder);
-  form.querySelector('[name="message"]').setAttribute('aria-label', texts.contatti.form.messagePlaceholder);
+  form.querySelector('[name="name"]').setAttribute('placeholder', texts.about.form.namePlaceholder);
+  form.querySelector('[name="email"]').setAttribute('placeholder', texts.about.form.emailPlaceholder);
+  form.querySelector('[name="subject"]').setAttribute('placeholder', texts.about.form.subjectPlaceholder);
+  form.querySelector('[name="message"]').setAttribute('placeholder', texts.about.form.messagePlaceholder);
+  form.querySelector('[name="name"]').setAttribute('aria-label', texts.about.form.namePlaceholder);
+  form.querySelector('[name="email"]').setAttribute('aria-label', texts.about.form.emailPlaceholder);
+  form.querySelector('[name="message"]').setAttribute('aria-label', texts.about.form.messagePlaceholder);
 
   const submitBtn = form.querySelector('.contact-form__submit');
-  submitBtn.textContent = texts.contatti.form.submitLabel;
+  submitBtn.textContent = texts.about.form.submitLabel;
 
   const feedbackEl = form.querySelector('.contact-form__feedback');
 
@@ -80,18 +80,18 @@ export function createContactForm(siteConfig, texts) {
       });
       const data = await res.json();
       if (data.ok) {
-        feedbackEl.textContent = texts.contatti.form.successMessage;
+        feedbackEl.textContent = texts.about.form.successMessage;
         form.reset();
         // Resetta Turnstile se disponibile
         if (window.turnstile && hasTurnstile) {
           window.turnstile.reset();
         }
       } else {
-        feedbackEl.textContent = texts.contatti.form.errorMessage;
+        feedbackEl.textContent = texts.about.form.errorMessage;
       }
     } catch (err) {
       console.error('[ContactForm] submit error:', err);
-      feedbackEl.textContent = texts.contatti.form.errorMessage;
+      feedbackEl.textContent = texts.about.form.errorMessage;
     } finally {
       submitBtn.disabled = false;
     }
