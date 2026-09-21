@@ -1,12 +1,12 @@
 /**
- * Costruisce l'oggetto salvato su R2. Copia solo i campi previsti: cio'
- * che arriva da una rotta pubblica non finisce nello storage per inerzia.
- * Non si registrano IP ne' user agent — sono dati personali che non
- * servono a rispondere a un messaggio (spec §3).
+ * Builds the message object to be saved on R2.
+ * Copies only the expected fields: data from a public route must not land in storage
+ * by accident. IP and user agent are never recorded — they are personal data not needed
+ * to reply to a message (see spec §3).
  *
- * @param {{name: string, email: string, message: string, subject?: string}} input
- * @param {number} now - epoch ms
- * @returns {object}
+ * @param {{name: string, email: string, message: string, subject?: string}} input - Submitted form data.
+ * @param {number} now - Current Unix timestamp in milliseconds.
+ * @returns {object} The message object ready to save.
  */
 export function buildMessage(input, now) {
   const m = {
@@ -21,17 +21,17 @@ export function buildMessage(input, now) {
 }
 
 /**
- * Chiave R2 del messaggio. Il prefisso ordinabile per data rende
- * l'elenco della dashboard una `list` con prefix, senza indice da
- * mantenere; il suffisso casuale evita collisioni nello stesso secondo.
+ * Generates the R2 object key for a message.
+ * The date-sortable prefix makes the dashboard list a simple prefix query without needing
+ * to maintain an index; the random suffix avoids collisions within the same second.
  *
- * @param {number} now - epoch ms
- * @param {string} rand - suffisso casuale
- * @returns {string}
+ * @param {number} now - Current Unix timestamp in milliseconds.
+ * @param {string} rand - Random suffix for collision prevention.
+ * @returns {string} The R2 object key.
  */
 export function messageKey(now, rand) {
-  // I due punti dell'ISO non sono vietati in R2, ma rendono scomode le
-  // chiavi in URL e shell: si sostituiscono con trattini.
+  // ISO colons aren't forbidden in R2, but they make keys awkward in URLs and shell.
+  // They are replaced with hyphens for usability.
   const stamp = new Date(now).toISOString().replace(/[:.]/g, '-');
   return `_messages/${stamp}-${rand}.json`;
 }

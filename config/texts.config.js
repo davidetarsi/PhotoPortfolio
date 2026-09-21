@@ -14,7 +14,7 @@ export const texts = {
       unknown: 'Errore durante il caricamento. Riprova più tardi.',
     },
   },
-  contatti: {
+  about: {
     heading: 'Contatti',
     body: 'Scrivimi per informazioni su lavori e collaborazioni.',
     form: {
@@ -32,7 +32,7 @@ export const texts = {
   },
   nav: {
     homeLabel: 'Portfolio',
-    contattiLabel: 'Contatti',
+    aboutLabel: 'Contatti',
   },
   admin: {
     site: {
@@ -47,6 +47,7 @@ export const texts = {
       heroUpdated: 'Hero aggiornata.',
       heroReadError: 'Impossibile leggere le foto di questo album.',
       heroChooseAlbum: 'Scegli album…',
+      heroNone: 'nessuna',
     },
     albums: {
       sectionTitle: 'Album',
@@ -56,6 +57,8 @@ export const texts = {
       titleReserved: '"{slug}" è un nome riservato.',
       delete: 'Elimina',
       deleteNameMismatch: 'Nome non corrispondente: cancellazione annullata.',
+      deleteConfirmPrompt: 'Per eliminare scrivi il nome esatto dell\'album: "{titolo}"',
+      loadError: 'Impossibile caricare gli album (rete o dati malformati).',
     },
     album: {
       save: 'Salva',

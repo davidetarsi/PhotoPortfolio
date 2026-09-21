@@ -18,7 +18,7 @@ renderSkeletons(gridEl, 12);
 
 const slug = window.location.pathname.replace(/^\/|\/$/g, '');
 
-// Lo slug è già noto dall'URL: nessun waterfall, tutte le fetch in volo insieme.
+// Slug is known from the URL: no waterfall, all fetches in parallel.
 const [siteRes, albumsRes, manifestRes, configRes] = await Promise.all([
   fetchSite(),
   fetchAlbums(),

@@ -19,6 +19,12 @@ async function loadTurnstile() {
   });
 }
 
+/**
+ * Creates a contact form element with optional Turnstile verification.
+ * @param {object} siteConfig - Site configuration with turnstileSitekey.
+ * @param {object} texts - UI text strings for form labels and messages.
+ * @returns {HTMLFormElement} The form element ready to append to the DOM.
+ */
 export function createContactForm(siteConfig, texts) {
   const form = document.createElement('form');
   form.className = 'contact-form';
@@ -38,16 +44,16 @@ export function createContactForm(siteConfig, texts) {
     <p class="contact-form__feedback" aria-live="polite"></p>
   `;
 
-  form.querySelector('[name="name"]').setAttribute('placeholder', texts.contatti.form.namePlaceholder);
-  form.querySelector('[name="email"]').setAttribute('placeholder', texts.contatti.form.emailPlaceholder);
-  form.querySelector('[name="subject"]').setAttribute('placeholder', texts.contatti.form.subjectPlaceholder);
-  form.querySelector('[name="message"]').setAttribute('placeholder', texts.contatti.form.messagePlaceholder);
-  form.querySelector('[name="name"]').setAttribute('aria-label', texts.contatti.form.namePlaceholder);
-  form.querySelector('[name="email"]').setAttribute('aria-label', texts.contatti.form.emailPlaceholder);
-  form.querySelector('[name="message"]').setAttribute('aria-label', texts.contatti.form.messagePlaceholder);
+  form.querySelector('[name="name"]').setAttribute('placeholder', texts.about.form.namePlaceholder);
+  form.querySelector('[name="email"]').setAttribute('placeholder', texts.about.form.emailPlaceholder);
+  form.querySelector('[name="subject"]').setAttribute('placeholder', texts.about.form.subjectPlaceholder);
+  form.querySelector('[name="message"]').setAttribute('placeholder', texts.about.form.messagePlaceholder);
+  form.querySelector('[name="name"]').setAttribute('aria-label', texts.about.form.namePlaceholder);
+  form.querySelector('[name="email"]').setAttribute('aria-label', texts.about.form.emailPlaceholder);
+  form.querySelector('[name="message"]').setAttribute('aria-label', texts.about.form.messagePlaceholder);
 
   const submitBtn = form.querySelector('.contact-form__submit');
-  submitBtn.textContent = texts.contatti.form.submitLabel;
+  submitBtn.textContent = texts.about.form.submitLabel;
 
   const feedbackEl = form.querySelector('.contact-form__feedback');
 
@@ -56,18 +62,18 @@ export function createContactForm(siteConfig, texts) {
     feedbackEl.textContent = '';
     submitBtn.disabled = true;
     try {
-      // Prepara il payload
+      // Build the payload from form fields.
       const payload = {
         name: form.querySelector('[name="name"]').value,
         email: form.querySelector('[name="email"]').value,
         message: form.querySelector('[name="message"]').value,
       };
 
-      // Aggiunge subject se compilato
+      // Add subject if filled.
       const subjectVal = form.querySelector('[name="subject"]').value.trim();
       if (subjectVal) payload.subject = subjectVal;
 
-      // Aggiunge Turnstile token se disponibile
+      // Add Turnstile token if available.
       if (window.turnstile && hasTurnstile) {
         const token = window.turnstile.getResponse();
         if (token) payload['cf-turnstile-response'] = token;
@@ -80,24 +86,24 @@ export function createContactForm(siteConfig, texts) {
       });
       const data = await res.json();
       if (data.ok) {
-        feedbackEl.textContent = texts.contatti.form.successMessage;
+        feedbackEl.textContent = texts.about.form.successMessage;
         form.reset();
-        // Resetta Turnstile se disponibile
+        // Reset Turnstile if available.
         if (window.turnstile && hasTurnstile) {
           window.turnstile.reset();
         }
       } else {
-        feedbackEl.textContent = texts.contatti.form.errorMessage;
+        feedbackEl.textContent = texts.about.form.errorMessage;
       }
     } catch (err) {
       console.error('[ContactForm] submit error:', err);
-      feedbackEl.textContent = texts.contatti.form.errorMessage;
+      feedbackEl.textContent = texts.about.form.errorMessage;
     } finally {
       submitBtn.disabled = false;
     }
   });
 
-  // Carica Turnstile se necessario
+  // Load Turnstile script if configured.
   if (hasTurnstile) {
     loadTurnstile().then(() => {
       const turnstileDiv = form.querySelector('.contact-form__turnstile');

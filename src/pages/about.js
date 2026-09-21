@@ -10,20 +10,20 @@ import { createContactForm } from '../components/ContactForm.js';
 
 validateSiteConfig(siteConfig);
 
-document.getElementById('contatti-heading').textContent = texts.contatti.heading;
-document.getElementById('contatti-body').textContent = texts.contatti.body;
+document.getElementById('about-heading').textContent = texts.about.heading;
+document.getElementById('about-body').textContent = texts.about.body;
 
 const [siteRes, configRes] = await Promise.all([fetchSite(), fetchConfig()]);
 const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2PublicUrl;
 
-// La sitekey arriva a runtime, come r2PublicUrl: e' cosi' che il valore
-// prodotto da Terraform e scritto in wrangler.json raggiunge il browser.
-// Il valore di build resta come ripiego se la fetch della config fallisce.
-// Il form si costruisce qui e non prima: creato sopra, avrebbe ricevuto
-// solo il valore di build, e la catena terraform → wrangler.json → form
-// si sarebbe interrotta senza che nulla lo segnalasse.
+// The sitekey arrives at runtime, just like r2PublicUrl: this is how values
+// produced by Terraform and written to wrangler.json reach the browser.
+// The build value serves as fallback if config fetch fails.
+// The form is built HERE, not earlier: if created above, it would receive
+// only the build value, and the chain terraform → wrangler.json → form
+// would break silently without warning.
 const turnstileSitekey = configRes.ok ? configRes.data.turnstileSitekey : siteConfig.turnstileSitekey;
-document.getElementById('contatti-form')
+document.getElementById('about-form')
   .appendChild(createContactForm({ ...siteConfig, turnstileSitekey }, texts));
 const site = resolveSiteContent(siteRes, { ...siteConfig, r2PublicUrl });
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);

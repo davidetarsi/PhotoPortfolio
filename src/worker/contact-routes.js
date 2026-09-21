@@ -1,5 +1,8 @@
-// L'unica scrittura non autenticata del sistema. Ogni controllo qui
-// dentro esiste perche' chiunque puo' chiamare questa rotta.
+/**
+ * Contact form submission handler.
+ * This is the only unauthenticated write in the system. Every validation here
+ * exists because anyone can call this endpoint.
+ */
 import { jsonResponse } from './http.js';
 import { validateContactShape } from '../shared/contact-rules.js';
 import { buildMessage, messageKey } from '../utils/buildMessage.js';
@@ -25,9 +28,11 @@ async function inviaNotifica(env, messaggio) {
 }
 
 /**
- * @param {Request} request
- * @param {object} env
- * @param {{now?: () => number, rand?: () => string, notify?: Function, verify?: Function}} deps
+ * Handles a contact form submission: validates, stores, and notifies.
+ * @param {Request} request - The incoming HTTP request with contact form data in JSON.
+ * @param {object} env - Cloudflare Worker environment with BUCKET, CONTACT_NOTIFY_URL, SITE_URL.
+ * @param {{now?: () => number, rand?: () => string, notify?: Function, verify?: Function}} deps - Injected dependencies for testing.
+ * @returns {Promise<Response>} JSON response with ok: true on success or error details.
  */
 export async function handleContactRequest(request, env, deps = {}) {
   if (request.method !== 'POST') return jsonResponse({ error: 'METHOD_NOT_ALLOWED' }, 405);
@@ -37,9 +42,9 @@ export async function handleContactRequest(request, env, deps = {}) {
   const notify = deps.notify ?? inviaNotifica;
   const verify = deps.verify ?? ((token) => verifyTurnstile(token, env.TURNSTILE_SECRET ?? ''));
 
-  // Content-Length prima di leggere: un corpo enorme va respinto senza
-  // caricarlo in memoria. L'intestazione puo' mancare o mentire, quindi
-  // il controllo sulla lunghezza reale resta come seconda rete.
+  // Check Content-Length before reading: oversized bodies are rejected without
+  // loading into memory. The header can be omitted or lie, so actual length
+  // is double-checked as a second defense.
   const dichiarata = Number(request.headers.get('Content-Length'));
   if (Number.isFinite(dichiarata) && dichiarata > MAX_BODY) {
     return jsonResponse({ error: 'TOO_LARGE' }, 400);
@@ -55,8 +60,8 @@ export async function handleContactRequest(request, env, deps = {}) {
     return jsonResponse({ error: 'INVALID_JSON' }, 400);
   }
 
-  // Honeypot: risponde 200 di proposito. Un bot che riceve un errore
-  // riprova cambiando qualcosa; uno che riceve successo se ne va.
+  // Honeypot: intentionally returns 200 success. A bot receiving an error retries
+  // with variations; one receiving success stops and moves on.
   if (data?.botcheck) return jsonResponse({ ok: true });
 
   if (!(await verify(data?.['cf-turnstile-response'] ?? ''))) {
@@ -66,21 +71,20 @@ export async function handleContactRequest(request, env, deps = {}) {
   const esito = validateContactShape(data);
   if (!esito.ok) return jsonResponse({ error: 'INVALID', detail: esito.error }, 400);
 
-  // Un solo now(): chiamarlo due volte fa dichiarare alla chiave un
-  // istante diverso da quello dentro il messaggio. Con il tempo
-  // congelato dai test non si vedrebbe mai.
+  // Call now() exactly once: calling it twice produces different timestamps
+  // for the key and the message content. Tests with frozen time would never catch this.
   const ts = now();
   const messaggio = buildMessage(data, ts);
   await env.BUCKET.put(messageKey(ts, rand()), JSON.stringify(messaggio), {
     httpMetadata: { contentType: 'application/json' },
   });
 
-  // Il messaggio e' gia' al sicuro: se la notifica fallisce, il
-  // visitatore non deve saperlo ne' subirne le conseguenze.
+  // Message is already safely stored. If notification fails, the visitor
+  // must not know or suffer any consequences.
   try {
     await notify(env, messaggio);
   } catch (err) {
-    console.error('notifica fallita:', err?.message);
+    console.error('notification failed:', err?.message);
   }
 
   return jsonResponse({ ok: true });

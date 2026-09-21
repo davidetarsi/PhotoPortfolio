@@ -1,17 +1,19 @@
-// Seed iniziale dell'identità del sito: serve solo al primo `npm run migrate`.
-// Da quel momento nome, bio, hero e social si modificano dalla dashboard e la
-// fonte di verità è R2.
+/**
+ * Initial seed for site identity: used only on first `npm run migrate`.
+ * After that, name, bio, hero, and social are edited from the dashboard
+ * and R2 becomes the source of truth.
+ */
 export const siteConfig = {
   name: 'Nome Fotografo',
   bio: 'Una breve descrizione del fotografo.',
   language: 'it',
-  heroImage: null,  // dopo l'upload: { album: 'nome-album', name: 'nome-foto.webp' }
+  heroImage: null,  // after upload: { album: 'album-name', name: 'photo.webp' }
   social: {
     // instagram: 'https://instagram.com/...',
   },
   provider: 'r2',
-  // Optional chaining: il file viene importato anche da vite.config.js (Node),
-  // dove import.meta.env non esiste.
+  // Optional chaining: this file is imported by vite.config.js (Node environment)
+  // where import.meta.env does not exist. Optional chaining prevents the error.
   r2PublicUrl: import.meta.env?.VITE_R2_PUBLIC_URL,
   turnstileSitekey: import.meta.env?.VITE_TURNSTILE_SITEKEY ?? '',
 };

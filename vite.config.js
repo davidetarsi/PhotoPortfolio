@@ -54,7 +54,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         album: resolve(__dirname, 'album.html'),
-        contatti: resolve(__dirname, 'contatti.html'),
+        about: resolve(__dirname, 'about.html'),
         admin: resolve(__dirname, 'admin.html'),
       },
     },

@@ -1,11 +1,11 @@
-// Seed iniziale degli album: serve solo al primo `npm run migrate`. Da quel
-// momento la fonte di verità è il manifest su R2, gestito dalla dashboard.
-// Rilanciare `migrate` dopo aver usato la dashboard ne sovrascrive il lavoro.
+// Initial albums seed: used only on first `npm run migrate`. After that,
+// the source of truth is the manifest on R2, managed by the dashboard.
+// Re-running `migrate` after using the dashboard will overwrite its work.
 export const albums = [
   {
     slug: 'nome-album',
     title: 'Titolo Album',
     description: 'Descrizione breve dell\'album.',
-    coverName: '',  // nome del file della copertina dentro l'album, es. 'copertina.webp'
+    coverName: '',  // cover filename inside album, e.g. 'cover.webp'. Empty string = no cover.
   },
 ];

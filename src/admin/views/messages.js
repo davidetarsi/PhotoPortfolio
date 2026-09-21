@@ -2,6 +2,14 @@ import { topBarHtml } from './top-bar.js';
 import { formatText } from '../../utils/formatText.js';
 import { siteConfig } from '../../../config/site.config.js';
 
+/**
+ * Renders the admin messages view for contact form submissions.
+ * Fetches and displays all messages with delete functionality.
+ * @param {HTMLElement} container - The container to render into.
+ * @param {Object} deps - Dependencies with api, say, and confirm methods.
+ * @param {Object} texts - Localization strings.
+ * @returns {Promise<void>}
+ */
 export async function renderMessages(container, deps, texts) {
   container.innerHTML = `
     <section class="admin-panel">
@@ -15,7 +23,7 @@ export async function renderMessages(container, deps, texts) {
   const q = sel => container.querySelector(sel);
   const { say, confirm } = deps;
 
-  // Carica i messaggi
+  // Load messages
   let res;
   try {
     res = await deps.api.listMessages();
@@ -68,7 +76,7 @@ export async function renderMessages(container, deps, texts) {
         await deps.api.deleteMessage(msg.id);
         row.remove();
         say(texts.admin.messages.deleted);
-        // Se non ci sono più messaggi, mostra il messaggio vuoto
+        // If no more messages, show empty message.
         if (list.children.length === 0) {
           emptyMsg.style.display = 'block';
         }

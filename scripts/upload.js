@@ -47,10 +47,10 @@ async function putObject(client, bucket, key, body, contentType) {
 }
 
 /**
- * Carica tutti i file .webp di una cartella su R2 sotto il prefix <albumSlug>/
- * e carica anche il manifest.json.
- * @param {string} albumSlug
- * @param {string} optimizedDir - percorso assoluto della cartella con i .webp
+ * Uploads all .webp files from a directory to R2 under <albumSlug>/ prefix
+ * and also uploads the manifest.json.
+ * @param {string} albumSlug - Album identifier for R2 path prefix.
+ * @param {string} optimizedDir - Absolute path to folder containing .webp files.
  * @returns {Promise<{ uploaded: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
 export async function uploadAlbum(albumSlug, optimizedDir) {

@@ -1,12 +1,19 @@
-// Regole condivise tra Worker (validazione scritture), sito pubblico (validazione
-// letture) e dashboard admin (naming/slug). Unica fonte di verità.
+/**
+ * Validation rules shared across Worker (write validation), public site (read validation),
+ * and admin dashboard (naming and slug generation). Single source of truth.
+ */
 
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-export const RESERVED_SLUGS = ['admin', 'api', 'assets', 'contatti'];
-// I nomi legacy caricati con upload.js contengono maiuscole: il server le accetta.
+export const RESERVED_SLUGS = ['admin', 'api', 'assets', 'about'];
+// Legacy photo names uploaded by upload.js contain uppercase letters; the server accepts them.
 export const PHOTO_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*\.webp$/;
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
+/**
+ * Converts a title into a URL-safe slug.
+ * @param {string} title - The title to slugify.
+ * @returns {string} The slugified version: lowercase, hyphen-separated, no special chars.
+ */
 export function slugifyTitle(title) {
   return String(title)
     .toLowerCase()
@@ -22,61 +29,83 @@ const OK = { ok: true };
 const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const isPhotoName = v => typeof v === 'string' && PHOTO_NAME_RE.test(v);
 
+/**
+ * Validates the structure of site metadata (name, bio, hero image, social links).
+ * @param {unknown} data - The site configuration object to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateSiteShape(data) {
-  if (!isObj(data)) return fail('site: non è un oggetto');
-  if (typeof data.name !== 'string' || !data.name.trim()) return fail('site.name obbligatorio');
-  if (typeof data.bio !== 'string') return fail('site.bio deve essere una stringa');
+  if (!isObj(data)) return fail('site: not an object');
+  if (typeof data.name !== 'string' || !data.name.trim()) return fail('site.name is required');
+  if (typeof data.bio !== 'string') return fail('site.bio must be a string');
   if (data.hero !== null) {
-    if (!isObj(data.hero)) return fail('site.hero deve essere null o oggetto');
-    if (typeof data.hero.album !== 'string' || !SLUG_RE.test(data.hero.album)) return fail('site.hero.album invalido');
-    if (!isPhotoName(data.hero.name)) return fail('site.hero.name invalido');
+    if (!isObj(data.hero)) return fail('site.hero must be null or an object');
+    if (typeof data.hero.album !== 'string' || !SLUG_RE.test(data.hero.album)) return fail('site.hero.album is invalid');
+    if (!isPhotoName(data.hero.name)) return fail('site.hero.name is invalid');
   }
-  if (!isObj(data.social)) return fail('site.social deve essere un oggetto');
+  if (!isObj(data.social)) return fail('site.social must be an object');
   for (const v of Object.values(data.social)) {
-    if (typeof v !== 'string') return fail('site.social: valori stringa');
+    if (typeof v !== 'string') return fail('site.social: values must be strings');
   }
   return OK;
 }
 
+/**
+ * Validates the structure of the albums collection.
+ * Ensures slugs are unique, reserved names are not used, and all required fields are present.
+ * @param {unknown} data - The albums configuration object to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateAlbumsShape(data) {
-  if (!isObj(data) || !Array.isArray(data.albums)) return fail('albums: shape invalida');
+  if (!isObj(data) || !Array.isArray(data.albums)) return fail('albums: invalid shape');
   const seen = new Set();
   for (const a of data.albums) {
-    if (!isObj(a)) return fail('albums: entry non oggetto');
-    if (typeof a.slug !== 'string' || !SLUG_RE.test(a.slug)) return fail(`slug invalido: "${a?.slug}"`);
-    if (RESERVED_SLUGS.includes(a.slug)) return fail(`slug riservato: "${a.slug}"`);
-    if (seen.has(a.slug)) return fail(`slug duplicato: "${a.slug}"`);
+    if (!isObj(a)) return fail('albums: entry is not an object');
+    if (typeof a.slug !== 'string' || !SLUG_RE.test(a.slug)) return fail(`invalid slug: "${a?.slug}"`);
+    if (RESERVED_SLUGS.includes(a.slug)) return fail(`reserved slug: "${a.slug}"`);
+    if (seen.has(a.slug)) return fail(`duplicate slug: "${a.slug}"`);
     seen.add(a.slug);
-    if (typeof a.title !== 'string' || !a.title.trim()) return fail(`title obbligatorio per "${a.slug}"`);
-    if (typeof a.description !== 'string') return fail(`description stringa per "${a.slug}"`);
-    if (a.coverName !== null && !isPhotoName(a.coverName)) return fail(`coverName invalido per "${a.slug}"`);
+    if (typeof a.title !== 'string' || !a.title.trim()) return fail(`title is required for "${a.slug}"`);
+    if (typeof a.description !== 'string') return fail(`description must be a string for "${a.slug}"`);
+    if (a.coverName !== null && !isPhotoName(a.coverName)) return fail(`coverName is invalid for "${a.slug}"`);
   }
   return OK;
 }
 
+/**
+ * Validates the structure of the photo manifest (list of uploaded photos with metadata).
+ * Ensures names are unique and dimensions are valid.
+ * @param {unknown} data - The manifest array to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateManifestShape(data) {
-  if (!Array.isArray(data)) return fail('manifest: non è un array');
+  if (!Array.isArray(data)) return fail('manifest: not an array');
   const seen = new Set();
   for (const e of data) {
-    if (!isObj(e)) return fail('manifest: entry non oggetto');
-    if (!isPhotoName(e.name)) return fail(`manifest: name invalido "${e?.name}"`);
-    if (seen.has(e.name)) return fail(`manifest: name duplicato "${e.name}"`);
+    if (!isObj(e)) return fail('manifest: entry is not an object');
+    if (!isPhotoName(e.name)) return fail(`manifest: invalid name "${e?.name}"`);
+    if (seen.has(e.name)) return fail(`manifest: duplicate name "${e.name}"`);
     seen.add(e.name);
-    if (!Number.isFinite(e.width) || e.width <= 0) return fail(`manifest: width invalida per "${e.name}"`);
-    if (!Number.isFinite(e.height) || e.height <= 0) return fail(`manifest: height invalida per "${e.name}"`);
-    if (e.capturedAt !== undefined && !Number.isFinite(e.capturedAt)) return fail(`manifest: capturedAt invalido per "${e.name}"`);
-    if (e.uploadedAt !== undefined && !Number.isFinite(e.uploadedAt)) return fail(`manifest: uploadedAt invalido per "${e.name}"`);
+    if (!Number.isFinite(e.width) || e.width <= 0) return fail(`manifest: invalid width for "${e.name}"`);
+    if (!Number.isFinite(e.height) || e.height <= 0) return fail(`manifest: invalid height for "${e.name}"`);
+    if (e.capturedAt !== undefined && !Number.isFinite(e.capturedAt)) return fail(`manifest: invalid capturedAt for "${e.name}"`);
+    if (e.uploadedAt !== undefined && !Number.isFinite(e.uploadedAt)) return fail(`manifest: invalid uploadedAt for "${e.name}"`);
   }
   return OK;
 }
 
+/**
+ * Validates the structure of the runtime configuration (R2 URL and Turnstile sitekey).
+ * @param {unknown} data - The configuration object to validate.
+ * @returns {{ok: true} | {ok: false, error: string}} Validation result.
+ */
 export function validateConfigShape(data) {
-  if (!isObj(data)) return fail('config: non è un oggetto');
+  if (!isObj(data)) return fail('config: not an object');
   if (typeof data.r2PublicUrl !== 'string' || !data.r2PublicUrl.trim()) {
-    return fail('config.r2PublicUrl deve essere una stringa non vuota');
+    return fail('config.r2PublicUrl must be a non-empty string');
   }
   if (data.turnstileSitekey !== null && data.turnstileSitekey !== undefined) {
-    if (typeof data.turnstileSitekey !== 'string') return fail('config.turnstileSitekey deve essere una stringa o null');
+    if (typeof data.turnstileSitekey !== 'string') return fail('config.turnstileSitekey must be a string or null');
   }
   return OK;
 }

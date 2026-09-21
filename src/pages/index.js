@@ -13,7 +13,7 @@ validateSiteConfig(siteConfig);
 
 document.getElementById('albums-heading').textContent = texts.landing.albumsSectionHeading;
 
-// Skeleton sulle card mentre i dati arrivano.
+// Skeleton cards while data is being fetched.
 const cardsEl = document.getElementById('album-cards');
 cardsEl.innerHTML = '<div class="album-card__skeleton"></div><div class="album-card__skeleton"></div>';
 

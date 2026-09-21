@@ -3,7 +3,7 @@ import { handleAdminRequest } from './worker/admin-routes.js'
 import { handleContactRequest } from './worker/contact-routes.js'
 
 const STATIC_PAGES = {
-  '/contatti': '/contatti.html',
+  '/about': '/about.html',
   '/admin': '/admin.html',
 }
 
@@ -14,7 +14,7 @@ export default {
     const url = new URL(request.url)
     const pathname = url.pathname.replace(/\/$/, '') || '/'
 
-    // API prima di tutto: non devono mai cadere nella regex degli album.
+    // API routes first: they must never match the album slug regex.
     if (pathname.startsWith('/api/data/')) {
       return handleDataRequest(request, env)
     }
@@ -25,6 +25,12 @@ export default {
 
     if (pathname === '/api/contact') {
       return handleContactRequest(request, env)
+    }
+
+    // The page was renamed from /contatti: existing shared links must not become 404s.
+    // 301 (permanent) not 302 (temporary) because the old address will not return.
+    if (pathname === '/contatti') {
+      return Response.redirect(new URL('/about', url).toString(), 301)
     }
 
     if (STATIC_PAGES[pathname]) {

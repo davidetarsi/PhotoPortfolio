@@ -27,12 +27,12 @@ describe('decideMigration', () => {
   it('con --force procede e avverte che sta sovrascrivendo', () => {
     const d = decideMigration(['_site/site.json'], true);
     expect(d.procedi).toBe(true);
-    expect(d.messaggio).toMatch(/sovrascriv/i);
+    expect(d.messaggio).toMatch(/overwrit/i);
   });
 
   it('con --force ma niente da sovrascrivere non allarma', () => {
     const d = decideMigration([], true);
     expect(d.procedi).toBe(true);
-    expect(d.messaggio).not.toMatch(/sovrascriv/i);
+    expect(d.messaggio).not.toMatch(/overwrit/i);
   });
 });

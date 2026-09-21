@@ -1,19 +1,17 @@
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 /**
- * Verifica il token Turnstile presso Cloudflare.
+ * Verifies a Turnstile token with Cloudflare.
  *
- * Senza secret la verifica e' disattivata e passa: Turnstile e'
- * opzionale, e chi sceglie di non usarlo deve avere un form che
- * funziona, non uno che rifiuta tutti. Con il secret configurato,
- * invece, qualunque incertezza blocca — un errore di rete verso
- * Cloudflare non e' un buon motivo per accettare un invio non
- * verificato.
+ * Without a secret, verification is disabled and always succeeds. Turnstile is optional,
+ * and users who don't use it should have a working form, not one that rejects everything.
+ * With secret configured, any uncertainty blocks the submission: network errors to Cloudflare
+ * are not a reason to accept an unverified submission.
  *
- * @param {string} token - dal campo cf-turnstile-response
- * @param {string} secret - TURNSTILE_SECRET, vuoto = disattivato
- * @param {typeof fetch} fetchImpl
- * @returns {Promise<boolean>}
+ * @param {string} token - The cf-turnstile-response field value from the form.
+ * @param {string} secret - TURNSTILE_SECRET; empty string means disabled.
+ * @param {typeof fetch} fetchImpl - Fetch implementation for testing.
+ * @returns {Promise<boolean>} True if verification passed, false if failed or not configured.
  */
 export async function verifyTurnstile(token, secret, fetchImpl = fetch) {
   if (!secret) return true;
