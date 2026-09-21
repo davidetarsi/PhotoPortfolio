@@ -56,7 +56,7 @@ function renderRoute() {
 }
 window.addEventListener('hashchange', renderRoute);
 if (!albumsRes.ok) {
-  root.innerHTML = '<p class="admin-status">Impossibile caricare gli album (rete o dati mancanti). Ricarica la pagina.</p>';
+  root.innerHTML = `<p class="admin-status">${texts.admin.albums.loadError}</p>`;
 } else {
   renderRoute();
 }

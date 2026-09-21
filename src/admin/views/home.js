@@ -40,7 +40,7 @@ export function renderAdminHome(container, ctx) {
       <label>${texts.admin.site.instagramLabel} <input name="site-instagram" type="url" placeholder="https://instagram.com/…"></label>
       <div class="admin-hero">
         <span>HeroImage:</span>
-        ${heroSrc ? `<img class="admin-hero__thumb" alt="">` : '<em>nessuna</em>'}
+        ${heroSrc ? `<img class="admin-hero__thumb" alt="">` : `<em>${texts.admin.site.heroNone}</em>`}
         <select name="hero-album"><option value="">${texts.admin.site.heroChooseAlbum}</option></select>
         <div class="admin-hero__picker"></div>
       </div>
@@ -139,7 +139,7 @@ export function renderAdminHome(container, ctx) {
     `;
     row.querySelector('.admin-album-row__title').textContent = a.title;
     row.querySelector('.admin-delete-album').addEventListener('click', () => run(async () => {
-      const typed = deps.prompt(`Per eliminare scrivi il nome esatto dell'album: "${a.title}"`);
+      const typed = deps.prompt(formatText(texts.admin.albums.deleteConfirmPrompt, { titolo: a.title }));
       if (typed !== a.title) { say(texts.admin.albums.deleteNameMismatch, true); return; }
       await api.deleteAlbum(a.slug);
       ctx.albums = ctx.albums.filter(x => x.slug !== a.slug);
