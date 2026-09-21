@@ -1,28 +1,39 @@
-// One-shot: trasforma le config build-time nei JSON runtime e li carica su R2.
-// Uso: npm run migrate            → carica _site/site.json e _data/albums.json
-//      npm run migrate -- --dry-run → stampa i JSON senza caricare nulla
-//      npm run migrate -- --force  → sovrascrive i dati gia' presenti su R2
+// One-shot: transforms build-time configs into runtime JSON and uploads to R2.
+// Usage: npm run migrate            → uploads _site/site.json and _data/albums.json
+//        npm run migrate -- --dry-run → prints JSON without uploading
+//        npm run migrate -- --force  → overwrites existing data on R2
 import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { fileURLToPath } from 'url';
 import { siteConfig } from '../config/site.config.js';
 import { albums } from '../config/albums.config.js';
 import { decideMigration } from '../src/utils/decideMigration.js';
 
+/**
+ * Transforms album config to runtime format for R2 storage.
+ * @param {Array<Object>} legacyAlbums - Album configurations from config file.
+ * @returns {{albums: Array<Object>}} Runtime albums structure.
+ */
 export function albumsToRuntime(legacyAlbums) {
   return {
     albums: legacyAlbums.map(a => ({
       slug: a.slug,
       title: a.title,
       description: a.description ?? '',
-      // `||` e non `??`: il seed usa la stringa vuota per "nessuna cover", e
-      // "" non e' un coverName valido per validateAlbumsShape, che accetta
-      // solo null o un nome di file. Con `??` la stringa vuota sopravvivrebbe
-      // e il sito rifiuterebbe i propri dati appena migrati.
+      // `||` not `??`: the seed uses empty string for "no cover", but "" is not
+      // a valid coverName for validateAlbumsShape, which accepts only null or a
+      // filename. With `??`, the empty string would survive and the site would
+      // reject its own just-migrated data.
       coverName: a.coverName || null,
     })),
   };
 }
 
+/**
+ * Transforms site config to runtime format for R2 storage.
+ * Filters social links to keep only string values.
+ * @param {Object} cfg - Site configuration object.
+ * @returns {Object} Runtime site structure with name, bio, hero, and social.
+ */
 export function siteToRuntime(cfg) {
   const social = {};
   for (const [k, v] of Object.entries(cfg.social ?? {})) {
@@ -67,9 +78,9 @@ async function main() {
       await s3.send(new HeadObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key }));
       esistenti.push(key);
     } catch (err) {
-      // 404/NotFound = la chiave non c'e', ed e' il caso normale al primo giro.
-      // Qualunque altro errore (permessi, rete, bucket sbagliato) non va
-      // scambiato per "non esiste": meglio fermarsi che sovrascrivere al buio.
+      // 404/NotFound = key doesn't exist, normal on first run.
+      // Any other error (permissions, network, wrong bucket) must not be mistaken
+      // for "doesn't exist": better to stop than overwrite blindly.
       const code = err?.$metadata?.httpStatusCode;
       if (code !== 404 && err?.name !== 'NotFound') throw err;
     }

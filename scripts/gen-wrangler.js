@@ -11,7 +11,7 @@ if (!existsSync(OUTPUTS)) {
   process.exit(1);
 }
 
-// `terraform output -json` incapsula ogni valore in { value, type, sensitive }.
+// `terraform output -json` wraps each value in { value, type, sensitive }.
 const grezzi = JSON.parse(readFileSync(OUTPUTS, 'utf8'));
 const outputs = Object.fromEntries(
   Object.entries(grezzi).map(([k, v]) => [k, v?.value ?? v]),

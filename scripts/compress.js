@@ -10,7 +10,7 @@ const WEBP_QUALITY = 85;
 const CONCURRENCY = 4;
 
 /**
- * @param {string[]} argv - Array di argomenti CLI (es. process.argv.slice(2)).
+ * @param {string[]} argv - Array of CLI arguments (e.g. process.argv.slice(2)).
  * @returns {{ input: string | null, help: boolean, manifestOnly: boolean }}
  */
 export function parseArgs(argv) {
@@ -24,7 +24,7 @@ export function parseArgs(argv) {
 }
 
 /**
- * @param {string} filename - Nome del file con estensione.
+ * @param {string} filename - Filename with extension.
  * @returns {boolean}
  */
 export function isSupportedFile(filename) {
@@ -32,8 +32,8 @@ export function isSupportedFile(filename) {
 }
 
 /**
- * @param {string} inPath - Percorso assoluto del file sorgente.
- * @param {string} outPath - Percorso assoluto del file di output (.webp).
+ * @param {string} inPath - Absolute path to source image file.
+ * @param {string} outPath - Absolute path for output .webp file.
  * @returns {Promise<{width: number, height: number, format: string, ...}>}
  */
 export async function processImage(inPath, outPath) {
@@ -50,9 +50,9 @@ export async function processImage(inPath, outPath) {
 }
 
 /**
- * Legge i .webp già presenti in optimizedDir e (ri)scrive manifest.json con dimensioni.
- * Non tocca i file immagine — utile quando le foto sono già in formato webp.
- * @param {string} optimizedDir - Percorso assoluto della cartella contenente i .webp.
+ * Reads existing .webp files and writes manifest.json with dimensions.
+ * Does not touch image files — useful when photos are already in webp format.
+ * @param {string} optimizedDir - Absolute path to folder containing .webp files.
  * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
 export async function buildManifest(optimizedDir) {
@@ -88,8 +88,9 @@ export async function buildManifest(optimizedDir) {
 }
 
 /**
- * @param {string} originaliDir - Percorso assoluto della cartella sorgente.
- * @param {string} optimizedDir - Percorso assoluto della cartella di output.
+ * Processes all images in source directory and writes optimized .webp files with manifest.
+ * @param {string} originaliDir - Absolute path to source image folder.
+ * @param {string} optimizedDir - Absolute path for output folder.
  * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
 export async function processDir(originaliDir, optimizedDir) {
