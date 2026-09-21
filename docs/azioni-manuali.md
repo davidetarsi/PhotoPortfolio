@@ -14,42 +14,48 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 ## In sospeso
 
-| # | Azione | Blocca | Urgenza |
-|---|---|---|---|
-| 1 | ~~Aprire e mergiare la PR del bootstrap~~ | — | **fatta** |
-| 2 | Decidere cosa fare di `docs/` prima della pubblicazione | la pubblicazione | prima di rendere pubblico |
-| 3 | Rendere pubblico il repo template | la condivisione con gli amici | prima di distribuire |
-| 4 | Togliere la spunta "Template repository" | niente | insieme al punto 3 |
-| 5 | Primo merge sito ← template, con precauzioni | niente | quando vuoi aggiornare il sito |
-| 6 | Accesso in scrittura alla deploy key di `photoportfolio` | niente | opzionale |
-| 7 | **`terraform apply`: applicare l'infrastruttura del punto 1** | la verifica di punto 1 e punto 2 | **la più urgente** |
-| 8 | Attivare il dominio custom delle foto (punto 2) | niente d'altro | dopo la 7 |
+### 🔧 Infrastruttura — nulla di tutto questo è mai stato provato contro l'API vera
+
+| # | Azione | Blocca |
+|---|---|---|
+| **7** | **`terraform apply`: creare l'infrastruttura** | la verifica dei punti 1, 2 e del form |
+| 8 | Dominio custom per le foto | niente d'altro, ma `r2.dev` è rate-limited |
+| 9 | I due secret del form: `TURNSTILE_SECRET` e `CONTACT_NOTIFY_URL` | la protezione antispam e le notifiche |
+
+### 📢 Pubblicazione — la strada per darlo agli amici
+
+| # | Azione | Blocca |
+|---|---|---|
+| 2 | Decidere cosa fare di `docs/` | la pubblicazione |
+| 3 | Rendere pubblico il repo | la condivisione con gli amici |
+| 4 | Togliere la spunta "Template repository" | niente, ma vanifica la scelta del fork |
+
+### 🖼️ Vetrina — quello che manca a chi arriva sul repo
+
+| # | Azione | Blocca |
+|---|---|---|
+| 10 | Screenshot di home, album e dashboard | niente, ma è ciò che pesa di più |
+| 11 | Link alla demo dal vivo | niente |
+| 12 | Username Ko-fi e PayPal | i due link di donazione |
+
+### 👀 Da guardare e decidere
+
+| # | Azione | Blocca |
+|---|---|---|
+| 13 | Guardare le tre varianti di card e scegliere il default | niente |
+
+### 🔄 Il tuo sito
+
+| # | Azione | Blocca |
+|---|---|---|
+| 5 | Primo merge sito ← template | niente |
+| 6 | Deploy key in scrittura su `photoportfolio` | niente, opzionale |
 
 **Nessuna blocca la scrittura di altro codice**, ma la voce 7 è diversa dalle altre:
-finché non viene eseguita, la configurazione Terraform dei punti 1 e 2 è **scritta e
-validata ma mai provata contro l'API vera**. Ogni punto costruito sopra aumenta ciò
-che si scoprirebbe tutto insieme al primo `apply`.
-
----
-
-### 1. Aprire e mergiare la PR del bootstrap
-
-**Dove:** https://github.com/davidetarsi/PhotoPortfolioTemplate/pull/new/bootstrap-architettura-r2
-
-Il branch `bootstrap-architettura-r2` è pushato e contiene sei commit: il merge che
-crea l'antenato comune con il sito, la neutralizzazione dei valori personali, il
-flusso fork nel README e la documentazione.
-
-**Perché non è bloccante:** il lavoro del punto 1 può partire da un branch che nasce
-da `bootstrap-architettura-r2` invece che da `main`. Git gestisce la cosa senza
-attriti.
-
-**Perché conviene comunque farlo prima:** se in revisione decidi di cambiare qualcosa
-del bootstrap, tutto ciò che ci è stato costruito sopra va rifatto. Mergiare prima
-elimina quel rischio.
-
-**Fatto quando:** `main` contiene il commit di merge e `git merge-base main <sito>`
-restituisce un commit.
+finché non viene eseguita, tutto ciò che abbiamo costruito su Cloudflare — bucket,
+Access, dominio custom, Turnstile — è **scritto e validato ma mai provato contro
+l'API vera**. Ogni lavoro aggiunto sopra allunga ciò che si scoprirebbe tutto insieme
+al primo `apply`.
 
 ---
 
@@ -202,18 +208,120 @@ non si vede navigando il sito, ed è proprio quello che il punto 2 serviva a sis
 
 ---
 
+### 9. I due secret del form di contatto
+
+**Dove:** sul tuo computer, dopo la voce 7.
+
+Il form scrive i messaggi su R2 da solo, ma due cose restano da configurare, **entrambe
+come secret e non come `vars`**:
+
+```bash
+npx wrangler secret put TURNSTILE_SECRET      # dal pannello Turnstile, dopo terraform apply
+npx wrangler secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
+```
+
+> ⚠️ **Non metterli in `wrangler.json`**, che è versionato: un URL Telegram contiene il
+> token del bot, e finirebbe su GitHub.
+
+Per le notifiche la via più rapida è [ntfy.sh](https://ntfy.sh/): nessun account, scegli
+un nome di topic **lungo e casuale** e installi l'app. Le tre ricette stanno nella
+[sezione 9 del runbook](runbook-cloudflare.md#9-contact-form-notifications-and-spam-protection).
+
+**Fatto quando:** invii un messaggio dal sito vero, arriva la notifica, e lo vedi in `/admin`.
+
+**E la verifica che nessun test può fare al posto tuo:** controlla che la notifica
+ricevuta **non contenga il testo del messaggio**. C'è un test automatico che lo
+garantisce, ma questa è l'unica prova sul canale reale.
+
+---
+
+### 10. Gli screenshot
+
+**Dove:** tre immagini in `docs/`, e quattro punti da aggiornare.
+
+Servono: la **home**, una **vista album** con la lightbox, e la **dashboard** di
+caricamento. Falle a finestra larga e con foto vere — uno screenshot col seed vuoto
+racconta il contrario di quello che vuoi dire.
+
+Poi vanno inserite in quattro punti: l'immagine in testa e la sezione Screenshot, in
+`README.md` e `README.it.md`. I segnaposto sono già lì, marcati `TODO` e *(coming soon)*.
+
+**Perché pesa più delle altre voci di questo gruppo:** un portfolio fotografico si
+giudica guardandolo. Finché mancano, i due README descrivono a parole una cosa che si
+capisce in un secondo vedendola.
+
+Mandami i file e li inserisco io.
+
+---
+
+### 11. Il link alla demo
+
+**Dove:** in testa a entrambi i README, riga `🔗 Live demo`.
+
+È il tuo sito, quando sarà online sul dominio definitivo. Un template che mostra un
+esempio funzionante convince più di qualsiasi elenco di funzionalità.
+
+---
+
+### 12. Ko-fi e PayPal
+
+**Dove:** `.github/FUNDING.yml` e la sezione *È gratis, e resta gratis* dei due README.
+
+In `FUNDING.yml` le due righe sono già scritte e commentate, con le istruzioni dentro il
+file. Servono solo gli username:
+
+```yaml
+# ko_fi: IL-TUO-USERNAME-KOFI
+# custom: ["https://paypal.me/IL-TUO-USERNAME"]
+```
+
+> Uno username sbagliato non dà errore: produce un bottone *Sponsor* che porta a una
+> pagina inesistente. Meglio lasciarli spenti finché non sono verificati.
+
+GitHub Sponsors è già attivo e non richiede nulla.
+
+---
+
+### 13. Guardare le tre varianti di card
+
+**Dove:** `npm run dev`, e una riga da cambiare in `theme/card.css`.
+
+È il Task 5 del punto 4, e nessun test può sostituirlo: **nessun test dice se una card
+è bella.**
+
+Attiva una variante alla volta — `cinematic`, `editorial`, `minimal` — commentando e
+decommentando le `@import`. Il dev server ricarica da solo. Guardale anche da telefono:
+`editorial` passa a colonna singola sotto i 600px, `minimal` diventa molto alta perché
+conserva le proporzioni originali delle foto.
+
+Poi decidi **quale resta il default del template**. Ora è `cinematic` perché era
+l'aspetto già esistente, non perché qualcuno l'abbia scelta.
+
+Se una non convince, dimmelo: sono tre file CSS indipendenti, si correggono o si
+eliminano senza toccare altro.
+
+---
+
 ## Decisioni ancora aperte
 
-Non sono azioni, ma scelte che serviranno lungo la strada. Da
-[analisi §8.2](superpowers/specs/2026-09-20-template-distribuibile-analisi.md):
+Non sono azioni da fare, ma scelte che prima o poi vanno prese. Le prime tre servono a
+lavori già pianificati; le ultime due sono stonature note di cui hai il diritto di
+decidere che non ti importano.
 
-- **Nome del repo template** una volta pubblico. `PhotoPortfolioTemplate` va bene,
-  ma è il momento buono per cambiarlo. Se lo cambi, vanno aggiornati gli URL nel
-  README (sezione fork).
-- **Quale dominio** per le foto, quando arriverà il punto 2 (`img.tuodominio.it` o
-  simile) e su quale zona Cloudflare. Serve al punto 2, non al punto 1.
-- **Stato Terraform**: locale (raccomandato in analisi §3.3) o backend su R2. Serve
-  al punto 1: in assenza di una tua indicazione si procede con lo stato locale.
+- **Nome del repo template** una volta pubblico. `PhotoPortfolioTemplate` va bene, ma è
+  il momento buono per cambiarlo: dopo, gli URL nel README e nei fork sarebbero da
+  aggiornare.
+- **Quale dominio** per le foto (`img.tuodominio.it` o simile) e su quale zona
+  Cloudflare. Serve alla voce 8.
+- **Stato Terraform**: locale, come raccomandato, oppure backend su R2. Serve alla
+  voce 7; in assenza di indicazioni si procede con quello locale.
+- **L'URL `/contatti` in un template inglese.** Chi forka si ritrova
+  `suosito.com/contatti`. Cambiarlo tocca routing, navigazione, testi e test — non è
+  una sostituzione di testo — e va deciso **prima** di distribuire: dopo, romperebbe i
+  link già condivisi.
+- **I commenti nel codice sono in italiano.** In un template rivolto a sviluppatori
+  internazionali è una stonatura vera, ma tradurli tutti significa toccare codice
+  funzionante per una ragione estetica. Se si fa, è un punto a sé con revisione seria.
 
 ---
 
