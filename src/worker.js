@@ -14,7 +14,7 @@ export default {
     const url = new URL(request.url)
     const pathname = url.pathname.replace(/\/$/, '') || '/'
 
-    // API prima di tutto: non devono mai cadere nella regex degli album.
+    // API routes first: they must never match the album slug regex.
     if (pathname.startsWith('/api/data/')) {
       return handleDataRequest(request, env)
     }
@@ -27,9 +27,8 @@ export default {
       return handleContactRequest(request, env)
     }
 
-    // La pagina si chiamava /contatti: il rename non deve trasformare in
-    // un 404 i link gia' condivisi. 301 e non 302 perche' il vecchio
-    // indirizzo non tornera'.
+    // The page was renamed from /contatti: existing shared links must not become 404s.
+    // 301 (permanent) not 302 (temporary) because the old address will not return.
     if (pathname === '/contatti') {
       return Response.redirect(new URL('/about', url).toString(), 301)
     }

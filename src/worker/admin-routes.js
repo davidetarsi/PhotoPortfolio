@@ -1,5 +1,8 @@
-// Scritture protette. Il JWT è verificato QUI (non nel router del worker):
-// ogni handler admin è chiuso by-construction anche se il routing cambiasse.
+/**
+ * Admin (authenticated) write handlers.
+ * JWT is verified HERE (not in the worker router): every admin handler is
+ * closed by construction even if routing changes.
+ */
 import { jsonResponse } from './http.js';
 import { verifyAccessJwt } from './access-jwt.js';
 import {
@@ -105,9 +108,9 @@ export async function handleAdminRequest(request, env, deps = {}) {
     const slug = albumDelete[1];
     if (RESERVED_SLUGS.includes(slug)) return jsonResponse({ error: 'NOT_FOUND' }, 404);
 
-    // Loop paginato: list() max 1000 chiavi/pagina, delete() max 1000 chiavi/chiamata.
-    // Prima gli oggetti, POI albums.json: se il loop muore a metà, l'album resta
-    // visibile nel pannello e la cancellazione è ri-lanciabile (idempotente).
+    // Paginated loop: list() returns max 1000 keys/page, delete() takes max 1000 keys/call.
+    // Delete photos first, THEN albums.json: if the loop dies halfway, the album
+    // stays visible in the dashboard and the delete is re-runnable (idempotent).
     try {
       let cursor;
       do {
@@ -140,7 +143,7 @@ export async function handleAdminRequest(request, env, deps = {}) {
       if (!obj) continue;
       messages.push({ id: key.slice(MESSAGES_PREFIX.length, -'.json'.length), ...(await obj.json()) });
     }
-    // Le chiavi sono ordinabili per data: invertirle basta, senza guardare receivedAt.
+    // Keys are sortable by date: reversing them is enough, no need to check receivedAt.
     messages.reverse();
     return jsonResponse({ messages });
   }
@@ -148,8 +151,8 @@ export async function handleAdminRequest(request, env, deps = {}) {
   const delMsg = pathname.match(/^\/api\/admin\/messages\/(.+)$/);
   if (delMsg && request.method === 'DELETE') {
     const id = decodeURIComponent(delMsg[1]);
-    // L'id finisce dentro una chiave R2: senza questo controllo un id
-    // con barre o punti puo' uscire da _messages/ e cancellare altro.
+    // The ID becomes part of an R2 key. Without this regex check, an ID containing
+    // slashes or dots could escape _messages/ and delete arbitrary objects.
     if (!MESSAGE_ID_RE.test(id)) return jsonResponse({ error: 'INVALID_ID' }, 400);
     await env.BUCKET.delete(`${MESSAGES_PREFIX}${id}.json`);
     return jsonResponse({ ok: true });
