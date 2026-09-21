@@ -41,6 +41,9 @@ Buckets, domains, Access applications: this configuration lives in `infra/variab
 | **Admin dashboard background** | `config/admin.config.js`, `backgroundImageUrl` field | URL of a photo already uploaded to R2 |
 | **Who can access `/admin`** | `infra/variables.tf`, `admin_emails` field (Terraform) or dashboard Access for `/admin` and `/api/admin` paths (manual) | Requires Terraform apply or manual Access modification. See [runbook](docs/runbook-cloudflare.md). |
 | **Photo domain** | `infra/variables.tf`, `custom_photo_domain` (Terraform), or dashboard R2 (manual) | See [runbook section 8](docs/runbook-cloudflare.md#8-custom-domain-for-photos). Do once before production. |
+| **Where contact messages go** | Nothing to configure — the Worker stores them on R2 and you read them in `/admin` | No third-party service, no extra account |
+| **Notification when a message arrives** | `npx wrangler secret put CONTACT_NOTIFY_URL` | Any service that accepts a POST. Three recipes in [runbook section 9](docs/runbook-cloudflare.md#9-contact-form-notifications-and-spam-protection) |
+| **Spam protection** | `TURNSTILE_SITEKEY` in `wrangler.json` + `npx wrangler secret put TURNSTILE_SECRET` | An empty sitekey turns it off. See [runbook section 9](docs/runbook-cloudflare.md#9-contact-form-notifications-and-spam-protection) |
 | **Security headers / CSP** | — Do not touch — | Generated from `wrangler.json` during build. See CSP plugin in `vite.config.js`. |
 
 ---
@@ -110,6 +113,14 @@ h1, h2, h3 {
 Files in `src/` are the application's behavior: modifying them creates conflicts on future template merges. Keep customizations in `config/` and `theme/`, the only designated extension points.
 
 Exception: if you fix a bug or add a feature to the template itself, do it in `src/`, but contribute it back to the repository you forked from — so the next fork of your copy has it already.
+
+
+### Contact messages contain other people's data
+
+Names, email addresses and whatever someone chose to write, sitting in your bucket. Two consequences worth knowing rather than discovering:
+
+- The dashboard lets you **delete** a message. That is not a convenience — it is the reason you are allowed to keep the others.
+- The notification you receive contains **only the sender's name and a link**, never the message. That is deliberate: a notification channel may be readable by others, and what leaves your bucket does not come back.
 
 ### `wrangler.json`
 

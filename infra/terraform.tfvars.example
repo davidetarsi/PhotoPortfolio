@@ -16,3 +16,7 @@ admin_emails = ["tu@esempio.it"]
 # Dopo aver verificato che le foto arrivano dal dominio custom, metti false
 # per chiudere la porta r2.dev sul bucket di produzione.
 # keep_managed_domain = false
+
+# Turnstile protegge il form di contatto, l'unica rotta pubblica che scrive.
+# A false resta solo l'honeypot: il form funziona, ma senza rate limiting.
+# enable_turnstile = true
