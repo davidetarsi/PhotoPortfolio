@@ -111,7 +111,7 @@ Conflicts, if any, will land on `config/`, `theme/` and `wrangler.json` — that
 node --version   # requires v20+
 npm install
 cp .env.example .env
-# Fill in .env: VITE_R2_PUBLIC_URL, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, VITE_WEB3FORMS_ACCESS_KEY
+# Fill in .env: VITE_R2_PUBLIC_URL, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
 npm run dev      # → http://localhost:5173/
 ALLOW_PLACEHOLDER_CSP=1 npm run build  # build check with placeholder values
 npm test         # the full suite
@@ -161,7 +161,6 @@ R2_ACCOUNT_ID="..."
 R2_ACCESS_KEY_ID="..."
 R2_SECRET_ACCESS_KEY="..."
 R2_BUCKET_NAME="your-bucket"
-VITE_WEB3FORMS_ACCESS_KEY="..."  # from web3forms.com
 ```
 
 These credentials must not go into git — `.env` is ignored, while the Cloudflare variables belong in `wrangler.json`, which is versioned.

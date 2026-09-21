@@ -1,5 +1,3 @@
-const FORM_ENDPOINT = 'https://api.web3forms.com';
-
 /**
  * Costruisce il contenuto di _headers dalle origini R2 dichiarate in
  * wrangler.json. Sorgente unica: chi compila wrangler.json a mano
@@ -8,7 +6,7 @@ const FORM_ENDPOINT = 'https://api.web3forms.com';
  * @param {object} config - oggetto wrangler.json
  * @param {{allowPlaceholders?: boolean}} [options] - allowPlaceholders serve
  *   solo a verificare che il template compili quando wrangler.json ha ancora
- *   i segnaposto. Non usarlo mai per un sito destinato al deploy: produce una
+ *   i segnaposti. Non usarlo mai per un sito destinato al deploy: produce una
  *   CSP che non autorizza alcuna origine R2, cioe un sito senza foto.
  * @returns {string} contenuto del file _headers
  */
@@ -32,14 +30,22 @@ export function buildHeaders(config, options = {}) {
 
   const lista = origini.join(' ');
 
+  // Turnstile carica uno script e disegna un iframe: senza queste tre
+  // direttive il browser lo blocca. Si aggiungono solo se il widget e'
+  // configurato: autorizzare un dominio che non si usa allarga la
+  // policy senza motivo.
+  const turnstile = config?.vars?.TURNSTILE_SITEKEY ? 'https://challenges.cloudflare.com' : '';
+  const conTurnstile = direttiva => (turnstile ? `${direttiva} ${turnstile}` : direttiva);
+
   const csp = [
     "default-src 'self'",
-    "script-src 'self'",
+    conTurnstile("script-src 'self'"),
     "style-src 'self' https://fonts.googleapis.com",
     'font-src https://fonts.gstatic.com',
     `img-src 'self' data: ${lista}`,
-    `connect-src 'self' ${lista} ${FORM_ENDPOINT}`,
-    `form-action 'self' ${FORM_ENDPOINT}`,
+    conTurnstile(`connect-src 'self' ${lista}`),
+    "form-action 'self'",
+    ...(turnstile ? [`frame-src ${turnstile}`] : []),
     "frame-ancestors 'none'",
     "object-src 'none'",
     "base-uri 'self'",

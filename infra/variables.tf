@@ -63,3 +63,9 @@ variable "keep_managed_domain" {
   default     = true
   description = "Tiene acceso il dominio r2.dev di produzione. Va messo a false SOLO dopo aver verificato che il dominio custom serve le foto: spegnerlo prima lascia il sito senza immagini."
 }
+
+variable "enable_turnstile" {
+  type        = bool
+  default     = true
+  description = "Crea il widget Turnstile che protegge il form di contatto. A false il form resta protetto solo dall'honeypot."
+}

@@ -13,5 +13,5 @@ export const siteConfig = {
   // Optional chaining: il file viene importato anche da vite.config.js (Node),
   // dove import.meta.env non esiste.
   r2PublicUrl: import.meta.env?.VITE_R2_PUBLIC_URL,
-  web3formsAccessKey: import.meta.env?.VITE_WEB3FORMS_ACCESS_KEY ?? '',
+  turnstileSitekey: import.meta.env?.VITE_TURNSTILE_SITEKEY ?? '',
 };

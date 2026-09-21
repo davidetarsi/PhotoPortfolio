@@ -17,7 +17,10 @@ export async function handleDataRequest(request, env) {
   const pathname = new URL(request.url).pathname;
 
   if (pathname === '/api/data/config') {
-    return jsonResponse({ r2PublicUrl: env.R2_PUBLIC_URL ?? null });
+    return jsonResponse({
+      r2PublicUrl: env.R2_PUBLIC_URL ?? null,
+      turnstileSitekey: env.TURNSTILE_SITEKEY ?? null,
+    });
   }
 
   const key = keyFor(pathname);

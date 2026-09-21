@@ -75,5 +75,8 @@ export function validateConfigShape(data) {
   if (typeof data.r2PublicUrl !== 'string' || !data.r2PublicUrl.trim()) {
     return fail('config.r2PublicUrl deve essere una stringa non vuota');
   }
+  if (data.turnstileSitekey !== null && data.turnstileSitekey !== undefined) {
+    if (typeof data.turnstileSitekey !== 'string') return fail('config.turnstileSitekey deve essere una stringa o null');
+  }
   return OK;
 }

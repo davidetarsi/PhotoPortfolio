@@ -267,6 +267,61 @@ Staging doesn't change: it has no custom domain, so its `r2.dev` stays on foreve
 
 ---
 
+## 9. Contact form: notifications and spam protection
+
+The contact form writes straight to your R2 bucket through the Worker — no third-party service, no extra account. Messages are read in the `/admin` dashboard, next to the albums.
+
+Two things are optional, and both are configured with **secrets, not `vars`**.
+
+> ⚠️ **`wrangler.json` is committed to the repository.** A notification URL can contain a token — a Telegram bot URL certainly does. Putting one in `wrangler.json` publishes it on GitHub. Use `wrangler secret put`, which stores the value with Cloudflare and never writes it to a file.
+
+### Notification when a message arrives
+
+Without this, messages still arrive and are still readable in the dashboard — you just have to go and look. With it, you get a push.
+
+```bash
+npx wrangler secret put CONTACT_NOTIFY_URL
+```
+
+The Worker sends a `POST` to that URL. Any service that accepts one works; here are three.
+
+**ntfy.sh — no account, nothing to sign up for**
+
+Pick a topic name, install the [ntfy app](https://ntfy.sh/), subscribe to the topic. Your URL is `https://ntfy.sh/your-topic-name`.
+
+> Public ntfy topics are readable by **anyone who guesses the name**. Use something long and random — `portfolio-msg-7f3a9c2b1e`, not `portfolio`. The notification deliberately contains only the sender's name and a link, never the message itself, precisely because this channel may not be private.
+
+**Telegram — a bot you talk to**
+
+Create a bot with [@BotFather](https://t.me/botfather), get its token, then get your chat id by messaging the bot and opening `https://api.telegram.org/bot<TOKEN>/getUpdates`. Your URL:
+
+```
+https://api.telegram.org/bot<TOKEN>/sendMessage?chat_id=<CHAT_ID>&text=
+```
+
+**Discord or Slack — one webhook**
+
+Server Settings → Integrations → Webhooks (Discord), or an incoming webhook app (Slack). Copy the URL as-is.
+
+### Turnstile, the spam protection
+
+`/api/contact` is the only route on the site that writes without authentication. The honeypot catches naive bots; Turnstile catches the rest.
+
+It is created by Terraform (`enable_turnstile = true`, the default), and produces two values that go to **two different places**:
+
+| Value | Where | Why |
+|---|---|---|
+| **sitekey** | `wrangler.json`, as a `var` — written by `npm run infra:sync` | it ends up in the HTML; it is not a secret |
+| **secret** | `npx wrangler secret put TURNSTILE_SECRET` | the Worker validates tokens with it; it must never reach git |
+
+Take the secret from the Cloudflare dashboard, under Turnstile, on your widget's page.
+
+Visitors see nothing: the widget is configured `interaction-only`, so it only appears when Cloudflare suspects something. There is no way to restyle it — it lives in an iframe — which is why it is configured to stay out of sight instead.
+
+**If you turn Turnstile off**, the form keeps working and the honeypot keeps catching the simplest bots. But there is no rate limiting: someone determined could fill your bucket with junk messages. Know that you are accepting it.
+
+---
+
 ## Manual path flow summary
 
 1. Create the two R2 buckets and their r2.dev managed domains from the dashboard.

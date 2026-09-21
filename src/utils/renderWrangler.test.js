@@ -59,4 +59,11 @@ describe('renderWrangler', () => {
     const { access_aud_prod, ...incompleti } = OUTPUTS;
     expect(() => renderWrangler(EXAMPLE, incompleti)).toThrow(/access_aud_prod/);
   });
+
+  it('turnstile spento: sitekey vuota, non un errore', () => {
+    const { turnstile_sitekey: _, ...senza } = OUTPUTS;
+    const r = renderWrangler(EXAMPLE, senza);
+    expect(r.vars.TURNSTILE_SITEKEY).toBe('');
+    expect(r.env.staging.vars.TURNSTILE_SITEKEY).toBe('');
+  });
 });
