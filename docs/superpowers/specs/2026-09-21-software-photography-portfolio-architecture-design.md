@@ -2,7 +2,7 @@
 
 **Data:** 2026-09-21
 
-**Stato:** design approvato in chat, in attesa di revisione del documento
+**Stato:** approvato; piani di implementazione preparati il 2026-09-21
 
 **Repository di riferimento:** `PhotoPortfolio` (sito personale)
 
