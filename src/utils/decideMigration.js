@@ -18,17 +18,16 @@ export function decideMigration(chiaviEsistenti, force) {
   if (force) {
     return {
       procedi: true,
-      messaggio: `--force: sovrascrivo ${elenco}.`,
+      messaggio: `--force: overwriting ${elenco}.`,
     };
   }
 
   return {
     procedi: false,
     messaggio:
-      `Su R2 esistono gia': ${elenco}.\n` +
-      'migrate serve a inizializzare il sito una volta sola. Se lo rilanci ora ' +
-      'riporti nome, bio, hero e album ai valori dei file in config/, ' +
-      'cancellando quello che hai fatto dalla dashboard.\n' +
-      'Se e\' davvero cio\' che vuoi: npm run migrate -- --force',
+      `Already on R2: ${elenco}.\n` +
+      'migrate initializes the site once. Running it now resets name, bio, hero and albums to the values in `config/`, ' +
+      'discarding what you did from the dashboard.\n' +
+      'If that is really what you want: npm run migrate -- --force',
   };
 }

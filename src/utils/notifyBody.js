@@ -14,5 +14,5 @@ const MAX_NOME = 80;
  */
 export function notifyBody(message, adminUrl) {
   const nome = String(message.name).slice(0, MAX_NOME);
-  return `Nuovo messaggio da ${nome}. Leggilo su ${adminUrl}`;
+  return `New message from ${nome}. Read it at ${adminUrl}`;
 }
