@@ -84,7 +84,7 @@ export async function handleContactRequest(request, env, deps = {}) {
   try {
     await notify(env, messaggio);
   } catch (err) {
-    console.error('notifica fallita:', err?.message);
+    console.error('notification failed:', err?.message);
   }
 
   return jsonResponse({ ok: true });

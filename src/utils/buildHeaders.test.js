@@ -60,7 +60,7 @@ describe('buildHeaders', () => {
 
   it('rifiuta un segnaposto non sostituito', () => {
     expect(() => buildHeaders({ vars: { R2_PUBLIC_URL: 'https://pub-xxxxxxxx.r2.dev' } }))
-      .toThrow(/segnaposto/);
+      .toThrow(/placeholder/);
   });
 
   it('con allowPlaceholders accetta il segnaposto, per verificare che il template compili', () => {

@@ -161,7 +161,13 @@ In `src/utils/decideMigration.test.js` ci sono due asserzioni su `/sovrascriv/i`
 
 Diventano `/overwrit/i` in entrambe.
 
-**È l'unico adeguamento di test consentito da questo piano**, ed è legittimo: il test verifica che il messaggio avverta della sovrascrittura, e quella parola in inglese è un'altra. Qualunque altro test fallisca, **fermarsi e riferire** invece di adeguarlo.
+C'è **un secondo adeguamento consentito**, scoperto durante l'esecuzione perché l'inventario di questo piano lo aveva mancato: in `src/utils/buildHeaders.test.js` riga 63, `.toThrow(/segnaposto/)` diventa `.toThrow(/placeholder/)`.
+
+Sono gli **unici due** adeguamenti consentiti, ed entrambi sono della stessa natura: il test verifica che il messaggio contenga un certo concetto — la sovrascrittura, il segnaposto — e quella parola in inglese è un'altra. La verifica resta la stessa.
+
+Una ricerca su tutto il repo conferma che gli accoppiamenti a parole italiane sono **esattamente tre**, tutti qui elencati. Qualunque altro test fallisca, **fermarsi e riferire** invece di adeguarlo: significherebbe un accoppiamento che nessuno aveva previsto.
+
+**I nomi dei test restano in italiano.** `it('rifiuta un segnaposto non sostituito', …)` va bene così: non sono stringhe di prodotto.
 
 - [ ] **Step 4: Verificare**
 

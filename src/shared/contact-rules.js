@@ -26,19 +26,19 @@ function stringaValida(v, max) {
  */
 export function validateContactShape(data) {
   if (data === null || typeof data !== 'object' || Array.isArray(data)) {
-    return fail('contact: shape invalida');
+    return fail('contact: invalid shape');
   }
 
   for (const campo of ['name', 'message']) {
-    if (!stringaValida(data[campo], LIMITS[campo])) return fail(`${campo} mancante o troppo lungo`);
+    if (!stringaValida(data[campo], LIMITS[campo])) return fail(`${campo} is missing or too long`);
   }
 
   if (!stringaValida(data.email, LIMITS.email) || !EMAIL_RE.test(data.email)) {
-    return fail('email mancante o non valida');
+    return fail('email is missing or invalid');
   }
 
   if (data.subject !== undefined && !stringaValida(data.subject, LIMITS.subject)) {
-    return fail('subject non valido');
+    return fail('subject is invalid');
   }
 
   return OK;

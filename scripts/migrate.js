@@ -54,13 +54,13 @@ async function main() {
 
   process.stdout.write(`_site/site.json:\n${siteJson}\n\n_data/albums.json:\n${albumsJson}\n\n`);
   if (dryRun) {
-    process.stdout.write('Dry-run: nessun upload.\n');
+    process.stdout.write('Dry-run: no upload.\n');
     return;
   }
 
   const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME } = process.env;
   if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
-    process.stderr.write('Env R2 mancanti (servono R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME nel .env).\n');
+    process.stderr.write('Missing R2 environment variables (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME required in .env).\n');
     process.exit(1);
   }
   const s3 = new S3Client({
@@ -92,7 +92,7 @@ async function main() {
 
   for (const [key, body] of [['_site/site.json', siteJson], ['_data/albums.json', albumsJson]]) {
     await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key, Body: body, ContentType: 'application/json' }));
-    process.stdout.write(`✓ caricato ${key}\n`);
+    process.stdout.write(`✓ uploaded ${key}\n`);
   }
 }
 

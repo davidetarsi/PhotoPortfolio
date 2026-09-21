@@ -15,7 +15,7 @@ export function buildHeaders(config, options = {}) {
   const staging = config?.env?.staging?.vars?.R2_PUBLIC_URL;
 
   if (!prod) {
-    throw new Error('wrangler.json: vars.R2_PUBLIC_URL mancante, impossibile generare la CSP.');
+    throw new Error('wrangler.json: vars.R2_PUBLIC_URL is missing, cannot generate CSP.');
   }
 
   const origini = [...new Set([prod, staging].filter(Boolean))];
@@ -23,8 +23,8 @@ export function buildHeaders(config, options = {}) {
   const segnaposto = origini.filter(o => /pub-(x+|y+)\.r2\.dev/.test(o));
   if (segnaposto.length > 0 && !options.allowPlaceholders) {
     throw new Error(
-      `wrangler.json contiene ancora un segnaposto (${segnaposto.join(', ')}). ` +
-      'Compila i valori reali, o generalo con `npm run infra:sync`.',
+      `wrangler.json still contains a placeholder (${segnaposto.join(', ')}). ` +
+      'Fill in the actual values, or generate it with `npm run infra:sync`.',
     );
   }
 

@@ -12,19 +12,19 @@ const KNOWN_PROVIDERS = ['r2'];
  */
 export function validateSiteConfig(siteConfig) {
   if (!siteConfig || typeof siteConfig !== 'object') {
-    throw new Error('[validateSiteConfig] siteConfig non valido');
+    throw new Error('[validateSiteConfig] siteConfig is invalid');
   }
   if (!siteConfig.name?.trim()) {
-    throw new Error('[validateSiteConfig] siteConfig.name è obbligatorio');
+    throw new Error('[validateSiteConfig] siteConfig.name is required');
   }
   if (!KNOWN_PROVIDERS.includes(siteConfig.provider)) {
     throw new Error(
-      `[validateSiteConfig] siteConfig.provider "${siteConfig.provider}" non riconosciuto. Valori validi: ${KNOWN_PROVIDERS.join(', ')}`
+      `[validateSiteConfig] siteConfig.provider "${siteConfig.provider}" not recognized. Valid values: ${KNOWN_PROVIDERS.join(', ')}`
     );
   }
   if (siteConfig.provider === 'r2' && !siteConfig.r2PublicUrl?.trim()) {
     throw new Error(
-      '[validateSiteConfig] siteConfig.r2PublicUrl è obbligatorio quando provider è "r2". Controlla VITE_R2_PUBLIC_URL nel file .env.'
+      '[validateSiteConfig] siteConfig.r2PublicUrl is required when provider is "r2". Check VITE_R2_PUBLIC_URL in .env file.'
     );
   }
 }
