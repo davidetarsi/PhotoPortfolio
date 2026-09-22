@@ -12,6 +12,7 @@ export const texts = {
       notFound: 'Album non trovato.',
       network: 'Errore di rete. Controlla la connessione.',
       unknown: 'Errore durante il caricamento. Riprova più tardi.',
+      noImage: 'Le immagini non sono disponibili senza un URL pubblico R2.',
     },
   },
   about: {

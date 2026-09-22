@@ -27,6 +27,7 @@ const [siteRes, albumsRes, manifestRes, configRes] = await Promise.all([
   fetchConfig(),
 ]);
 const r2PublicUrl = configRes.ok ? configRes.data.r2PublicUrl : siteConfig.r2PublicUrl;
+const hasPublicUrl = typeof r2PublicUrl === 'string' && r2PublicUrl.trim().length > 0;
 
 const site = resolveSiteContent(siteRes, { ...siteConfig, r2PublicUrl });
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);
@@ -61,6 +62,8 @@ if (page.kind === 'not_found') {
   document.getElementById('album-title').textContent = page.album.title;
   if (page.kind === 'empty') {
     showMessage(texts.album.empty);
+  } else if (!hasPublicUrl) {
+    showMessage(texts.album.error.noImage);
   } else {
     const photos = photosFromManifest(page.entries, slug, r2PublicUrl);
     const lb = createLightbox(photos);

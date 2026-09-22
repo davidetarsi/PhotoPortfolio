@@ -24,26 +24,29 @@ describe('devRouteFallback', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('rewrites a clean album slug to album.html and keeps the query string', () => {
-    const request = { url: '/nome-album?preview=1' };
-    const response = responseDouble();
-    const next = vi.fn();
-
-    devRouteFallback(request, response, next);
-
-    expect(request.url).toBe('/album.html?preview=1');
-    expect(next).toHaveBeenCalledOnce();
-    expect(response.end).not.toHaveBeenCalled();
-  });
-
-  it.each(['/api/contact', '/assets/logo.svg', '/about', '/admin', '/contatti', '/'])(
-    'passes through non-data route %s', url => {
+  it.each(['/nome-album?preview=1', '/nome-album/?preview=1'])
+    ('rewrites a clean album slug with or without trailing slash and keeps the query string', url => {
+      const request = { url };
       const response = responseDouble();
       const next = vi.fn();
 
-      devRouteFallback({ url }, response, next);
+      devRouteFallback(request, response, next);
+
+      expect(request.url).toBe('/album.html?preview=1');
+      expect(next).toHaveBeenCalledOnce();
+      expect(response.end).not.toHaveBeenCalled();
+    });
+
+  it.each(['/api/contact', '/assets/logo.svg', '/about', '/about/', '/admin', '/contatti', '/'])(
+    'passes through non-data route %s', url => {
+      const request = { url };
+      const response = responseDouble();
+      const next = vi.fn();
+
+      devRouteFallback(request, response, next);
 
       expect(next).toHaveBeenCalledOnce();
+      expect(request.url).toBe(url);
       expect(response.end).not.toHaveBeenCalled();
     },
   );

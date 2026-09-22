@@ -5,12 +5,13 @@
 
 /**
  * Constructs the public URL for a photo on R2.
- * @param {string} r2PublicUrl - Public R2 bucket URL.
+ * @param {string|undefined|null} r2PublicUrl - Optional public R2 bucket URL.
  * @param {string} slug - Album slug.
  * @param {string} name - Photo filename.
- * @returns {string} Full photo URL.
+ * @returns {string|null} Full photo URL, or null when the public URL is unavailable.
  */
 export function photoUrl(r2PublicUrl, slug, name) {
+  if (typeof r2PublicUrl !== 'string' || !r2PublicUrl.trim()) return null;
   return `${r2PublicUrl.replace(/\/$/, '')}/${slug}/${name}`;
 }
 
@@ -18,10 +19,12 @@ export function photoUrl(r2PublicUrl, slug, name) {
  * Transforms a photo manifest into objects ready to render in the grid.
  * @param {Array} entries - Manifest entries with name, width, height.
  * @param {string} slug - Album slug.
- * @param {string} r2PublicUrl - Public R2 bucket URL.
- * @returns {Array} Photo objects with gridUrl, fullUrl, dimensions, and name.
+ * @param {string|undefined|null} r2PublicUrl - Optional public R2 bucket URL.
+ * @returns {Array} Photo objects with gridUrl, fullUrl, dimensions, and name;
+ * empty when the public URL is unavailable.
  */
 export function photosFromManifest(entries, slug, r2PublicUrl) {
+  if (typeof r2PublicUrl !== 'string' || !r2PublicUrl.trim()) return [];
   return entries.map(({ name, width, height }) => ({
     name,
     width,

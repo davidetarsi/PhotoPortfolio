@@ -6,6 +6,10 @@ describe('photoUrl', () => {
     expect(photoUrl('https://pub.r2.dev', 'sport', 'a.webp')).toBe('https://pub.r2.dev/sport/a.webp');
     expect(photoUrl('https://pub.r2.dev/', 'sport', 'a.webp')).toBe('https://pub.r2.dev/sport/a.webp');
   });
+
+  it.each([undefined, null, ''])('ritorna null se manca il dominio pubblico (%s)', r2PublicUrl => {
+    expect(photoUrl(r2PublicUrl, 'sport', 'a.webp')).toBeNull();
+  });
 });
 
 describe('photosFromManifest', () => {
@@ -18,5 +22,9 @@ describe('photosFromManifest', () => {
   });
   it('array vuoto → array vuoto', () => {
     expect(photosFromManifest([], 'sport', 'https://pub.r2.dev')).toEqual([]);
+  });
+
+  it('non produce foto con URL null quando manca il dominio pubblico', () => {
+    expect(photosFromManifest([{ name: 'a.webp', width: 10, height: 20 }], 'sport', undefined)).toEqual([]);
   });
 });

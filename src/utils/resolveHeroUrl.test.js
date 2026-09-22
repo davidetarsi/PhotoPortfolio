@@ -31,4 +31,8 @@ describe('resolveHeroUrl', () => {
     expect(resolveHeroUrl({ name: 'foto.webp' }, 'https://img.example.com')).toBeNull();
     expect(resolveHeroUrl({}, 'https://img.example.com')).toBeNull();
   });
+
+  it.each([undefined, null, ''])('ritorna null se manca il dominio pubblico (%s)', r2PublicUrl => {
+    expect(resolveHeroUrl({ album: 'natura', name: 'foto.webp' }, r2PublicUrl)).toBeNull();
+  });
 });

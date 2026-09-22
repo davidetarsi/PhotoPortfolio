@@ -51,7 +51,7 @@ export function resolveAlbums(albumsRes, buildAlbums) {
 /**
  * Transforms album objects into card data for display.
  * @param {Array} albums - Album objects with slug, title, description, coverName.
- * @param {string} r2PublicUrl - Public R2 bucket URL.
+ * @param {string|undefined|null} r2PublicUrl - Optional public R2 bucket URL.
  * @returns {Array} Card objects ready to render.
  */
 export function albumsToCards(albums, r2PublicUrl) {

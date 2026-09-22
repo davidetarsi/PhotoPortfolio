@@ -19,6 +19,15 @@ describe('resolveSiteContent', () => {
       name: 'Build Name', bio: 'Build bio', social: { x: 'y' }, heroUrl: 'https://pub.r2.dev/sport/hero.webp',
     });
   });
+
+  it('hero runtime con dominio pubblico assente → heroUrl null', () => {
+    const site = { name: 'Runtime', bio: 'B', hero: { album: 'sport', name: 'a.webp' }, social: {} };
+    expect(resolveSiteContent({ ok: true, data: site }, { ...BUILD, r2PublicUrl: undefined }).heroUrl).toBeNull();
+  });
+
+  it('hero seed con dominio pubblico assente → heroUrl null', () => {
+    expect(resolveSiteContent({ ok: false, error: 'NETWORK' }, { ...BUILD, r2PublicUrl: undefined }).heroUrl).toBeNull();
+  });
 });
 
 describe('albumsToCards', () => {
@@ -30,6 +39,14 @@ describe('albumsToCards', () => {
     expect(albumsToCards(albums, 'https://pub.r2.dev')).toEqual([
       { slug: 'sport', title: 'Sport', description: 'd', coverUrl: 'https://pub.r2.dev/sport/c.webp' },
       { slug: 'x', title: 'X', description: '', coverUrl: null },
+    ]);
+  });
+
+  it('cover presente senza dominio pubblico → coverUrl null', () => {
+    expect(albumsToCards([
+      { slug: 'sport', title: 'Sport', description: 'd', coverName: 'c.webp' },
+    ], undefined)).toEqual([
+      { slug: 'sport', title: 'Sport', description: 'd', coverUrl: null },
     ]);
   });
 });

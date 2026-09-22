@@ -159,7 +159,7 @@ A mano, o con `npm run infra:sync` se usi Terraform.
 
 ### 3. Credenziali locali facoltative per la CLI
 
-L'anteprima nel browser non richiede `.env`. Solo `npm run migrate` e `npm run upload` richiedono le quattro variabili R2 qui sotto. `VITE_R2_PUBLIC_URL` è facoltativa: impostala per il fallback nel browser e l'anteprima dei meta tag, ma non è una credenziale S3. In `.env` non deve esserci alcuna sitekey Turnstile.
+L'anteprima nel browser non richiede `.env`. Solo `npm run migrate` e `npm run upload` richiedono le quattro variabili R2 qui sotto. `VITE_R2_PUBLIC_URL` è facoltativa e serve solo al fallback nel browser; l'anteprima dei meta tag a build time legge `R2_PUBLIC_URL` da `wrangler.json`. Non è una credenziale S3. In `.env` non deve esserci alcuna sitekey Turnstile.
 
 ```bash
 VITE_R2_PUBLIC_URL="https://pub-xxxxxxxx.r2.dev"  # facoltativa: copia da wrangler.json vars.R2_PUBLIC_URL

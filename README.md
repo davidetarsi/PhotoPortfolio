@@ -157,7 +157,7 @@ By hand, or with `npm run infra:sync` if you use Terraform.
 
 ### 3. Optional local CLI credentials
 
-The browser preview does not need `.env`. Only `npm run migrate` and `npm run upload` require the four R2 variables below. `VITE_R2_PUBLIC_URL` is optional: set it for the browser fallback and meta preview, but it is not an S3 credential. No Turnstile sitekey belongs in `.env`.
+The browser preview does not need `.env`. Only `npm run migrate` and `npm run upload` require the four R2 variables below. `VITE_R2_PUBLIC_URL` is optional and is used only by the browser fallback; build-time meta preview reads `R2_PUBLIC_URL` from `wrangler.json`. It is not an S3 credential. No Turnstile sitekey belongs in `.env`.
 
 ```bash
 VITE_R2_PUBLIC_URL="https://pub-xxxxxxxx.r2.dev"  # optional: copy from wrangler.json vars.R2_PUBLIC_URL

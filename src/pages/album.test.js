@@ -44,4 +44,18 @@ describe('album bootstrap from the build seed', () => {
     expect(document.querySelector('.photo-grid__error')).not.toBeNull();
     expect(document.querySelector('#photo-grid a[href="/"]')).toBeNull();
   });
+
+  it('shows an explicit no-image state when the manifest exists but the public URL is absent', async () => {
+    mocks.fetchConfig.mockResolvedValue({ ok: false, error: 'NOT_FOUND' });
+    mocks.fetchManifest.mockResolvedValue({
+      ok: true,
+      data: [{ name: 'photo.webp', width: 100, height: 100 }],
+    });
+
+    await import('./album.js');
+
+    expect(document.querySelector('.photo-grid__error').textContent)
+      .toBe('Le immagini non sono disponibili senza un URL pubblico R2.');
+    expect(document.querySelector('#photo-grid img')).toBeNull();
+  });
 });

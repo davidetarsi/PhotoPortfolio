@@ -3,11 +3,12 @@
  * preview depends on it: missing data APIs stay missing and clean album slugs
  * serve album.html instead of the SPA index.
  */
-const ALBUM_SLUG_RE = /^\/[a-z0-9][a-z0-9-]*$/;
+const ALBUM_SLUG_RE = /^\/[a-z0-9][a-z0-9-]*\/?$/;
 const RESERVED_PATHS = new Set(['/about', '/admin', '/contatti']);
 
 export function devRouteFallback(request, response, next) {
   const url = new URL(request.url, 'http://localhost');
+  const normalizedPath = url.pathname.replace(/\/$/, '') || '/';
 
   if (url.pathname.startsWith('/api/data/')) {
     response.statusCode = 404;
@@ -18,7 +19,7 @@ export function devRouteFallback(request, response, next) {
     return;
   }
 
-  if (ALBUM_SLUG_RE.test(url.pathname) && !RESERVED_PATHS.has(url.pathname)) {
+  if (ALBUM_SLUG_RE.test(url.pathname) && !RESERVED_PATHS.has(normalizedPath)) {
     request.url = `/album.html${url.search}`;
   }
   next();
