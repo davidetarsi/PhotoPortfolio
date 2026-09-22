@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveSiteContent, albumsToCards } from './home-logic.js';
+import { resolveSiteContent, resolveAlbums, albumsToCards } from './home-logic.js';
 
 const BUILD = { name: 'Build Name', bio: 'Build bio', heroImage: { album: 'sport', name: 'hero.webp' }, social: { x: 'y' }, r2PublicUrl: 'https://pub.r2.dev' };
 
@@ -32,4 +32,29 @@ describe('albumsToCards', () => {
       { slug: 'x', title: 'X', description: '', coverUrl: null },
     ]);
   });
+});
+
+describe('resolveAlbums', () => {
+  const seed = [
+    { slug: 'seed', title: 'Seed', description: '', coverName: '' },
+  ];
+
+  it('returns runtime albums unchanged when the fetch succeeds', () => {
+    const runtime = [{ slug: 'live', title: 'Live', description: '', coverName: 'cover.webp' }];
+    expect(resolveAlbums({ ok: true, data: runtime }, seed)).toBe(runtime);
+  });
+
+  it('falls back only on NOT_FOUND and normalizes an empty coverName to null', () => {
+    expect(resolveAlbums({ ok: false, error: 'NOT_FOUND' }, seed)).toEqual([
+      { slug: 'seed', title: 'Seed', description: '', coverName: null },
+    ]);
+    expect(seed[0].coverName).toBe('');
+  });
+
+  it.each(['NETWORK', 'UNKNOWN', 'MALFORMED'])(
+    'returns null for %s so the caller keeps the error visible',
+    error => {
+      expect(resolveAlbums({ ok: false, error }, seed)).toBeNull();
+    },
+  );
 });
