@@ -123,10 +123,14 @@ For the first deploy to Cloudflare, fill `wrangler.json` with your real values (
 
 ### 1. Cloudflare infrastructure
 
-Create the R2 bucket and the Access applications. Two equivalent paths:
+This README is the setup entry point; the [Cloudflare infrastructure runbook](docs/runbook-cloudflare.md) is the detailed procedure linked from it. Start with the runbook's [field-by-field Terraform reference](docs/runbook-cloudflare.md#32-variable-reference) before editing [`infra/terraform.tfvars.example`](infra/terraform.tfvars.example).
 
-- **Automatically, with Terraform** (recommended): follow `infra/` and section 3 of the runbook — it creates everything in one command.
-- **By hand, from the dashboard**: follow the [runbook](docs/runbook-cloudflare.md) section 5 — remember that `staging_hostname` isn't known until after the first deploy (see runbook section 4).
+Create the R2 buckets, Access applications and Turnstile widget through one of two equivalent paths:
+
+- **Automatically, with Terraform** (recommended): follow the runbook's [Terraform path](docs/runbook-cloudflare.md#3-terraform-path). It covers tokens, every `terraform.tfvars` field, plan review, existing-resource imports and cleanup.
+- **By hand, from the dashboard**: follow the [manual path](docs/runbook-cloudflare.md#5-manual-path--creating-resources-from-cloudflare-dashboard).
+
+Maintaining the template itself? Use the runbook's [isolated Terraform smoke test](docs/runbook-cloudflare.md#35-isolated-smoke-test-for-template-maintainers), which never targets a live hostname.
 
 Either way, the CSP is generated automatically from `wrangler.json` during the build.
 

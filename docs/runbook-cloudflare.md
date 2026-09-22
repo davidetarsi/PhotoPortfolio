@@ -1,8 +1,12 @@
-# Cloudflare Runbook — Manual infrastructure configuration
+# Cloudflare infrastructure runbook
 
-This document describes how to configure Cloudflare infrastructure for the photography portfolio manually from the dashboard, without using Terraform. It's the equivalent path to the `infra/` configuration file — produces the same result, and is supported as a permanent alternative.
+The [README](../README.md) is the canonical entry point for setup. This runbook contains the detailed Cloudflare procedures behind it: Terraform, existing-resource imports, an isolated smoke test, the permanent dashboard-only path, custom image domains and contact-form secrets.
 
-If you prefer Terraform, skip this document and follow the automated path in `README.md`. If you've already created resources manually, go to [Importing existing resources](#infrastructure-preexistent--terraform-import).
+Choose one starting path:
+
+- **New infrastructure:** follow [Terraform path](#3-terraform-path), or [create it manually](#5-manual-path--creating-resources-from-cloudflare-dashboard).
+- **Resources already exist:** do not create duplicates; follow [Importing existing resources](#7-infrastructure-preexistent--terraform-import).
+- **Template maintainers validating Terraform:** use the [isolated smoke test](#35-isolated-smoke-test-for-template-maintainers).
 
 ## 1. Prerequisites
 
@@ -21,38 +25,113 @@ Terraform operations require an API token with specific permissions. If you're n
 - **Turnstile: Edit** — required by the contact-form widget, enabled by default through `enable_turnstile = true`.
 - **Zone: DNS: Edit** (only if using a custom domain for photos) — allows configuring DNS records on the domain.
 
-Create the token in Cloudflare dashboard → **Account → API Tokens → Create Token** and assign these permissions. **Critical:** never write the token in a versioned file (never in `.env`, `wrangler.json`, or `terraform.tfvars`). Export it only as an environment variable in your shell:
+Create the token in Cloudflare dashboard → **My Profile → API Tokens → Create Token → Create Custom Token** and assign these permissions. Restrict it to the account used by the portfolio and use a short lifetime when possible. See Cloudflare's [API token guide](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/).
 
-```bash
-export CLOUDFLARE_API_TOKEN="your-token-here"
+**Critical:** never write the token in a versioned file (never in `.env`, `wrangler.json`, or `terraform.tfvars`). Read it without echoing it or storing it in shell history:
+
+```zsh
+read -s CLOUDFLARE_API_TOKEN
+export CLOUDFLARE_API_TOKEN
 ```
 
 If you accidentally write it in a file, immediately revoke the token on Cloudflare and create a new one.
 
 ## 3. Terraform path
 
-If using Terraform, the flow is:
+### 3.1 Local files and secrets
+
+From the repository root:
 
 ```bash
 cd infra
 cp terraform.tfvars.example terraform.tfvars
-# Now populate terraform.tfvars with your values:
-# - account_id: find in Cloudflare dashboard → Account → right sidebar
-# - project_name: bucket prefix, e.g. 'mario-portfolio'
-# - access_team_domain: account's Zero Trust team domain, format team.cloudflareaccess.com
-# - prod_hostname: your domain, e.g. 'mario.com'
-# - staging_hostname: fill after first deploy (see next section)
-# - admin_emails: emails authorized for admin dashboard
-
-export CLOUDFLARE_API_TOKEN="..."
-terraform init
-terraform apply
-terraform -chdir=. output -json > outputs.json
-cd ..
-npm run infra:sync
 ```
 
-This creates all buckets, public domains, and Access applications in one command. If successful, `wrangler.json` is ready and synchronized.
+`terraform.tfvars`, `.terraform/`, the state and `outputs.json` are ignored by Git. They contain account-specific configuration and must stay local. The Cloudflare token does **not** belong in any of them; it exists only in `CLOUDFLARE_API_TOKEN` in the current shell.
+
+### 3.2 Variable reference
+
+| Variable | What to enter | Where to find it |
+|---|---|---|
+| `account_id` | The Cloudflare account that owns the resources | Account Home → `Cmd/Ctrl+K` → **Copy account ID**, or Workers & Pages → Account Details. [Official guide](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/) |
+| `project_name` | Base resource name. Production bucket uses it exactly; staging adds `-staging` | Choose a new lowercase, hyphenated name, or use the exact existing bucket prefix when importing |
+| `access_team_domain` | Existing Zero Trust domain, without `https://` | Zero Trust → Settings → Team name and domain. Format: `team.cloudflareaccess.com`. [Official guide](https://developers.cloudflare.com/cloudflare-one/faq/getting-started-faq/#what-is-a-team-domainteam-name) |
+| `prod_hostname` | Production hostname without scheme or trailing slash | Real public hostname for a deployment; unused subdomain for an isolated smoke test |
+| `staging_hostname` | Staging hostname without scheme or trailing slash | Workers & Pages → staging Worker → Settings → Domains & Routes; see [first-deploy constraint](#4-order-constraint-staging_hostname-isnt-known-before-first-deploy) |
+| `admin_emails` | One or more addresses allowed into `/admin` | Decide who administers the portfolio; every listed address becomes an Access include rule |
+| `custom_photo_domain` | Optional production hostname for R2 images | Choose a subdomain such as `img.example.com`; leave empty during initial setup |
+| `photo_domain_zone_id` | Zone ID for `custom_photo_domain` | Domain Overview → API section → Zone ID. [Official guide](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/#copy-your-zone-id) |
+| `keep_managed_domain` | Keep `true` until the custom image domain is verified | Set `false` only after completing [section 8](#8-custom-domain-for-photos) |
+| `enable_turnstile` | Create spam protection for the contact form | Keep `true` unless accepting honeypot-only protection |
+
+For a real deployment, hostnames and existing bucket names must describe the real environment. For a smoke test, use a unique `project_name` and two unused subdomains so no live hostname or bucket can overlap.
+
+### 3.3 Plan before apply
+
+Initialize and validate locally:
+
+```bash
+terraform init
+terraform fmt -check
+terraform validate
+terraform plan
+```
+
+Read the plan in full. Stop if it proposes changing or destroying resources you did not intentionally put under Terraform. New infrastructure normally shows only `create`; existing infrastructure must be [imported first](#7-infrastructure-preexistent--terraform-import).
+
+Only after reviewing the plan:
+
+```bash
+terraform apply
+terraform plan  # expected after a successful apply: No changes
+terraform output -json > outputs.json
+cd ..
+npm run infra:sync
+ALLOW_PLACEHOLDER_CSP=1 npm run build
+```
+
+`infra:sync` writes account-specific values into the repository's tracked `wrangler.json`. In a real fork, review and commit that file. In the public template's smoke test, never commit the generated values; restore the placeholder version after verification.
+
+### 3.4 Existing infrastructure is an import, not a new apply
+
+If buckets, Access applications or public domains already exist, `terraform.tfvars` must describe those exact resources. Do not apply a plan that proposes duplicates. Complete the imports in [section 7](#7-infrastructure-preexistent--terraform-import), then require `terraform plan` to converge before applying.
+
+### 3.5 Isolated smoke test for template maintainers
+
+This path validates the Terraform code against the real Cloudflare API without touching a live portfolio.
+
+1. Use a unique name such as `photo-portfolio-template-smoke-YYYYMMDD`.
+2. Use two unused subdomains from a zone you control for `prod_hostname` and `staging_hostname`. Do not create DNS records and do not use the live hostname.
+3. Leave `custom_photo_domain` and `photo_domain_zone_id` empty; keep `keep_managed_domain` and `enable_turnstile` true.
+4. Run `terraform fmt -check`, `terraform validate`, then inspect `terraform plan`.
+
+The expected first plan contains exactly:
+
+- two R2 buckets;
+- two R2 managed `r2.dev` domains;
+- one reusable Access policy;
+- two Access applications;
+- one Turnstile widget;
+- `8 to add, 0 to change, 0 to destroy`.
+
+After `terraform apply`, immediately run a second `terraform plan`; it must report `No changes`. Then generate `outputs.json`, run `npm run infra:sync`, inspect `wrangler.json`, and verify the build.
+
+#### Smoke cleanup and the `r2.dev` limitation
+
+Provider v5 warns that `cloudflare_r2_managed_domain` cannot be destroyed through Terraform. Before `terraform destroy`:
+
+1. Cloudflare dashboard → R2 → each smoke bucket → Settings → Public access: disable its `r2.dev` development URL.
+2. Remove only the two non-destroyable wrappers from local state:
+
+   ```bash
+   terraform state rm cloudflare_r2_managed_domain.prod cloudflare_r2_managed_domain.staging
+   ```
+
+3. Run `terraform destroy` and verify that its plan contains only resources whose names use the smoke prefix.
+4. Confirm in R2, Zero Trust → Access → Applications, Access policies, and Turnstile that no resource with the smoke prefix remains.
+5. Restore the public template's placeholder `wrangler.json`; never commit smoke account values.
+
+The buckets must remain empty. Terraform refuses to delete a non-empty R2 bucket.
 
 ## 4. Order constraint: `staging_hostname` isn't known before first deploy
 
