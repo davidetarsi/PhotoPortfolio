@@ -132,7 +132,7 @@ Crea i bucket R2, le applicazioni Access e il widget Turnstile attraverso uno di
 - **Automatico, con Terraform** (consigliato): segui il [percorso Terraform](docs/runbook-cloudflare.md#3-terraform-path). Comprende token, spiegazione di ogni campo, revisione del piano, import delle risorse esistenti e pulizia.
 - **Manuale, dalla dashboard**: segui il [percorso manuale](docs/runbook-cloudflare.md#5-manual-path--creating-resources-from-cloudflare-dashboard).
 
-Se stai mantenendo il template, usa lo [smoke test Terraform isolato](docs/runbook-cloudflare.md#35-isolated-smoke-test-for-template-maintainers), che non punta mai al sito live.
+Se stai mantenendo il template, usa lo [smoke test Terraform isolato](docs/runbook-cloudflare.md#35-isolated-smoke-test-for-template-maintainers), che non punta mai al sito live. L'intero ciclo di creazione, convergenza, build e pulizia è stato verificato contro l'API Cloudflare reale il 22 settembre 2026.
 
 In entrambi i casi, la CSP si genera automaticamente da `wrangler.json` durante la build.
 

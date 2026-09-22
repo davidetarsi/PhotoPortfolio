@@ -130,7 +130,7 @@ Create the R2 buckets, Access applications and Turnstile widget through one of t
 - **Automatically, with Terraform** (recommended): follow the runbook's [Terraform path](docs/runbook-cloudflare.md#3-terraform-path). It covers tokens, every `terraform.tfvars` field, plan review, existing-resource imports and cleanup.
 - **By hand, from the dashboard**: follow the [manual path](docs/runbook-cloudflare.md#5-manual-path--creating-resources-from-cloudflare-dashboard).
 
-Maintaining the template itself? Use the runbook's [isolated Terraform smoke test](docs/runbook-cloudflare.md#35-isolated-smoke-test-for-template-maintainers), which never targets a live hostname.
+Maintaining the template itself? Use the runbook's [isolated Terraform smoke test](docs/runbook-cloudflare.md#35-isolated-smoke-test-for-template-maintainers), which never targets a live hostname. The complete create, convergence, build and cleanup lifecycle was verified against the real Cloudflare API on 22 September 2026.
 
 Either way, the CSP is generated automatically from `wrangler.json` during the build.
 

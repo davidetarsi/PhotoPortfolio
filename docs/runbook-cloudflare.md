@@ -5,7 +5,7 @@ The [README](../README.md) is the canonical entry point for setup. This runbook 
 Choose one starting path:
 
 - **New infrastructure:** follow [Terraform path](#3-terraform-path), or [create it manually](#5-manual-path--creating-resources-from-cloudflare-dashboard).
-- **Resources already exist:** do not create duplicates; follow [Importing existing resources](#7-infrastructure-preexistent--terraform-import).
+- **Resources already exist:** do not create duplicates; follow [Importing existing resources](#7-import-existing-infrastructure).
 - **Template maintainers validating Terraform:** use the [isolated smoke test](#35-isolated-smoke-test-for-template-maintainers).
 
 ## 1. Prerequisites
@@ -92,7 +92,7 @@ terraform validate
 terraform plan
 ```
 
-Read the plan in full. Stop if it proposes changing or destroying resources you did not intentionally put under Terraform. New infrastructure normally shows only `create`; existing infrastructure must be [imported first](#7-infrastructure-preexistent--terraform-import).
+Read the plan in full. Stop if it proposes changing or destroying resources you did not intentionally put under Terraform. New infrastructure normally shows only `create`; existing infrastructure must be [imported first](#7-import-existing-infrastructure).
 
 Only after reviewing the plan:
 
@@ -109,11 +109,13 @@ ALLOW_PLACEHOLDER_CSP=1 npm run build
 
 ### 3.4 Existing infrastructure is an import, not a new apply
 
-If buckets, Access applications or public domains already exist, `terraform.tfvars` must describe those exact resources. Do not apply a plan that proposes duplicates. Complete the imports in [section 7](#7-infrastructure-preexistent--terraform-import), then require `terraform plan` to converge before applying.
+If buckets, Access applications or public domains already exist, `terraform.tfvars` must describe those exact resources. Do not apply a plan that proposes duplicates. Complete the imports in [section 7](#7-import-existing-infrastructure), then require `terraform plan` to converge before applying.
 
 ### 3.5 Isolated smoke test for template maintainers
 
 This path validates the Terraform code against the real Cloudflare API without touching a live portfolio.
+
+> **Live validation status:** the full lifecycle below was verified on 22 September 2026 with Terraform 1.16.3 and Cloudflare provider 5.13.0. It created all eight expected resources, converged to `No changes`, generated `wrangler.json`, passed the production build, destroyed the six directly removable resources, and left no smoke resources in the Cloudflare dashboard. The two `r2.dev` managed-domain wrappers required the documented manual disable and state-removal steps.
 
 1. Use a unique name such as `photo-portfolio-template-smoke-YYYYMMDD`.
 2. Use two unused subdomains from a zone you control for `prod_hostname` and `staging_hostname`. Do not create DNS records and do not use the live hostname.
@@ -232,7 +234,7 @@ Cloudflare lets you deploy the Worker directly from Git — no GitHub Actions ne
    - **Build command:** `npm test && npm run build`
    - **Build output directory:** `dist`
    - **Root directory:** `/` (leave default)
-5. Environment: add environment variables if needed (in your case, probably none — `wrangler.json` is in the repo)
+5. Environment: add environment variables only if your fork requires them; the standard template reads its non-secret Cloudflare configuration from `wrangler.json`.
 6. **Production branch:** `main` (for production Worker)
 7. **Staging branch:** `staging` (for staging Worker)
 
@@ -242,9 +244,9 @@ Cloudflare creates two Workers automatically:
 
 Every push triggers a new deploy automatically.
 
-## 7. Infrastructure preexistent — terraform import
+## 7. Import existing infrastructure
 
-If you've already created buckets, public domains, or Access applications manually (like on Davide's site), you can import them into Terraform rather than recreate them. Use `terraform import`:
+If you've already created buckets, public domains, or Access applications manually for an existing deployment, import them into Terraform rather than recreating them. Use `terraform import`:
 
 ```bash
 # Import production bucket
