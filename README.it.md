@@ -114,11 +114,9 @@ I conflitti, se ci sono, cadranno su `config/`, `theme/` e `wrangler.json` — c
 ```bash
 node --version   # richiede v20+
 npm install
-cp .env.example .env
-# Compila .env: VITE_R2_PUBLIC_URL, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
 npm run dev      # → http://localhost:5173/
-ALLOW_PLACEHOLDER_CSP=1 npm run build  # prova di build con i valori segnaposto
-npm test         # la suite completa
+ALLOW_PLACEHOLDER_CSP=1 npm run build
+npm test
 ```
 
 Per il primo deploy su Cloudflare, compila `wrangler.json` con i tuoi valori veri (non i segnaposto).
@@ -159,12 +157,12 @@ Compila i segnaposto:
 
 A mano, o con `npm run infra:sync` se usi Terraform.
 
-### 3. Variabili d'ambiente locali
+### 3. Credenziali locali facoltative per la CLI
 
-Compila `.env` con le credenziali R2 (servono a `npm run migrate` e `npm run upload`):
+L'anteprima nel browser non richiede `.env`. Solo `npm run migrate` e `npm run upload` richiedono le quattro variabili R2 qui sotto. `VITE_R2_PUBLIC_URL` è facoltativa e serve solo al fallback nel browser; l'anteprima dei meta tag a build time legge `R2_PUBLIC_URL` da `wrangler.json`. Non è una credenziale S3. In `.env` non deve esserci alcuna sitekey Turnstile.
 
 ```bash
-VITE_R2_PUBLIC_URL="https://pub-xxxxxxxx.r2.dev"  # copia da wrangler.json vars.R2_PUBLIC_URL
+VITE_R2_PUBLIC_URL="https://pub-xxxxxxxx.r2.dev"  # facoltativa: copia da wrangler.json vars.R2_PUBLIC_URL
 R2_ACCOUNT_ID="..."
 R2_ACCESS_KEY_ID="..."
 R2_SECRET_ACCESS_KEY="..."
@@ -173,7 +171,7 @@ R2_BUCKET_NAME="il-tuo-bucket"
 
 Queste credenziali non vanno in git — `.env` è ignorato, mentre le variabili Cloudflare stanno in `wrangler.json`, che è versionato.
 
-### 4. Seed iniziale
+### 4. Bootstrap della dashboard
 
 Compila i file di configurazione che formano il seed del sito:
 
@@ -184,11 +182,15 @@ Compila i file di configurazione che formano il seed del sito:
 - **`theme/tokens.css`** — colori e variabili dei font
 - **`theme/typography.css`** — scala tipografica e link Google Fonts
 
-Poi:
+Il seed è già visibile nell'anteprima locale. Quando vuoi fare il bootstrap della dashboard, esegui:
 
 ```bash
 npm run migrate
 ```
+
+Questo copia `site.config.js` e `albums.config.js` su R2, così `/admin` ha dati runtime da modificare.
+
+> Prima della migrazione, la home può mostrare le schede degli album dal seed della build. Aprirne una mostra un album vuoto perché i manifest delle foto e i file immagine esistono solo su R2.
 
 > ⚠️ `migrate` è un comando di bootstrap, una volta sola: trasforma il seed nei JSON su R2. **Rilanciarlo dopo aver usato la dashboard riporta tutto al seed, cancellando il lavoro fatto da lì.** Il comando se ne accorge, si ferma spiegando cosa perderesti, e richiede `--force` se insisti.
 
@@ -249,6 +251,7 @@ public/          ← asset statici (favicon). `_headers` non sta qui: si genera 
 | **Meta tag OpenGraph** | iniettati a build time da `site.config.js` |
 | **Framework** | vanilla JS/HTML/CSS — nessun framework a runtime |
 | **Compressione foto** | `npm run compress -- --input <percorso>` — per HEIC, TIFF e caricamenti massivi (Sharp, WebP 1900px q85) |
+| **Upload foto diretto** | `npm run upload -- --album <slug> --input <optimized-directory>` — carica direttamente su R2 una directory preparata e il suo `manifest.json`; richiede le credenziali facoltative in `.env` e non è il normale flusso della dashboard. |
 
 ## 🤝 Contribuire
 

@@ -1,9 +1,10 @@
 import '../styles/main.css';
 import { siteConfig } from '../../config/site.config.js';
+import { albums as buildAlbums } from '../../config/albums.config.js';
 import { texts } from '../../config/texts.config.js';
 import { validateSiteConfig } from '../utils/validateConfig.js';
 import { fetchSite, fetchAlbums, fetchConfig } from '../providers/data.js';
-import { resolveSiteContent, albumsToCards } from './home-logic.js';
+import { resolveSiteContent, resolveAlbums, albumsToCards } from './home-logic.js';
 import { renderNav } from '../components/Nav.js';
 import { renderFooter } from '../components/Footer.js';
 import { renderHero } from '../components/Hero.js';
@@ -26,12 +27,13 @@ renderHero(document.getElementById('hero'), site, texts);
 renderFooter(document.getElementById('site-footer'), texts, site.social);
 
 cardsEl.innerHTML = '';
-if (!albumsRes.ok) {
+const resolvedAlbums = resolveAlbums(albumsRes, buildAlbums);
+if (resolvedAlbums === null) {
   const p = document.createElement('p');
   p.className = 'page-error';
   p.textContent = albumsRes.error === 'NETWORK' ? texts.album.error.network : texts.album.error.unknown;
   cardsEl.appendChild(p);
 } else {
-  albumsToCards(albumsRes.data, r2PublicUrl)
+  albumsToCards(resolvedAlbums, r2PublicUrl)
     .forEach(card => cardsEl.appendChild(createAlbumCard(card)));
 }

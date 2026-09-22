@@ -25,4 +25,4 @@ mockups/*
 *.sln
 *.sw?
 .superpowers/
-
+.worktrees/

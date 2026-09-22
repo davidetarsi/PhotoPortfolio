@@ -22,9 +22,4 @@ export function validateSiteConfig(siteConfig) {
       `[validateSiteConfig] siteConfig.provider "${siteConfig.provider}" not recognized. Valid values: ${KNOWN_PROVIDERS.join(', ')}`
     );
   }
-  if (siteConfig.provider === 'r2' && !siteConfig.r2PublicUrl?.trim()) {
-    throw new Error(
-      '[validateSiteConfig] siteConfig.r2PublicUrl is required when provider is "r2". Check VITE_R2_PUBLIC_URL in .env file.'
-    );
-  }
 }

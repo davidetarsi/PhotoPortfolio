@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from 'fs'
 import { siteConfig } from './config/site.config.js'
 import { injectSiteMeta } from './src/utils/injectSiteMeta.js'
 import { buildHeaders } from './src/utils/buildHeaders.js'
+import { devRouteFallback } from './src/utils/devRouteFallback.js'
 
 // Letto una volta: serve sia al meta og:image sia alla CSP, e leggerlo due
 // volte aprirebbe la porta a due valori diversi nello stesso build.
@@ -11,6 +12,14 @@ const wranglerConfig = existsSync('wrangler.json')
   ? JSON.parse(readFileSync('wrangler.json', 'utf8'))
   : null
 const r2PublicUrl = wranglerConfig?.vars?.R2_PUBLIC_URL ?? ''
+
+const devRouteFallbackPlugin = () => ({
+  name: 'dev-route-fallback',
+  apply: 'serve',
+  configureServer(server) {
+    server.middlewares.use(devRouteFallback)
+  },
+})
 
 // Sostituisce i placeholder {{SITE_*}} negli HTML a build time (e in dev),
 // così titolo e Open Graph sono nell'HTML statico visibile ai crawler social.
@@ -44,7 +53,7 @@ const headersPlugin = () => ({
 })
 
 export default defineConfig({
-  plugins: [siteMetaPlugin(), headersPlugin()],
+  plugins: [devRouteFallbackPlugin(), siteMetaPlugin(), headersPlugin()],
   test: {
     environment: 'jsdom',
   },
