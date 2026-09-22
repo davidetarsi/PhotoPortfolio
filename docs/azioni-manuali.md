@@ -89,6 +89,9 @@ Il README spiega di forkare, ma un bottone verde vince su un paragrafo.
 > per davvero** in un clone usa-e-getta. La versione precedente descriveva un conflitto
 > su `wrangler.json` che **non avviene**, e la procedura che suggeriva avrebbe messo in
 > produzione i segnaposto del template. Sotto c'è quello che succede davvero.
+>
+> La versione generica di questa procedura, per chiunque usi il template, sta in
+> [`docs/upgrading.md`](upgrading.md). Qui restano solo i numeri del tuo caso.
 
 **Il primo merge è un fast-forward, non un merge.** Verificato: `photoportfolio` non ha
 nessun commit che il template non abbia già, ed è 205 commit indietro. Il bootstrap della
