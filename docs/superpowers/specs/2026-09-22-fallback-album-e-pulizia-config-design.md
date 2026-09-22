@@ -54,10 +54,8 @@ fallback **deve** normalizzare `'' → null`, o produce URL di copertina rotti.
 
 ## 2. Decisioni
 
-1. **Il fallback degli album segue il precedente esistente**: si attiva su qualunque esito
-   non riuscito, esattamente come quello dei contenuti del sito. Non si distingue fra 404 e
-   errore di rete: distinguere significherebbe due comportamenti da spiegare, e il
-   precedente ha già scelto.
+1. **Il fallback degli album si attiva solo su `NOT_FOUND`.** Vedi §3.1: gli altri tre
+   esiti continuano a mostrare un errore, come oggi.
 2. **`migrate` resta, ma smette di essere un cancello.** Diventa il passo che dà alla
    dashboard qualcosa da modificare, non il passo che rende visibile il sito.
 3. **`.env` esce dal percorso obbligatorio**, e con lui le credenziali S3 di R2.
@@ -76,8 +74,32 @@ export function resolveAlbums(albumsRes, buildAlbums) { ... }
 ```
 
 - se `albumsRes.ok`, restituisce `albumsRes.data` così com'è;
-- altrimenti restituisce il seed **normalizzato**: `coverName: a.coverName || null`, per la
-  ragione della sezione 1.
+- se l'errore è **`NOT_FOUND`**, restituisce il seed **normalizzato**:
+  `coverName: a.coverName || null`, per la ragione della sezione 1;
+- per ogni altro errore restituisce `null`, e il chiamante mostra il messaggio d'errore che
+  mostra oggi.
+
+#### Perché solo `NOT_FOUND`
+
+`src/providers/data.js:14-31` distingue quattro esiti — `NETWORK`, `NOT_FOUND`, `UNKNOWN`,
+`MALFORMED` — e l'intestazione del modulo dichiara che è compito del chiamante decidere
+caso per caso. I quattro significano cose diverse, e per gli album vanno trattati diversi:
+
+| Esito | Significato | Comportamento |
+|---|---|---|
+| `NOT_FOUND` | R2 non ha `albums.json`: installazione nuova | **seed** |
+| `MALFORMED` | i dati esistono ma sono corrotti o non passano la validazione | errore |
+| `NETWORK`, `UNKNOWN` | guasto transitorio | errore |
+
+Il caso che decide è `MALFORMED`, e lo decide un bug già avvenuto: quando `coverName: ''`
+passò la normalizzazione e `validateAlbumsShape` lo respinse, il sito rifiutò i propri dati
+migrati. Fu sgradevole ma **visibile**, e diagnosticato subito. Con un fallback su qualunque
+errore lo stesso bug si presenterebbe come «il sito mostra l'album di esempio e i tuoi
+spariscono»: un guasto che urlava diventerebbe un guasto che sussurra.
+
+`resolveSiteContent` collassa invece i quattro esiti in uno, e per i contenuti del sito ha
+senso: la cornice **deve** disegnare un nome e un hero. Una lista di album vuota con un
+messaggio è una risposta legittima; una pagina senza intestazione no.
 
 `src/pages/index.js` smette di stampare l'errore e chiama `resolveAlbums`.
 
@@ -86,10 +108,12 @@ La pagina del singolo album passa invece da `resolveAlbumPage(slug, albumsRes, m
 applicato **a monte**, passando la lista già risolta al posto di `albumsRes` grezzo, così
 che la regola viva in un punto solo e `resolveAlbumPage` non debba conoscere il seed.
 
-Il commento di `home-logic.js:23` dice «Asymmetric fallback»: dopo questo lavoro
-l'asimmetria non c'è più, e il commento va riscritto — è uno di quelli che
-[`CONTRIBUTING.md`](../../../CONTRIBUTING.md) chiede di non cancellare, quindi si aggiorna
-spiegando la nuova regola, non si toglie.
+Il commento di `home-logic.js:23` dice «Asymmetric fallback». L'asimmetria **resta**, ma
+cambia significato: non è più «il sito ricade, gli album no», è «il sito ricade su
+qualunque errore, gli album solo quando R2 non ha ancora dati». Il commento va quindi
+esteso a dire entrambe le regole e perché differiscono — è uno di quelli che
+[`CONTRIBUTING.md`](../../../CONTRIBUTING.md) chiede di non cancellare, e dopo questo
+lavoro spiega una scelta più sottile di prima, non meno.
 
 ### 3.2 Quello che il fallback non può dare
 
@@ -131,25 +155,29 @@ sovrascrive il lavoro fatto — resta dov'è: quella è memoria di un rischio ve
 
 ## 5. Rischi
 
-**Il fallback può mascherare un guasto reale.** Se R2 diventa irraggiungibile su un sito
-vivo, la home mostrerà gli album del seed invece di un errore, e chi guarda non saprà che
-qualcosa non va.
+Restringere il fallback a `NOT_FOUND` toglie i due rischi che una versione precedente di
+questa spec dichiarava, e vale la pena dire perché non ci sono più:
 
-Il rischio è reale ma già accettato: è esattamente il comportamento che i contenuti del
-sito hanno da sempre, e il seed contiene dati dell'autore, non dati sbagliati. L'alternativa
-— un errore in faccia ai visitatori — è peggiore per un sito pubblico. Va però **scritto**
-nel commento della funzione, perché è una scelta, non una conseguenza.
+- **non maschera un guasto di R2**, perché un guasto non produce `NOT_FOUND` ma `NETWORK`,
+  `UNKNOWN` o un 5xx, e quei casi continuano a mostrare l'errore;
+- **non fa comparire `nome-album` su un sito vivo**, perché un sito già popolato ha il suo
+  `albums.json` su R2: `NOT_FOUND` lì non capita.
 
-**Rischio minore:** chi ha già un sito vivo e tira questo aggiornamento si ritrova il seed
-come rete di sicurezza. Se il suo `config/albums.config.js` è rimasto quello distribuito
-dal template, il fallback mostrerebbe un album finto chiamato `nome-album`. Va detto in
-`docs/upgrading.md`: se il seed è ancora quello di esempio, conviene svuotarlo.
+**Il rischio che resta** è ristretto e va scritto nel commento: un sito che ha perso
+`albums.json` — cancellato per sbaglio dalla dashboard, o bucket sbagliato in
+`wrangler.json` — mostrerà il seed invece di un errore. Il secondo caso è il più insidioso,
+perché puntare al bucket sbagliato è un errore di configurazione plausibile e il sito
+sembrerebbe funzionare. È il prezzo accettato in cambio del fatto che un'installazione nuova
+si vede, e va dichiarato come scelta, non subìto come conseguenza.
 
 ## 6. Verifica
 
-- Test della funzione pura nelle due direzioni: fetch riuscito → dati di R2; fetch fallito
-  → seed normalizzato, con `coverName: ''` che diventa `null`.
-- Test che la home renda le card quando il fetch fallisce, invece del paragrafo d'errore.
+- Test della funzione pura sui quattro esiti: riuscito → dati di R2; `NOT_FOUND` → seed
+  normalizzato, con `coverName: ''` che diventa `null`; `MALFORMED`, `NETWORK` e `UNKNOWN`
+  → nessun fallback.
+- Test che la home renda le card su `NOT_FOUND` e continui a mostrare il paragrafo
+  d'errore su `MALFORMED` — è la regressione che conta, perché è il caso in cui un bug dei
+  dati tornerebbe invisibile.
 - `npm run dev` dopo un clone pulito, senza `.env` e senza bucket: la home mostra le card
   del seed.
 - `npm test` e `ALLOW_PLACEHOLDER_CSP=1 npm run build` verdi.
