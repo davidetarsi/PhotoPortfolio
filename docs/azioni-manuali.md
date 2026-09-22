@@ -119,6 +119,12 @@ git add wrangler.json
 git commit -m "chore: ripristina la configurazione reale del sito"
 ```
 
+> ⚠️ **Il ripristino non basta: al tuo `wrangler.json` manca `TURNSTILE_SITEKEY`.** Né la
+> tua versione né quella del template ce l'hanno — sta solo in `wrangler.example.json`.
+> Rimetterlo tale e quale ti lascia senza quella `var`, e la voce 9 diventa una trappola.
+> Leggi lì prima di fare i `secret put`: le configurazioni sane sono due, e una via di
+> mezzo rompe il form per tutti.
+
 **Quel commit finale non è cosmetico: è quello che rende il sito un ramo suo.** Da lì in
 poi `photoportfolio` ha almeno un commit che il template non ha, i merge successivi
 saranno merge veri, e `wrangler.json` andrà in conflitto davvero. Solo **da quel momento**
@@ -147,8 +153,32 @@ Chiudi verificando che il sito regga ancora:
 npm test && npm run build && head -2 dist/_headers
 ```
 
-La riga CSP deve contenere i tuoi URL R2 veri. Se contiene `pub-xxxxxxxx`, la
-risoluzione del conflitto è andata storta.
+La riga CSP deve contenere i tuoi URL R2 veri. Se contiene `pub-xxxxxxxx`, il
+ripristino di `wrangler.json` è andato storto.
+
+**Fallo su `staging`, non su `main`.** Questo merge non "collega" il sito al template:
+porta 205 commit sul repo da cui Cloudflare fa il deploy, quindi il sito pubblico cambia
+nel momento in cui pushi. Il branch `staging` esiste, punta a un Worker e a un bucket
+separati (`photo-portfolio-staging`), ed è già 33 commit avanti a `main` — anche lui
+interamente contenuto nel template, quindi anche lì il merge è un fast-forward.
+
+Il giro completo, con `main` toccato solo alla fine e solo per allinearlo a ciò che hai
+già visto funzionare:
+
+```bash
+git checkout staging && git merge upstream/main    # fast-forward
+#   ...ripristino di wrangler.json e commit, come sopra...
+git push origin staging                            # Cloudflare deploya lo staging
+
+#   guardi il sito di staging: home, un album, /admin, e il form
+#   quando sei convinto:
+git checkout main && git merge staging             # fast-forward: stessi byte
+git push origin main
+```
+
+Il secondo merge è un fast-forward perché `staging` contiene già tutto: in produzione
+finiscono gli stessi identici byte che hai verificato, non una seconda risoluzione fatta
+a mano.
 
 ---
 
@@ -251,11 +281,36 @@ npx wrangler secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
 > 7B — se mettere l'infrastruttura vera sotto Terraform — la strada è quella manuale:
 > [sezione 5 del runbook, "Turnstile widget"](runbook-cloudflare.md#turnstile-widget).
 
-> ⚠️ **Se salti `TURNSTILE_SECRET`, il form non si blocca: accetta tutto.** Senza secret
-> `verifyTurnstile` legge "Turnstile non è in uso qui" e lascia passare ogni invio
-> (`src/worker/turnstile.js:17`). Fallisce aperto, non chiuso, e il widget resta disegnato
-> sulla pagina come se controllasse qualcosa. Vale per ogni ambiente separatamente: il
-> secret va messo sia in produzione sia con `--env staging`.
+> ⚠️ **`TURNSTILE_SECRET` e `TURNSTILE_SITEKEY` vanno messi insieme, o non messi affatto.**
+> Sono due valori dello stesso widget in due posti diversi, e ogni combinazione a metà
+> rompe qualcosa in una direzione opposta.
+
+| sitekey in `wrangler.json` | secret | Cosa succede davvero |
+|---|---|---|
+| assente | assente | **sano.** Niente widget, `verifyTurnstile` lascia passare tutto, resta l'honeypot |
+| presente | presente | **sano.** Protezione attiva |
+| presente | assente | fallisce **aperto**: il widget appare, ma dietro non valida nessuno |
+| assente | **presente** | fallisce **chiuso**: **403 a ogni invio, per tutti** |
+
+L'ultima riga è quella in cui rischi di finire arrivando dalla voce 5, perché al tuo
+`wrangler.json` la `var` `TURNSTILE_SITEKEY` **manca** (sta solo in
+`wrangler.example.json`). Senza sitekey il client non disegna il widget e non manda il
+token (`src/components/ContactForm.js:32`); il Worker, che il secret ce l'ha, vede un
+token vuoto e rifiuta (`src/worker/turnstile.js:18`). Il form non degrada: muore.
+
+Quindi o aggiungi la `var` prima del `secret put`:
+
+```jsonc
+// wrangler.json, sia in "vars" sia in "env.staging.vars"
+"TURNSTILE_SITEKEY": "0x4AAA..."   // la Site Key del widget
+```
+
+oppure rimandi Turnstile del tutto e fai **solo** `CONTACT_NOTIFY_URL`: è la prima riga
+della tabella, una configurazione legittima in cui il form funziona e l'honeypot continua
+a fermare i bot più ingenui.
+
+I secret sono **per ambiente**: `npx wrangler secret put TURNSTILE_SECRET` vale per la
+produzione, e serve un secondo giro con `--env staging`.
 
 > ⚠️ **Non metterli in `wrangler.json`**, che è versionato: un URL Telegram contiene il
 > token del bot, e finirebbe su GitHub.

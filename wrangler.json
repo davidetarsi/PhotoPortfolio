@@ -12,7 +12,8 @@
   "vars": {
     "ACCESS_TEAM_DOMAIN": "il-tuo-team.cloudflareaccess.com",
     "ACCESS_AUD": "incolla-qui-l-aud-della-tua-Access-application",
-    "R2_PUBLIC_URL": "https://pub-xxxxxxxx.r2.dev"
+    "R2_PUBLIC_URL": "https://pub-xxxxxxxx.r2.dev",
+    "TURNSTILE_SITEKEY": ""
   },
   "env": {
     "staging": {
@@ -23,7 +24,8 @@
       "vars": {
         "ACCESS_TEAM_DOMAIN": "il-tuo-team.cloudflareaccess.com",
         "ACCESS_AUD": "incolla-qui-l-aud-della-tua-Access-application-di-staging",
-        "R2_PUBLIC_URL": "https://pub-yyyyyyyy.r2.dev"
+        "R2_PUBLIC_URL": "https://pub-yyyyyyyy.r2.dev",
+        "TURNSTILE_SITEKEY": ""
       }
     }
   }

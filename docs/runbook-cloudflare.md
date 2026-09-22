@@ -448,6 +448,13 @@ Terraform creates it (`enable_turnstile = true`, the default); on the manual pat
 
 Take the secret from the Cloudflare dashboard, under Turnstile, on your widget's page.
 
+> ⚠️ **Set both, or neither.** A half-configuration breaks in one of two opposite ways.
+> With the sitekey but no secret, Turnstile fails **open**: the widget is drawn and
+> nothing validates behind it. With the secret but no sitekey, it fails **closed**: the
+> client never draws the widget, so it never sends a token, and the Worker rejects every
+> submission with `CHALLENGE_FAILED` — the form dies for everyone. Leaving out both is a
+> legitimate configuration; the form works and the honeypot still catches naive bots.
+
 Visitors see nothing: the widget is configured `interaction-only`, so it only appears when Cloudflare suspects something. There is no way to restyle it — it lives in an iframe — which is why it is configured to stay out of sight instead.
 
 **If you turn Turnstile off**, the form keeps working and the honeypot keeps catching the simplest bots. But there is no rate limiting: someone determined could fill your bucket with junk messages. Know that you are accepting it.
