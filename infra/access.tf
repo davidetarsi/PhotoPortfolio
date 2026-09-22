@@ -23,7 +23,10 @@ resource "cloudflare_zero_trust_access_application" "prod" {
     { type = "public", uri = "${var.prod_hostname}/api/admin" },
   ]
 
-  policies = [cloudflare_zero_trust_access_policy.solo_admin.id]
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.solo_admin.id
+    precedence = 1
+  }]
 }
 
 # Staging: dominio workers.dev, dove Access non sa fare path-scoping.
@@ -38,5 +41,8 @@ resource "cloudflare_zero_trust_access_application" "staging" {
     { type = "public", uri = var.staging_hostname },
   ]
 
-  policies = [cloudflare_zero_trust_access_policy.solo_admin.id]
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.solo_admin.id
+    precedence = 1
+  }]
 }
