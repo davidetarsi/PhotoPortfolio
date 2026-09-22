@@ -31,8 +31,23 @@ Create the token in Cloudflare dashboard → **My Profile → API Tokens → Cre
 
 ```zsh
 read -s CLOUDFLARE_API_TOKEN
+echo
 export CLOUDFLARE_API_TOKEN
 ```
+
+The environment variable exists only in the terminal session where you exported it. Run every Terraform command from that same terminal. Opening another tab or window, or starting a new shell, requires exporting the token again.
+
+Before `terraform apply`, verify that the variable is present without printing its value:
+
+```zsh
+if [[ -n "${CLOUDFLARE_API_TOKEN:-}" ]]; then
+  echo "Cloudflare API token: loaded"
+else
+  echo "Cloudflare API token: missing"
+fi
+```
+
+If Cloudflare returns error `9106` with `Missing X-Auth-Key, X-Auth-Email or Authorization headers`, the provider received no token. Export `CLOUDFLARE_API_TOKEN` again in the same terminal and retry. This error is different from a token that is present but lacks a required permission.
 
 If you accidentally write it in a file, immediately revoke the token on Cloudflare and create a new one.
 
