@@ -112,11 +112,9 @@ Conflicts, if any, will land on `config/`, `theme/` and `wrangler.json` — that
 ```bash
 node --version   # requires v20+
 npm install
-cp .env.example .env
-# Fill in .env: VITE_R2_PUBLIC_URL, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
 npm run dev      # → http://localhost:5173/
-ALLOW_PLACEHOLDER_CSP=1 npm run build  # build check with placeholder values
-npm test         # the full suite
+ALLOW_PLACEHOLDER_CSP=1 npm run build
+npm test
 ```
 
 For the first deploy to Cloudflare, fill `wrangler.json` with your real values (not the placeholders).
@@ -157,12 +155,12 @@ Fill in the placeholders:
 
 By hand, or with `npm run infra:sync` if you use Terraform.
 
-### 3. Local environment variables
+### 3. Optional local CLI credentials
 
-Fill `.env` with the R2 credentials (used by `npm run migrate` and `npm run upload`):
+The browser preview does not need `.env`. Only `npm run migrate` and `npm run upload` require the four R2 variables below. `VITE_R2_PUBLIC_URL` is optional: set it for the browser fallback and meta preview, but it is not an S3 credential. No Turnstile sitekey belongs in `.env`.
 
 ```bash
-VITE_R2_PUBLIC_URL="https://pub-xxxxxxxx.r2.dev"  # copy from wrangler.json vars.R2_PUBLIC_URL
+VITE_R2_PUBLIC_URL="https://pub-xxxxxxxx.r2.dev"  # optional: copy from wrangler.json vars.R2_PUBLIC_URL
 R2_ACCOUNT_ID="..."
 R2_ACCESS_KEY_ID="..."
 R2_SECRET_ACCESS_KEY="..."
@@ -171,7 +169,7 @@ R2_BUCKET_NAME="your-bucket"
 
 These credentials must not go into git — `.env` is ignored, while the Cloudflare variables belong in `wrangler.json`, which is versioned.
 
-### 4. Initial seed
+### 4. Dashboard bootstrap
 
 Fill in the configuration files that make up the site's seed:
 
@@ -182,11 +180,15 @@ Fill in the configuration files that make up the site's seed:
 - **`theme/tokens.css`** — colors and font variables
 - **`theme/typography.css`** — type scale and Google Fonts links
 
-Then:
+The seed is already visible in the local preview. When you are ready to bootstrap the dashboard, run:
 
 ```bash
 npm run migrate
 ```
+
+This copies `site.config.js` and `albums.config.js` to R2 so `/admin` has runtime data to edit.
+
+> Before migration, the home page can render album cards from the build seed. Opening one shows an empty album because photo manifests and image files exist only in R2.
 
 > ⚠️ `migrate` is a one-time bootstrap command: it turns the seed into the JSON files on R2. **Running it again after you've used the dashboard resets everything to the seed, wiping out the work you did there.** The command notices, stops and explains what you'd lose, and asks for `--force` if you insist.
 
@@ -247,6 +249,7 @@ public/          ← static assets (favicon). `_headers` doesn't live here: it's
 | **OpenGraph meta tags** | injected at build time from `site.config.js` |
 | **Framework** | vanilla JS/HTML/CSS — no runtime framework |
 | **Photo compression** | `npm run compress -- --input <path>` — for HEIC, TIFF and bulk uploads (Sharp, WebP 1900px q85) |
+| **Direct photo upload** | `npm run upload -- --album <slug> --input <optimized-directory>` — uploads a prepared directory and its `manifest.json` directly to R2; requires the optional `.env` credentials and is not the normal dashboard workflow. |
 
 ## 🤝 Contributing
 
