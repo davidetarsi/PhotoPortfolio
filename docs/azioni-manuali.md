@@ -14,13 +14,13 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 ## In sospeso
 
-### 🔧 Infrastruttura — nulla di tutto questo è mai stato provato contro l'API vera
+### 🔧 Infrastruttura — la configurazione è provata contro l'API vera (22/09/2026)
 
 | # | Azione | Blocca |
 |---|---|---|
-| **7** | **`terraform apply`: creare l'infrastruttura** | la verifica dei punti 1, 2 e del form |
+| 7B | Decidere se il sito vero passa sotto Terraform (con `import`) | niente, rimandabile |
 | 8 | Dominio custom per le foto | niente d'altro, ma `r2.dev` è rate-limited |
-| 9 | I due secret del form: `TURNSTILE_SECRET` e `CONTACT_NOTIFY_URL` | la protezione antispam e le notifiche |
+| **9** | **I due secret del form, più il widget Turnstile da creare a mano** | la protezione antispam e le notifiche |
 
 ### 📢 Pubblicazione — la strada per darlo agli amici
 
@@ -44,14 +44,13 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 | # | Azione | Blocca |
 |---|---|---|
-| 5 | Primo merge sito ← template | niente |
-| 6 | Deploy key in scrittura su `photoportfolio` | niente, opzionale |
+| 5 | Primo merge sito ← template (**riscritta**: è un fast-forward, non un merge) | niente |
+| 6 | Deploy key dedicata a `photoportfolio` (**diagnosi corretta**) | niente, opzionale |
 
-**Nessuna blocca la scrittura di altro codice**, ma la voce 7 è diversa dalle altre:
-finché non viene eseguita, tutto ciò che abbiamo costruito su Cloudflare — bucket,
-Access, dominio custom, Turnstile — è **scritto e validato ma mai provato contro
-l'API vera**. Ogni lavoro aggiunto sopra allunga ciò che si scoprirebbe tutto insieme
-al primo `apply`.
+**Nessuna blocca la scrittura di altro codice.** La voce 7, che era la più urgente, è
+chiusa: la configurazione Cloudflare non è più solo validata, è stata creata e distrutta
+contro l'API vera. Resta la 9, che è l'unica con una conseguenza silenziosa — senza
+`TURNSTILE_SECRET` il form non si rompe, accetta tutto.
 
 ---
 
@@ -86,29 +85,61 @@ Il README spiega di forkare, ma un bottone verde vince su un paragrafo.
 
 **Dove:** sul tuo computer, nel repo `photoportfolio`.
 
-Il merge non è pericoloso come sembrava in una versione precedente di questo
-documento, ma due file vanno guardati a mano.
+> ⚠️ **Questa voce è stata riscritta il 22 settembre 2026, dopo aver provato il merge
+> per davvero** in un clone usa-e-getta. La versione precedente descriveva un conflitto
+> su `wrangler.json` che **non avviene**, e la procedura che suggeriva avrebbe messo in
+> produzione i segnaposto del template. Sotto c'è quello che succede davvero.
+
+**Il primo merge è un fast-forward, non un merge.** Verificato: `photoportfolio` non ha
+nessun commit che il template non abbia già, ed è 205 commit indietro. Il bootstrap della
+storia comune ha funzionato fin troppo bene — i due rami non sono divergenti, sono in fila.
+
+Ne segue la cosa importante: **niente va in conflitto, quindi niente ti avvisa**. Git
+sposta l'etichetta in avanti e i file del sito diventano quelli del template, in silenzio.
+Su 139 file la maggior parte è lavoro nuovo che vuoi, ma tre casi vanno gestiti a mano:
+
+| File | Cosa succede | Va bene? |
+|---|---|---|
+| `wrangler.json` | i tuoi valori reali vengono **sostituiti dai segnaposto** | **no, va ripristinato** |
+| `public/_headers` | viene cancellato | sì: dal punto 1 la CSP si genera a build time |
+| `config/*.config.js` | tornano al seed neutro | sì: a runtime la verità è su R2 |
+
+La procedura corretta, quindi, è mettere da parte la tua configurazione **prima** e
+rimetterla **dopo**:
 
 ```bash
 cd photoportfolio
 git remote add upstream git@github.com:davidetarsi/PhotoPortfolioTemplate.git
-git fetch upstream && git merge upstream/main
+git fetch upstream
+
+cp wrangler.json ~/wrangler.sito.json          # i tuoi valori veri, fuori dal repo
+git merge upstream/main                        # fast-forward: sovrascrive senza chiedere
+cp ~/wrangler.sito.json wrangler.json          # rimetti i tuoi valori
+git add wrangler.json
+git commit -m "chore: ripristina la configurazione reale del sito"
 ```
 
-**`wrangler.json` andrà in conflitto**, ed è voluto: il template porta i segnaposto,
-tu hai i tuoi valori reali. Risolvi **tenendo la tua versione**:
+**Quel commit finale non è cosmetico: è quello che rende il sito un ramo suo.** Da lì in
+poi `photoportfolio` ha almeno un commit che il template non ha, i merge successivi
+saranno merge veri, e `wrangler.json` andrà in conflitto davvero. Solo **da quel momento**
+vale la vecchia ricetta, che ora è giusto tenere per il futuro:
 
 ```bash
-git checkout --ours wrangler.json && git add wrangler.json
+git checkout --ours wrangler.json && git add wrangler.json    # dal secondo merge in poi
 ```
 
-**`public/_headers` viene eliminato**, ed è giusto: dal punto 1 la CSP si genera a
-build time da `wrangler.json`. Non ripristinarlo — se resta, Vite lo copierebbe
-sopra quello generato, rimettendo in produzione URL fissi.
+Non rilanciare `npm run migrate` dopo il merge, o sovrascriveresti i contenuti reali col
+seed vuoto.
 
-I file in `config/` torneranno al seed neutro: **è innocuo**, perché a runtime la
-verità è su R2. Ma non rilanciare `npm run migrate` dopo, o sovrascriveresti i
-contenuti reali col seed vuoto.
+**Due cambi di comportamento che questo merge porta con sé**, e che prima non c'erano:
+
+- **Il form di contatto passa da Web3Forms al Worker.** Oggi il sito usa Web3Forms
+  (`src/components/ContactForm.js`, `config/site.config.js`); dopo il merge i messaggi
+  vengono scritti sul tuo bucket R2 e letti in `/admin`. Perché funzioni davvero serve la
+  [voce 9](#9-i-due-secret-del-form-di-contatto): senza `TURNSTILE_SECRET` il form accetta
+  comunque tutto, senza `CONTACT_NOTIFY_URL` i messaggi arrivano ma non te lo dice nessuno.
+- **`/contatti` diventa `/about`.** I link già condivisi non si rompono: il Worker
+  risponde `301` su `/contatti` (`src/worker.js:32`).
 
 Chiudi verificando che il sito regga ancora:
 
@@ -121,43 +152,69 @@ risoluzione del conflitto è andata storta.
 
 ---
 
-### 6. Accesso in scrittura alla deploy key di `photoportfolio`
+### 6. Una deploy key dedicata a `photoportfolio`
 
-**Dove:** GitHub → `photoportfolio` → Settings → Deploy keys → "Allow write access".
+**Dove:** GitHub → `photoportfolio` → Settings → Deploy keys → **Add deploy key**.
 
-**Perché è solo opzionale:** la chiave di questa VPS ha accesso in sola lettura a
-`photoportfolio`, e il push dei documenti è stato rifiutato. Ma quei commit sono
-comunque arrivati su GitHub passando dal template, di cui sono diventati antenati.
-Non si è perso nulla.
+> Il titolo di questa voce diceva "accesso in scrittura alla deploy key". Era la
+> diagnosi sbagliata, e l'ho corretta il 22 settembre 2026.
 
-Serve solo se in futuro vorrai che il lavoro sul *sito* venga fatto da questa VPS.
-Per la decisione presa — il template è upstream, il sito è a valle — non dovrebbe
-servire quasi mai.
+**Cosa succede davvero.** La chiave SSH di questa VPS è una deploy key **di
+`PhotoPortfolioTemplate`**, non di `photoportfolio`. Lo dice GitHub stesso:
+
+```
+$ ssh -T git@github.com-photoportfolio
+Hi davidetarsi/PhotoPortfolioTemplate! You've successfully authenticated...
+```
+
+Una deploy key appartiene a **un solo repository**. I permessi di scrittura che le hai
+dato sono reali e funzionano — infatti da qui i branch sul template si pushano senza
+problemi. Ma su `photoportfolio` quella chiave non è autorizzata e non potrà esserlo:
+non è una spunta da attivare, è un'altra chiave che manca.
+
+**Quindi, se un giorno servirà**, la strada è generare una seconda coppia di chiavi,
+registrarne la pubblica su `photoportfolio` con "Allow write access", e dare a questa
+VPS un alias SSH separato che la usi per quel remote. È lavoro tuo: la configurazione
+SSH di questa macchina è fuori dalla mia portata, ed è giusto che lo sia.
+
+**Perché resta opzionale:** i documenti che non si erano potuti pushare sono comunque
+arrivati su GitHub passando dal template, di cui sono diventati antenati. Non si è perso
+nulla. E per la decisione presa — il template è upstream, il sito è a valle — il lavoro
+sul sito lo fai tu dal tuo computer, che la chiave ce l'ha già.
 
 ---
 
-### 7. `terraform apply`: applicare l'infrastruttura
+### 7. ✅ `terraform apply`: la configurazione funziona davvero — fatto il 22/09/2026
 
-**Dove:** sul tuo computer, non su questa VPS: serve un token API Cloudflare che
-l'agente non deve possedere.
+Lo smoke test isolato è stato eseguito con Terraform 1.16.3 e provider Cloudflare
+5.13.0: ha creato tutte e otto le risorse attese, è arrivato a `No changes`, ha
+generato `wrangler.json`, ha passato la build di produzione e ha distrutto tutto senza
+lasciare residui. Il resoconto sta nel [runbook](runbook-cloudflare.md), sezione 3.5.
 
-È il Task 8 del [piano del punto 1](superpowers/plans/2026-09-20-punto1-terraform-e-configurazione.md).
-La procedura completa, con i permessi esatti del token, sta nel
-[runbook](runbook-cloudflare.md) sezioni 2 e 3.
+**Cosa dimostra e cosa no.** La domanda che contava — *l'API Cloudflare accetta questa
+configurazione?* — ha risposta sì, provata. Resta aperta una domanda diversa, che è la
+7B qui sotto: *la tua infrastruttura vera va messa sotto Terraform?*
 
-**Perché è la più urgente.** `terraform validate` verifica che la configurazione sia
-sintatticamente valida e che i nomi dei campi esistano nello schema del provider. Non
-verifica che l'API Cloudflare accetti quei valori, che i permessi del token bastino,
-che le risorse si creino davvero. Quella prova è solo l'`apply`.
+---
 
-**Attenzione al `plan` prima dell'`apply`:** la tua infrastruttura **esiste già**
-(bucket e applicazioni Access create a mano a luglio). Se il piano propone di
-**creare** risorse che già esistono, servono gli `import` della sezione 7 del
-runbook. Applicare senza guardare produrrebbe risorse duplicate e un sito che punta
-a quella sbagliata.
+### 7B. Decidere se il sito vero passa sotto Terraform
 
-**Fatto quando:** `terraform plan` risponde `No changes`, e `npm run infra:sync`
-rigenera un `wrangler.json` con i valori reali.
+**Dove:** sul tuo computer. Rimandabile senza costi.
+
+La tua infrastruttura di produzione **esiste già** (bucket e applicazioni Access creati
+a mano a luglio) e continua a funzionare senza Terraform. Metterla sotto significa
+`terraform import` di ogni risorsa esistente — sezione 7 del runbook — non un `apply`.
+
+> ⚠️ **Un `apply` senza `import` creerebbe duplicati.** Il piano proporrebbe di *creare*
+> risorse che già esistono, e il sito finirebbe a puntare a quella sbagliata. Se decidi
+> di farlo, la regola è: `import` di tutto, poi `plan` finché non dice `No changes`, e
+> solo allora `apply`.
+
+**Il pezzo che lo smoke test si è portato via:** creando e distruggendo tutto, il widget
+Turnstile del tuo sito non esiste. Finché non fai la 7B, crealo a mano — è la
+[voce 9](#9-i-due-secret-del-form-di-contatto).
+
+**Fatto quando:** `terraform plan` sulla tua infrastruttura vera risponde `No changes`.
 
 ---
 
@@ -185,9 +242,20 @@ Il form scrive i messaggi su R2 da solo, ma due cose restano da configurare, **e
 come secret e non come `vars`**:
 
 ```bash
-npx wrangler secret put TURNSTILE_SECRET      # dal pannello Turnstile, dopo terraform apply
+npx wrangler secret put TURNSTILE_SECRET      # dal pannello Turnstile
 npx wrangler secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
 ```
+
+> **Il widget Turnstile del tuo sito non esiste ancora.** Lo smoke test della voce 7 ha
+> creato le otto risorse e poi le ha distrutte, widget compreso. Finché non decidi la
+> 7B — se mettere l'infrastruttura vera sotto Terraform — la strada è quella manuale:
+> [sezione 5 del runbook, "Turnstile widget"](runbook-cloudflare.md#turnstile-widget).
+
+> ⚠️ **Se salti `TURNSTILE_SECRET`, il form non si blocca: accetta tutto.** Senza secret
+> `verifyTurnstile` legge "Turnstile non è in uso qui" e lascia passare ogni invio
+> (`src/worker/turnstile.js:17`). Fallisce aperto, non chiuso, e il widget resta disegnato
+> sulla pagina come se controllasse qualcosa. Vale per ogni ambiente separatamente: il
+> secret va messo sia in produzione sia con `--env staging`.
 
 > ⚠️ **Non metterli in `wrangler.json`**, che è versionato: un URL Telegram contiene il
 > token del bot, e finirebbe su GitHub.
