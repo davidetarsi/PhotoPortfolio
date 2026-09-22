@@ -15,5 +15,4 @@ export const siteConfig = {
   // Optional chaining: this file is imported by vite.config.js (Node environment)
   // where import.meta.env does not exist. Optional chaining prevents the error.
   r2PublicUrl: import.meta.env?.VITE_R2_PUBLIC_URL,
-  turnstileSitekey: import.meta.env?.VITE_TURNSTILE_SITEKEY ?? '',
 };
