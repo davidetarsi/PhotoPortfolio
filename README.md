@@ -103,6 +103,8 @@ Conflicts, if any, will land on `config/`, `theme/` and `wrangler.json` — that
 
 `wrangler.json` in particular will conflict almost every time, because the template ships it with placeholders and you've put your own values in it: resolve by keeping your version, with `git checkout --ours wrangler.json`.
 
+> ⚠️ **Unless it doesn't conflict at all.** If you haven't committed anything of your own yet, git fast-forwards instead of merging: nothing conflicts, nothing warns, and your `wrangler.json` is replaced by the placeholders in silence. One command tells you which case you're in, and [**docs/upgrading.md**](docs/upgrading.md) is the full procedure — including how to test an update on `staging` before your visitors see it.
+
 > 💡 Prefer a private repository, unlinked from the fork? Then `git clone` this repo, point `origin` at your own, and add `upstream` as above: for updates the result is identical.
 
 ## ⚡ Quick start

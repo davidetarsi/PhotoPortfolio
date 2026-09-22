@@ -105,6 +105,8 @@ I conflitti, se ci sono, cadranno su `config/`, `theme/` e `wrangler.json` — c
 
 `wrangler.json` in particolare andrà in conflitto quasi sempre, perché il template lo distribuisce coi segnaposto e tu ci hai messo i tuoi valori: risolvi tenendo la tua versione, con `git checkout --ours wrangler.json`.
 
+> ⚠️ **A meno che non vada in conflitto per niente.** Se non hai ancora committato nulla di tuo, git fa un fast-forward invece di un merge: niente conflitti, nessun avviso, e il tuo `wrangler.json` viene sostituito dai segnaposto in silenzio. Un comando ti dice in quale dei due casi sei, e [**docs/upgrading.md**](docs/upgrading.md) è la procedura completa — compreso come provare un aggiornamento su `staging` prima che lo vedano i visitatori.
+
 > 💡 Preferisci un repo privato e slegato dal fork? Allora `git clone` di questo repo, poi ripunta `origin` sul tuo e aggiungi `upstream` come sopra: il risultato per gli aggiornamenti è identico.
 
 ## ⚡ Avvio rapido

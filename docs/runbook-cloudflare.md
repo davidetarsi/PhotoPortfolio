@@ -223,6 +223,32 @@ The team domain is provided by Cloudflare with your first Zero Trust account —
 
 Find it at: Cloudflare dashboard → **Zero Trust → Settings → Custom domain**. If you don't see it, navigate to **Access → Applications** and find the team domain in the browser URL (`https://{team}.cloudflareaccess.com/...`).
 
+### Turnstile widget
+
+On the Terraform path this widget is created for you. Here you create it by hand — or you skip it, and the form still works: section 9 explains what you give up.
+
+1. Cloudflare dashboard → **Turnstile → Add widget**
+2. Name: e.g. `mario-portfolio contact form`
+3. **Hostnames:** add the production hostname *and* the staging one (e.g. `mario.com` and `mario-portfolio-staging.xxxxx.workers.dev`). One widget covers both. A hostname that isn't listed fails validation, so a staging form pointed at a prod-only widget answers `CHALLENGE_FAILED` every time.
+4. Widget Mode: **Managed**
+5. Create
+
+The staging hostname isn't known before the first deploy (see section 4). Create the widget with production only, and add staging once Cloudflare has assigned it.
+
+The widget page then shows two values, and they go to **two different places** — never both into `wrangler.json`:
+
+| Value | Where it goes | Why |
+|---|---|---|
+| **Site Key** | `wrangler.json`, as `vars.TURNSTILE_SITEKEY`, and again under `env.staging.vars` | it ends up in the HTML; it is not a secret |
+| **Secret Key** | `wrangler secret put`, once per environment | the Worker validates tokens with it; it must never reach git |
+
+```bash
+npx wrangler secret put TURNSTILE_SECRET
+npx wrangler secret put TURNSTILE_SECRET --env staging
+```
+
+Secrets are per-environment, and a missing one fails **open**, not closed: `verifyTurnstile` reads an absent secret as "Turnstile isn't in use here" and accepts every submission. So setting it only for production doesn't break staging — it silently leaves it unguarded, with the widget still drawn on the page if the staging sitekey is set. Nothing in the UI tells you. Set it in both environments, or decide deliberately that staging goes without.
+
 ## 6. Git integration — Connect repository
 
 Cloudflare lets you deploy the Worker directly from Git — no GitHub Actions needed, it's native.
@@ -269,7 +295,14 @@ terraform import cloudflare_zero_trust_access_application.staging {account_id}/{
 
 # Import Access policy (copy ID from application page → Access policies)
 terraform import cloudflare_zero_trust_access_policy.solo_admin {account_id}/{policy-id}
+
+# Import the Turnstile widget, if you created it by hand (section 5).
+# It is identified by its sitekey, and the address needs quoting: the
+# resource has a count, so it lives at index 0.
+terraform import 'cloudflare_turnstile_widget.contact[0]' {account_id}/{sitekey}
 ```
+
+Import the widget rather than letting Terraform create one: without the import, the next `apply` adds a *second* widget with a different sitekey, and the form keeps validating against the old one until you sync `wrangler.json`.
 
 After imports, verify that `terraform plan` proposes no further changes. If it proposes fields you haven't specified in `.tf`, add them to configuration files to make them converge.
 
@@ -406,7 +439,7 @@ Server Settings → Integrations → Webhooks (Discord), or an incoming webhook 
 
 `/api/contact` is the only route on the site that writes without authentication. The honeypot catches naive bots; Turnstile catches the rest.
 
-It is created by Terraform (`enable_turnstile = true`, the default), and produces two values that go to **two different places**:
+Terraform creates it (`enable_turnstile = true`, the default); on the manual path you create it yourself, following the Turnstile subsection of section 5. Either way it produces two values that go to **two different places**:
 
 | Value | Where | Why |
 |---|---|---|
@@ -414,6 +447,13 @@ It is created by Terraform (`enable_turnstile = true`, the default), and produce
 | **secret** | `npx wrangler secret put TURNSTILE_SECRET` | the Worker validates tokens with it; it must never reach git |
 
 Take the secret from the Cloudflare dashboard, under Turnstile, on your widget's page.
+
+> ⚠️ **Set both, or neither.** A half-configuration breaks in one of two opposite ways.
+> With the sitekey but no secret, Turnstile fails **open**: the widget is drawn and
+> nothing validates behind it. With the secret but no sitekey, it fails **closed**: the
+> client never draws the widget, so it never sends a token, and the Worker rejects every
+> submission with `CHALLENGE_FAILED` — the form dies for everyone. Leaving out both is a
+> legitimate configuration; the form works and the honeypot still catches naive bots.
 
 Visitors see nothing: the widget is configured `interaction-only`, so it only appears when Cloudflare suspects something. There is no way to restyle it — it lives in an iframe — which is why it is configured to stay out of sight instead.
 
@@ -426,10 +466,11 @@ Visitors see nothing: the widget is configured `interaction-only`, so it only ap
 1. Create the two R2 buckets and their r2.dev managed domains from the dashboard.
 2. Create the Access application (`/admin` + `/api/admin/*`) with Allow policy for your email.
 3. Copy team domain + AUD from the dashboard.
-4. Populate `wrangler.json` manually (copy `wrangler.example.json`, fill bucket name, public R2 URL, team domain, AUD).
-5. Connect repository to Cloudflare Workers & Pages with `main` and `staging` branches.
-6. Push to trigger first deploy. Read the assigned `workers.dev` hostname.
-7. If using Terraform later, import existing resources with `terraform import`.
-8. (Optional) Enable a custom domain for photos before going live.
+4. (Optional) Create the Turnstile widget and set `TURNSTILE_SECRET` for both environments.
+5. Populate `wrangler.json` manually (copy `wrangler.example.json`, fill bucket name, public R2 URL, team domain, AUD, Turnstile sitekey).
+6. Connect repository to Cloudflare Workers & Pages with `main` and `staging` branches.
+7. Push to trigger first deploy. Read the assigned `workers.dev` hostname. Add it to the Turnstile widget's hostnames.
+8. If using Terraform later, import existing resources with `terraform import`.
+9. (Optional) Enable a custom domain for photos before going live.
 
 Both with Terraform and manually, CSP in `dist/_headers` is generated from `wrangler.json` during build — it's not hardcoded, so it stays correct whichever path you choose.
