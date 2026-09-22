@@ -257,9 +257,8 @@ staging outputs.
 ## 7. Upgrade through staging
 
 An update is not a code review, it is a deployment: the moment you push, Cloudflare builds
-and your visitors get it. The template ships two environments precisely so this step costs
-you nothing — `staging` is a separate Worker with its own bucket, so nothing you do there
-can touch production.
+and your visitors get it. When you explicitly enable staging, it is a separate Worker with
+its own bucket, so you can verify an update there without touching production.
 
 ```bash
 git checkout staging
@@ -291,17 +290,28 @@ might differ from the first.
 ## 8. Disable staging safely
 
 Do not disable staging until its bucket is empty; Terraform cannot delete a non-empty R2
-bucket. First disable the staging bucket's `r2.dev` public URL manually in Cloudflare. The
-managed-domain wrapper cannot be destroyed through Terraform, so remove only that wrapper
-from state while `enable_staging` is still `true`:
+bucket. First, confirm the staging bucket is empty and manually disable its `r2.dev` public
+URL in Cloudflare. The managed-domain wrapper cannot be destroyed through Terraform, so
+while `enable_staging` is still `true`, remove only that wrapper from state:
 
 ```bash
 terraform state rm 'cloudflare_r2_managed_domain.staging[0]'
+```
+
+After the state removal succeeds, set `enable_staging = false` in
+`infra/terraform.tfvars`, then run and review the plan:
+
+```bash
 terraform plan
+```
+
+The plan should remove only the empty staging bucket and staging Access application. If it
+shows any other changes, stop and resolve them before continuing. Once the plan matches
+that scope, apply:
+
+```bash
 terraform apply
 ```
 
-After the state removal succeeds, set `enable_staging = false` in `infra/terraform.tfvars`
-before running the plan and apply shown above. Review the plan: it should remove the empty
-staging bucket and staging Access application only. Then regenerate Wrangler configuration
-from Terraform outputs with `npm run infra:sync` and rebuild production.
+Finally, regenerate Wrangler configuration from Terraform outputs with
+`npm run infra:sync` and rebuild production.
