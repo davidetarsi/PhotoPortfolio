@@ -146,6 +146,7 @@ Provider v5 warns that `cloudflare_r2_managed_domain` cannot be destroyed throug
 4. Confirm in R2, Zero Trust → Access → Applications, Access policies, and Turnstile that no resource with the smoke prefix remains.
 5. Restore the public template's placeholder `wrangler.json`; never commit smoke account values.
 6. Delete the generated `infra/outputs.json`. Remove or replace the smoke-test values in `infra/terraform.tfvars`; leaving them there makes the next `terraform plan` propose recreating the disposable infrastructure.
+7. Remove the API token from the current shell with `unset CLOUDFLARE_API_TOKEN` when the Terraform session is finished.
 
 The buckets must remain empty. Terraform refuses to delete a non-empty R2 bucket.
 
