@@ -3,6 +3,19 @@
 Staging is a second, isolated Cloudflare deployment. It is disabled by default; follow
 this guide only if you need deployment-level checks before promoting an update.
 
+> **Existing staging users: preserve it before planning**
+>
+> Staging is now opt-in. If your current Terraform state already contains a staging
+> bucket, managed domain, or Access application, add this to `infra/terraform.tfvars`
+> before running the first `terraform plan` after the update:
+>
+> ```hcl
+> enable_staging = true
+> ```
+>
+> Without it, the default is `false` and Terraform proposes destroying those three
+> staging resources. Stop if the plan contains those destroys.
+
 ## 1. What staging is, and what it is not
 
 Staging lets you verify that a build deploys, Cloudflare Access login works, admin routes
