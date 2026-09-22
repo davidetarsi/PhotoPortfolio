@@ -1,10 +1,11 @@
 import '../styles/main.css';
 import { siteConfig } from '../../config/site.config.js';
+import { albums as buildAlbums } from '../../config/albums.config.js';
 import { texts } from '../../config/texts.config.js';
 import { validateSiteConfig } from '../utils/validateConfig.js';
 import { fetchSite, fetchAlbums, fetchManifest, fetchConfig } from '../providers/data.js';
 import { photosFromManifest } from '../providers/r2.js';
-import { resolveSiteContent } from './home-logic.js';
+import { resolveSiteContent, resolveAlbums } from './home-logic.js';
 import { resolveAlbumPage } from './album-logic.js';
 import { renderNav } from '../components/Nav.js';
 import { renderFooter } from '../components/Footer.js';
@@ -31,7 +32,11 @@ const site = resolveSiteContent(siteRes, { ...siteConfig, r2PublicUrl });
 renderNav(document.getElementById('site-nav'), { name: site.name }, texts);
 renderFooter(document.getElementById('site-footer'), texts, site.social);
 
-const page = resolveAlbumPage(slug, albumsRes, manifestRes);
+const resolvedAlbums = resolveAlbums(albumsRes, buildAlbums);
+const albumsForPage = resolvedAlbums === null
+  ? albumsRes
+  : { ok: true, data: resolvedAlbums };
+const page = resolveAlbumPage(slug, albumsForPage, manifestRes);
 
 function showMessage(text, withHomeLink = false) {
   const p = document.createElement('p');
