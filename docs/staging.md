@@ -153,18 +153,27 @@ both into `wrangler.json`:
 | Value | Where it goes | Why |
 |---|---|---|
 | **Site Key** | `wrangler.json`, as `vars.TURNSTILE_SITEKEY`, and again under `env.staging.vars` | it ends up in the HTML; it is not a secret |
-| **Secret Key** | `wrangler secret put`, once per environment | the Worker validates tokens with it; it must never reach git |
+| **Secret Key** | `npx wrangler versions secret put TURNSTILE_SECRET` on the connected Worker | the Worker validates tokens with it; it must never reach git |
 
 ```bash
-npx wrangler secret put TURNSTILE_SECRET
-npx wrangler secret put TURNSTILE_SECRET --env staging
+npx wrangler versions secret put CONTACT_NOTIFY_URL
+npx wrangler versions secret put TURNSTILE_SECRET
 ```
+
+Production and the staging version URL belong to the same Worker. Configure the secret
+bindings on that Worker and upload the staging version with `env.staging` bindings. Do
+not target `{project-name}-staging`; that would configure a different Worker instead of
+the reviewed version preview.
+
+A deliberately separate Wrangler Worker must manage its own secrets; that setup is
+outside the verified workflow.
 
 Secrets are per-environment, and a missing one fails **open**, not closed: `verifyTurnstile`
 reads an absent secret as "Turnstile isn't in use here" and accepts every submission. So
-setting it only for production doesn't break staging — it silently leaves it unguarded,
-with the widget still drawn on the page if the staging sitekey is set. Nothing in the UI
-tells you. Set it in both environments, or decide deliberately that staging goes without.
+setting only one required binding leaves the other environment unguarded, with the widget
+still drawn on the page if its sitekey is set. Nothing in the UI tells you. Configure the
+secret bindings on the connected Worker before uploading the version, or decide
+deliberately that staging goes without.
 
 ### Git integration — Connect repository
 
@@ -231,11 +240,10 @@ resources, keep `enable_staging = true` and render the complete `env.staging` bl
 connected Worker publishes the staging version preview with those bindings. If the widget
 is manual, keep the generated preview hostname in its dashboard settings when required;
 until that hostname is listed, every staging form submission fails with
-`CHALLENGE_FAILED`. Set `TURNSTILE_SECRET` separately for staging with:
-
-```bash
-npx wrangler secret put TURNSTILE_SECRET --env staging
-```
+`CHALLENGE_FAILED`. The staging version uses the configured secret bindings on the same
+Worker; upload it with `npx wrangler versions upload --env staging`. Do not run
+`secret put --env staging` or target `{project-name}-staging`, which would address a
+different Worker.
 
 For a manually managed installation, retain the staging bucket, public `r2.dev` domain,
 and Access application described in [the resource inventory](#5-manual-resource-inventory-cold-bootstrap-unresolved).
