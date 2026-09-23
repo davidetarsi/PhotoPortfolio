@@ -1,7 +1,7 @@
 # Protezione Turnstile e notifiche ntfy per il form contatti
 
-**Data:** 2026-09-23  
-**Stato:** design approvato; implementazione da pianificare  
+**Data:** 2026-09-23
+**Stato:** design approvato; implementazione da pianificare
 **Repository coinvolti:** `PhotoPortfolioTemplate` (upstream generico) e `PhotoPortfolio` (downstream personale)
 
 ## 1. Obiettivo
