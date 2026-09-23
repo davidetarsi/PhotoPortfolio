@@ -1,6 +1,6 @@
 import '../styles/contact-form.css';
 
-const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
 let turnstileLoaded = false;
 
