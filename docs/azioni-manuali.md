@@ -142,7 +142,7 @@ solo dopo aver ispezionato un conflitto reale e aver aggiunto eventuali nuove ch
 introdotte dal template:
 
 ```bash
-git checkout --ours wrangler.json && git add wrangler.json    # dal secondo merge in poi
+git checkout --ours wrangler.json && git add wrangler.json    # solo se esiste un conflitto reale
 ```
 
 Non rilanciare `npm run migrate` dopo il merge, o sovrascriveresti i contenuti reali col
@@ -185,7 +185,7 @@ git push origin staging                            # Cloudflare deploya lo stagi
 
 #   guardi il sito di staging: home, un album, /admin, e il form
 #   quando sei convinto:
-git checkout main && git merge staging             # promuove lo stesso tree verificato
+git checkout main && git merge --ff-only staging   # promuove lo stesso tree verificato
 git push origin main
 ```
 
