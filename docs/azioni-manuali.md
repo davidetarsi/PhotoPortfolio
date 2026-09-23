@@ -44,10 +44,12 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 | # | Azione | Blocca |
 |---|---|---|
-| 5 | Primo merge sito ← template (**riscritta**: è un fast-forward, non un merge) | niente |
-| 6 | Deploy key dedicata a `photoportfolio` (**diagnosi corretta**) | niente, opzionale |
+| 5 | Primo merge sito ← template (**aperta fino ai gate live**) | la chiusura della sincronizzazione |
+| 6 | ✅ Deploy key dedicata a `PhotoPortfolio`, verificata con accesso in scrittura | niente |
 
-**Nessuna blocca la scrittura di altro codice.** La voce 7, che era la più urgente, è
+La voce 5 resta aperta fino a quando i gate live di staging e produzione previsti dal
+piano non passano: il merge del template da solo non la chiude. Nessuna voce blocca la
+scrittura di altro codice. La voce 7, che era la più urgente, è
 chiusa: la configurazione Cloudflare non è più solo validata, è stata creata e distrutta
 contro l'API vera. Resta la 9, che è l'unica con una conseguenza silenziosa — senza
 `TURNSTILE_SECRET` il form non si rompe, accetta tutto.
@@ -91,21 +93,21 @@ Il README spiega di forkare, ma un bottone verde vince su un paragrafo.
 > produzione i segnaposto del template. Sotto c'è quello che succede davvero.
 >
 > La versione generica di questa procedura, per chiunque usi il template, sta in
-> [`docs/upgrading.md`](upgrading.md). Qui restano solo i numeri del tuo caso.
+> [`docs/upgrading.md`](upgrading.md). Qui restano solo le peculiarità del tuo caso.
 
-**Il primo merge è un fast-forward, non un merge.** Verificato: `photoportfolio` non ha
-nessun commit che il template non abbia già, ed è 205 commit indietro. Il bootstrap della
-storia comune ha funzionato fin troppo bene — i due rami non sono divergenti, sono in fila.
+**Il primo aggiornamento non è un fast-forward:** lo `staging` personale ha commit
+propri, quindi il merge con il template è un merge reale. `wrangler.json`, però, verrà
+comunque sovrascritto senza conflitto: è rimasto invariato sul ramo personale dopo la
+base comune, perciò Git vede la versione del template come l'unica modifica di quel
+file. Senza un ripristino esplicito, accetterebbe in silenzio i segnaposto.
 
-Ne segue la cosa importante: **niente va in conflitto, quindi niente ti avvisa**. Git
-sposta l'etichetta in avanti e i file del sito diventano quelli del template, in silenzio.
-Su 139 file la maggior parte è lavoro nuovo che vuoi, ma tre casi vanno gestiti a mano:
+La maggior parte dei file è lavoro nuovo che vuoi, ma tre casi vanno gestiti a mano:
 
 | File | Cosa succede | Va bene? |
 |---|---|---|
 | `wrangler.json` | i tuoi valori reali vengono **sostituiti dai segnaposto** | **no, va ripristinato** |
 | `public/_headers` | viene cancellato | sì: dal punto 1 la CSP si genera a build time |
-| `config/*.config.js` | tornano al seed neutro | sì: a runtime la verità è su R2 |
+| `config/*.config.js` | tornano al seed neutro, ora fallback pubblico | **no: le configurazioni personalizzate vanno migrate** |
 
 La procedura corretta, quindi, è mettere da parte la tua configurazione **prima** e
 rimetterla **dopo**:
@@ -116,25 +118,31 @@ git remote add upstream git@github.com:davidetarsi/PhotoPortfolioTemplate.git
 git fetch upstream
 
 cp wrangler.json ~/wrangler.sito.json          # i tuoi valori veri, fuori dal repo
-git merge upstream/main                        # fast-forward: sovrascrive senza chiedere
+git merge upstream/main                        # merge reale: può sovrascrivere senza conflitto
 cp ~/wrangler.sito.json wrangler.json          # rimetti i tuoi valori
 git add wrangler.json
 git commit -m "chore: ripristina la configurazione reale del sito"
 ```
 
-> ⚠️ **Il ripristino non basta: al tuo `wrangler.json` manca `TURNSTILE_SITEKEY`.** Né la
-> tua versione né quella del template ce l'hanno — sta solo in `wrangler.example.json`.
-> Rimetterlo tale e quale ti lascia senza quella `var`, e la voce 9 diventa una trappola.
-> Leggi lì prima di fare i `secret put`: le configurazioni sane sono due, e una via di
-> mezzo rompe il form per tutti.
+> ⚠️ **Il ripristino non basta:** conserva il blocco `env.staging` esistente e aggiungi
+> `"TURNSTILE_SITEKEY": ""` sia alle `vars` di produzione sia a `env.staging.vars`.
+> Per ora il valore deve restare vuoto in entrambi gli ambienti; non modificare gli
+> altri valori personali.
 
-**Quel commit finale non è cosmetico: è quello che rende il sito un ramo suo.** Da lì in
-poi `photoportfolio` ha almeno un commit che il template non ha, i merge successivi
-saranno merge veri, e `wrangler.json` andrà in conflitto davvero. Solo **da quel momento**
-vale la vecchia ricetta, che ora è giusto tenere per il futuro:
+Le configurazioni personalizzate in `config/*.config.js` vanno migrate durante lo stesso
+passaggio. Ora sono il fallback pubblico quando R2 restituisce `NOT_FOUND`: lasciare i
+seed neutri del template cambierebbe il contenuto visibile del sito anche se R2 è vuoto.
+
+Il commit che ripristina la configurazione conserva i valori reali, ma non rende
+automaticamente il repository divergente: il ramo personale può avere commit propri già
+prima di questo passaggio. Nei merge futuri la presenza di commit su entrambi i rami non
+garantisce un conflitto su ogni file. Per ogni file, preserva esplicitamente i valori
+personali quando il downstream non lo ha modificato dopo la base comune; usa `--ours`
+solo dopo aver ispezionato un conflitto reale e aver aggiunto eventuali nuove chiavi
+introdotte dal template:
 
 ```bash
-git checkout --ours wrangler.json && git add wrangler.json    # dal secondo merge in poi
+git checkout --ours wrangler.json && git add wrangler.json    # solo se esiste un conflitto reale
 ```
 
 Non rilanciare `npm run migrate` dopo il merge, o sovrascriveresti i contenuti reali col
@@ -150,7 +158,8 @@ seed vuoto.
 - **`/contatti` diventa `/about`.** I link già condivisi non si rompono: il Worker
   risponde `301` su `/contatti` (`src/worker.js:32`).
 
-Chiudi verificando che il sito regga ancora:
+La voce 5 resta aperta: dopo il merge e il ripristino, verifica che il sito regga ancora
+e chiudila solo quando anche i gate live di staging e produzione del piano sono passati:
 
 ```bash
 npm test && npm run build && head -2 dist/_headers
@@ -160,60 +169,42 @@ La riga CSP deve contenere i tuoi URL R2 veri. Se contiene `pub-xxxxxxxx`, il
 ripristino di `wrangler.json` è andato storto.
 
 **Fallo su `staging`, non su `main`.** Questo merge non "collega" il sito al template:
-porta 205 commit sul repo da cui Cloudflare fa il deploy, quindi il sito pubblico cambia
-nel momento in cui pushi. Il branch `staging` esiste, punta a un Worker e a un bucket
-separati (`photo-portfolio-staging`), ed è già 33 commit avanti a `main` — anche lui
-interamente contenuto nel template, quindi anche lì il merge è un fast-forward.
+porta i commit del template sul repo da cui Cloudflare fa il deploy, quindi il sito
+pubblico cambia nel momento in cui pushi. Il branch `staging` esiste, punta a un Worker e a un bucket
+separati (`photo-portfolio-staging`) e ha commit propri rispetto alla base condivisa: il
+merge con `upstream/main` è quindi un merge reale. Anche qui `wrangler.json` può essere
+sovrascritto senza conflitto se non è cambiato sul ramo personale dopo quella base.
 
 Il giro completo, con `main` toccato solo alla fine e solo per allinearlo a ciò che hai
 già visto funzionare:
 
 ```bash
-git checkout staging && git merge upstream/main    # fast-forward
+git checkout staging && git merge --no-ff upstream/main  # merge reale; ispeziona i conflitti
 #   ...ripristino di wrangler.json e commit, come sopra...
 git push origin staging                            # Cloudflare deploya lo staging
 
 #   guardi il sito di staging: home, un album, /admin, e il form
 #   quando sei convinto:
-git checkout main && git merge staging             # fast-forward: stessi byte
+git checkout main && git merge --ff-only staging   # promuove lo stesso tree verificato
 git push origin main
 ```
 
-Il secondo merge è un fast-forward perché `staging` contiene già tutto: in produzione
-finiscono gli stessi identici byte che hai verificato, non una seconda risoluzione fatta
-a mano.
+In produzione devono finire gli stessi identici byte verificati su `staging`. Se Git
+segnala divergenza durante la promozione su `main`, fermati e ispeziona il merge invece
+di applicare una risoluzione alla cieca.
 
 ---
 
-### 6. Una deploy key dedicata a `photoportfolio`
+### 6. ✅ Una deploy key dedicata a `PhotoPortfolio` — verificata
 
-**Dove:** GitHub → `photoportfolio` → Settings → Deploy keys → **Add deploy key**.
+**Dove:** GitHub → `PhotoPortfolio` → Settings → Deploy keys.
 
-> Il titolo di questa voce diceva "accesso in scrittura alla deploy key". Era la
-> diagnosi sbagliata, e l'ho corretta il 22 settembre 2026.
+La deploy key dedicata a `PhotoPortfolio` è stata aggiunta con **Allow write access** e
+verificata con un'operazione di scrittura sul repository. È distinta dalla chiave usata
+per `PhotoPortfolioTemplate`.
 
-**Cosa succede davvero.** La chiave SSH di questa VPS è una deploy key **di
-`PhotoPortfolioTemplate`**, non di `photoportfolio`. Lo dice GitHub stesso:
-
-```
-$ ssh -T git@github.com-photoportfolio
-Hi davidetarsi/PhotoPortfolioTemplate! You've successfully authenticated...
-```
-
-Una deploy key appartiene a **un solo repository**. I permessi di scrittura che le hai
-dato sono reali e funzionano — infatti da qui i branch sul template si pushano senza
-problemi. Ma su `photoportfolio` quella chiave non è autorizzata e non potrà esserlo:
-non è una spunta da attivare, è un'altra chiave che manca.
-
-**Quindi, se un giorno servirà**, la strada è generare una seconda coppia di chiavi,
-registrarne la pubblica su `photoportfolio` con "Allow write access", e dare a questa
-VPS un alias SSH separato che la usi per quel remote. È lavoro tuo: la configurazione
-SSH di questa macchina è fuori dalla mia portata, ed è giusto che lo sia.
-
-**Perché resta opzionale:** i documenti che non si erano potuti pushare sono comunque
-arrivati su GitHub passando dal template, di cui sono diventati antenati. Non si è perso
-nulla. E per la decisione presa — il template è upstream, il sito è a valle — il lavoro
-sul sito lo fai tu dal tuo computer, che la chiave ce l'ha già.
+La voce 6 è chiusa: non è necessario generare o riutilizzare altre chiavi per il repo
+personale.
 
 ---
 
@@ -290,18 +281,19 @@ npx wrangler secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
 
 | sitekey in `wrangler.json` | secret | Cosa succede davvero |
 |---|---|---|
-| assente | assente | **sano.** Niente widget, `verifyTurnstile` lascia passare tutto, resta l'honeypot |
-| presente | presente | **sano.** Protezione attiva |
-| presente | assente | fallisce **aperto**: il widget appare, ma dietro non valida nessuno |
-| assente | **presente** | fallisce **chiuso**: **403 a ogni invio, per tutti** |
+| assente o vuota | assente | **sano.** Niente widget, `verifyTurnstile` lascia passare tutto, resta l'honeypot |
+| non vuota | presente | **sano.** Protezione attiva |
+| non vuota | assente | fallisce **aperto**: il widget appare, ma dietro non valida nessuno |
+| assente o vuota | **presente** | fallisce **chiuso**: **403 a ogni invio, per tutti** |
 
-L'ultima riga è quella in cui rischi di finire arrivando dalla voce 5, perché al tuo
-`wrangler.json` la `var` `TURNSTILE_SITEKEY` **manca** (sta solo in
-`wrangler.example.json`). Senza sitekey il client non disegna il widget e non manda il
-token (`src/components/ContactForm.js:32`); il Worker, che il secret ce l'ha, vede un
-token vuoto e rifiuta (`src/worker/turnstile.js:18`). Il form non degrada: muore.
+Arrivando dalla voce 5, `TURNSTILE_SITEKEY` deve essere presente ma vuota in entrambi
+gli ambienti: finché il widget non esiste, non impostare `TURNSTILE_SECRET`. Senza
+sitekey il client non disegna il widget e non manda il token (`src/components/ContactForm.js:32`);
+con il secret già configurato il Worker rifiuterebbe ogni invio
+(`src/worker/turnstile.js:18`).
 
-Quindi o aggiungi la `var` prima del `secret put`:
+Quando avrai creato il widget, sostituisci la `var` vuota in entrambi gli ambienti con la
+sitekey reale prima del `secret put`:
 
 ```jsonc
 // wrangler.json, sia in "vars" sia in "env.staging.vars"
