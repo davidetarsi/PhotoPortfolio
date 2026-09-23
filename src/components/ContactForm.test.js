@@ -18,7 +18,11 @@ const texts = {
 
 describe('createContactForm', () => {
   beforeEach(() => { document.body.innerHTML = ''; });
-  afterEach(() => { vi.unstubAllGlobals(); });
+  afterEach(() => {
+    document.head.querySelectorAll('script[src*="challenges.cloudflare.com/turnstile"]')
+      .forEach(script => script.remove());
+    vi.unstubAllGlobals();
+  });
 
   it('renders all required named fields', () => {
     const form = createContactForm(siteConfig, texts);
@@ -38,6 +42,18 @@ describe('createContactForm', () => {
     const honeypot = form.querySelector('[name="botcheck"]');
     expect(honeypot.type).toBe('checkbox');
     expect(honeypot.classList.contains('contact-form__honeypot')).toBe(true);
+  });
+
+  it('carica Turnstile nella modalita di rendering esplicita', () => {
+    createContactForm({ turnstileSitekey: 'test-sitekey' }, texts);
+
+    const script = document.head.querySelector(
+      'script[src*="challenges.cloudflare.com/turnstile"]',
+    );
+    expect(script).not.toBeNull();
+    expect(script.src).toBe(
+      'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
+    );
   });
 
   it('invia a /api/contact, non a un servizio esterno', async () => {

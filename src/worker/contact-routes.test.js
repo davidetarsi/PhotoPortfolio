@@ -79,6 +79,18 @@ describe('handleContactRequest', () => {
     expect(deps.notify).toHaveBeenCalledOnce();
   });
 
+  it('notifica con la dashboard assoluta dell host chiamato', async () => {
+    const env = makeEnv();
+    const deps = makeDeps();
+    await post(env, VALIDO, deps);
+
+    expect(deps.notify).toHaveBeenCalledWith(
+      env,
+      expect.objectContaining({ name: 'Mario' }),
+      'https://x.dev/admin',
+    );
+  });
+
   it('se la notifica fallisce il messaggio resta salvato e la risposta e 200', async () => {
     // Un visitatore non deve vedere "invio fallito" perche' il telefono
     // del proprietario era irraggiungibile (spec §4).

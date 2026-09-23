@@ -16,10 +16,9 @@ function randSuffix() {
   return Math.random().toString(36).slice(2, 8).padEnd(6, '0');
 }
 
-async function inviaNotifica(env, messaggio) {
+async function inviaNotifica(env, messaggio, adminUrl) {
   const url = env.CONTACT_NOTIFY_URL;
   if (!url) return;
-  const adminUrl = `${env.SITE_URL ?? ''}/admin`;
   await fetch(url, {
     method: 'POST',
     body: notifyBody(messaggio, adminUrl),
@@ -30,7 +29,7 @@ async function inviaNotifica(env, messaggio) {
 /**
  * Handles a contact form submission: validates, stores, and notifies.
  * @param {Request} request - The incoming HTTP request with contact form data in JSON.
- * @param {object} env - Cloudflare Worker environment with BUCKET, CONTACT_NOTIFY_URL, SITE_URL.
+ * @param {object} env - Cloudflare Worker environment with BUCKET and CONTACT_NOTIFY_URL.
  * @param {{now?: () => number, rand?: () => string, notify?: Function, verify?: Function}} deps - Injected dependencies for testing.
  * @returns {Promise<Response>} JSON response with ok: true on success or error details.
  */
@@ -82,7 +81,8 @@ export async function handleContactRequest(request, env, deps = {}) {
   // Message is already safely stored. If notification fails, the visitor
   // must not know or suffer any consequences.
   try {
-    await notify(env, messaggio);
+    const adminUrl = new URL('/admin', request.url).href;
+    await notify(env, messaggio, adminUrl);
   } catch (err) {
     console.error('notification failed:', err?.message);
   }
