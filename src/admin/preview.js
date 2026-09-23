@@ -1,9 +1,10 @@
-// Overlay di anteprima per il form Sito. Riusa renderHero/renderFooter/
-// createAlbumCard/PhotoGrid/Lightbox/resolveAlbumPage — le stesse funzioni
-// del sito pubblico — così l'anteprima non è mai una reimplementazione
-// parallela che può disallinearsi. L'header (titolo + Chiudi) resta fisso:
-// solo .admin-preview__content cambia tra vista landing e vista album.
+// Site form preview overlay. Reuses renderHero/renderFooter/createAlbumCard/
+// PhotoGrid/Lightbox/resolveAlbumPage — the same functions as the public site —
+// so the preview is never a parallel reimplementation that can drift. The header
+// (title + Close) stays fixed: only .admin-preview__content changes between
+// landing and album views.
 import '../styles/main.css'; // .container, .section-heading (layout condiviso con index.html/album.html)
+import { texts } from '../../config/texts.config.js';
 import { renderHero } from '../components/Hero.js';
 import { renderFooter } from '../components/Footer.js';
 import { createAlbumCard } from '../components/AlbumCard.js';
@@ -14,15 +15,14 @@ import { resolveAlbumPage } from '../pages/album-logic.js';
 import { photosFromManifest } from '../providers/r2.js';
 
 let _keyboardBound = false;
-// Incrementato ad ogni cambio vista: una fetch manifest in volo che risolve
-// dopo che l'utente è tornato alla landing (o ha aperto un altro album, o ha
-// chiuso la preview) confronta il proprio token e si arrende invece di
-// scrivere su una vista non più attiva.
+// Incremented on every view change: an in-flight manifest fetch that resolves
+// after the user returns to landing (or opens another album, or closes preview)
+// compares its token and surrenders instead of writing to an inactive view.
 let _renderToken = 0;
-// Ultima lightbox creata entrando in una vista album: createLightbox non ha
-// modo di essere "sostituita" da sé — va smontata esplicitamente prima di
-// aprirne un'altra, altrimenti si accumulano nodi in document.body ad ogni
-// album visitato nella stessa sessione di anteprima.
+// Last lightbox created when entering an album view: createLightbox has no way
+// to replace itself — must be explicitly torn down before opening another,
+// otherwise DOM nodes accumulate in document.body for every album visited in
+// the same preview session.
 let _activeLightbox = null;
 
 function teardownLightbox() {
@@ -35,8 +35,8 @@ function currentPreviewEl() {
   return document.querySelector('.admin-preview');
 }
 
-// Interroga i focusabili ogni volta (non li memorizza): cambiano tra vista
-// landing (album-card, link social) e vista album (back, foto della griglia).
+// Queries focusable elements every time (doesn't cache): they change between
+// landing view (album-card, social links) and album view (back, grid photos).
 function focusableElements(el) {
   return [...el.querySelectorAll('button, a[href]')];
 }
@@ -52,8 +52,8 @@ function ensureKeyboardHandling() {
       return;
     }
     if (e.key !== 'Tab') return;
-    // Anello tra primo e ultimo focusabile — interviene solo ai bordi.
-    // Nel mezzo Tab si muove normalmente, senza preventDefault.
+    // Loop between first and last focusable — intervenes only at boundaries.
+    // In between, Tab moves normally, without preventDefault.
     const focusable = focusableElements(el);
     if (focusable.length === 0) return;
     const first = focusable[0];
@@ -68,22 +68,31 @@ function ensureKeyboardHandling() {
   });
 }
 
-export function showPreview(container, data, texts, deps) {
+/**
+ * Shows the site preview overlay in the admin panel.
+ * Sets up keyboard handling and renders the initial landing view.
+ * @param {HTMLElement} container - The container for the preview overlay.
+ * @param {Object} data - The site data to preview (name, bio, albums, etc.).
+ * @param {Object} textsArg - Localization strings.
+ * @param {Object} deps - Dependencies for rendering.
+ * @param {Function} deps.fetchManifest - Function to fetch album manifests.
+ */
+export function showPreview(container, data, textsArg, deps) {
   ensureKeyboardHandling();
   container.innerHTML = `
     <div class="admin-preview__header">
-      <h2>Anteprima</h2>
-      <button class="admin-preview__close" type="button">Chiudi</button>
+      <h2>${textsArg.admin.site.preview}</h2>
+      <button class="admin-preview__close" type="button">${textsArg.admin.site.previewClose}</button>
     </div>
     <div class="admin-preview__content"></div>
   `;
   container.querySelector('.admin-preview__close').addEventListener('click', () => hidePreview(container));
-  renderLandingView(container, data, texts, deps);
+  renderLandingView(container, data, textsArg, deps);
   container.hidden = false;
   container.querySelector('.admin-preview__close').focus();
 }
 
-function renderLandingView(container, data, texts, deps) {
+function renderLandingView(container, data, textsArg, deps) {
   _renderToken++;
   teardownLightbox();
   const { name, bio, heroUrl, social, albums = [], r2PublicUrl } = data;
@@ -96,21 +105,21 @@ function renderLandingView(container, data, texts, deps) {
     </div>
     <div class="admin-preview__footer"></div>
   `;
-  renderHero(content.querySelector('.admin-preview__hero'), { name, bio, heroUrl }, texts);
-  content.querySelector('.section-heading').textContent = texts.landing.albumsSectionHeading;
+  renderHero(content.querySelector('.admin-preview__hero'), { name, bio, heroUrl }, textsArg);
+  content.querySelector('.section-heading').textContent = textsArg.landing.albumsSectionHeading;
   const cardsEl = content.querySelector('.admin-preview__albums');
   albumsToCards(albums, r2PublicUrl).forEach(card => {
     const cardEl = createAlbumCard(card);
     cardEl.addEventListener('click', e => {
-      e.preventDefault(); // dentro l'anteprima non si naviga davvero: si cambia solo il contenuto
-      renderAlbumView(container, card.slug, data, texts, deps);
+      e.preventDefault(); // Inside the preview, no real navigation: only content changes.
+      renderAlbumView(container, card.slug, data, textsArg, deps);
     });
     cardsEl.appendChild(cardEl);
   });
-  renderFooter(content.querySelector('.admin-preview__footer'), texts, social);
+  renderFooter(content.querySelector('.admin-preview__footer'), textsArg, social);
 }
 
-async function renderAlbumView(container, slug, data, texts, deps) {
+async function renderAlbumView(container, slug, data, textsArg, deps) {
   const token = ++_renderToken;
   teardownLightbox();
   const { albums = [], r2PublicUrl, social } = data;
@@ -123,27 +132,27 @@ async function renderAlbumView(container, slug, data, texts, deps) {
     </div>
     <div class="admin-preview__footer"></div>
   `;
-  content.querySelector('.admin-preview__back').addEventListener('click', () => renderLandingView(container, data, texts, deps));
-  renderFooter(content.querySelector('.admin-preview__footer'), texts, social);
+  content.querySelector('.admin-preview__back').addEventListener('click', () => renderLandingView(container, data, textsArg, deps));
+  renderFooter(content.querySelector('.admin-preview__footer'), textsArg, social);
 
   const gridEl = content.querySelector('.admin-preview__photo-grid');
   renderSkeletons(gridEl, 12);
 
   const manifestRes = await deps.fetchManifest(slug);
-  if (token !== _renderToken) return; // la vista è cambiata mentre la fetch era in volo
+  if (token !== _renderToken) return; // View changed while fetch was in flight.
 
   const page = resolveAlbumPage(slug, { ok: true, data: albums }, manifestRes);
   const titleEl = content.querySelector('.section-heading');
 
   if (page.kind === 'not_found') {
     titleEl.textContent = '';
-    gridEl.innerHTML = `<p class="photo-grid__error">${texts.album.notFound}</p>`;
+    gridEl.innerHTML = `<p class="photo-grid__error">${textsArg.album.notFound}</p>`;
   } else {
     titleEl.textContent = page.album.title;
     if (page.kind === 'empty') {
-      gridEl.innerHTML = `<p class="photo-grid__error">${texts.album.empty}</p>`;
+      gridEl.innerHTML = `<p class="photo-grid__error">${textsArg.album.empty}</p>`;
     } else if (page.kind === 'error') {
-      gridEl.innerHTML = `<p class="photo-grid__error">${page.code === 'network' ? texts.album.error.network : texts.album.error.unknown}</p>`;
+      gridEl.innerHTML = `<p class="photo-grid__error">${page.code === 'network' ? textsArg.album.error.network : textsArg.album.error.unknown}</p>`;
     } else {
       const photos = photosFromManifest(page.entries, slug, r2PublicUrl);
       const lb = createLightbox(photos);
@@ -153,6 +162,11 @@ async function renderAlbumView(container, slug, data, texts, deps) {
   }
 }
 
+/**
+ * Hides and cleans up the site preview overlay.
+ * Increments render token and tears down any active lightbox.
+ * @param {HTMLElement} container - The preview container to hide.
+ */
 export function hidePreview(container) {
   _renderToken++;
   teardownLightbox();

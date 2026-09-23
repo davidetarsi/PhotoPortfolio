@@ -54,7 +54,7 @@
   font-size: 0.65rem;
   letter-spacing: 0.1em;
   color: var(--color-text);
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+  background: linear-gradient(transparent, var(--color-overlay-soft));
   opacity: 0;
   transition: opacity 0.25s;
   pointer-events: none;
@@ -74,7 +74,7 @@
   background: linear-gradient(
     100deg,
     var(--color-surface) 40%,
-    #2e3235 50%,
+    var(--color-shimmer) 50%,
     var(--color-surface) 60%
   );
   background-size: 200% 100%;

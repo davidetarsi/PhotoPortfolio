@@ -70,7 +70,7 @@ oppure scarica dal sito ufficiale: https://nodejs.org (scarica la versione "LTS"
 
 - [ ] **Step 2: Crea il progetto Vite nella directory corrente**
 
-Dalla directory `/Users/davide/Desktop/Personal/Progetti/PhotoPortfolio/`:
+Dalla directory `/path/to/PhotoPortfolio/`:
 ```bash
 npm create vite@latest . -- --template vanilla
 ```

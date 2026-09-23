@@ -1,6 +1,11 @@
-// Normalizzazione nomi upload. I nomi legacy su R2 (con maiuscole) restano
-// validi lato server; i NUOVI upload sono sempre normalizzati così.
+// Upload filename normalization. Legacy names on R2 (with uppercase) remain
+// valid on the server; NEW uploads are always normalized this way.
 
+/**
+ * Normalizes an upload filename to lowercase, URL-safe format with .webp extension.
+ * @param {string} original - The original filename.
+ * @returns {string} Normalized filename with .webp extension.
+ */
 export function normalizeFilename(original) {
   const stem = String(original).replace(/\.[^.]*$/, '');
   const clean = stem
@@ -13,6 +18,12 @@ export function normalizeFilename(original) {
   return `${clean || 'foto'}.webp`;
 }
 
+/**
+ * Assigns a unique filename by appending a counter if the base name is already taken.
+ * @param {string} base - The base filename.
+ * @param {Set<string>} taken - Set of already-used filenames.
+ * @returns {string} A unique filename not in the taken set.
+ */
 export function assignUniqueName(base, taken) {
   if (!taken.has(base)) return base;
   const stem = base.slice(0, -'.webp'.length);

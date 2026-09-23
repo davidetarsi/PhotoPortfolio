@@ -25,7 +25,7 @@ Tre step indipendenti:
 
 ## M5.1 — Push GitHub
 
-Il remote `origin` punta già a `https://github.com/davidetarsi/PhotoPortfolio.git`. Pubblicare tutti i commit:
+Il remote `origin` punta già a `https://github.com/your-github-user/your-portfolio.git`. Pubblicare tutti i commit:
 
 ```bash
 git push -u origin main
@@ -49,7 +49,7 @@ Verificare che GitHub mostri i commit fino a `b5be091` (ultimo commit M4).
 1. Nel dashboard: **Workers & Pages → Create → Pages**
 2. Cliccare **Connect to Git → GitHub**
 3. Autorizzare Cloudflare ad accedere al repository
-4. Selezionare `davidetarsi/PhotoPortfolio`
+4. Selezionare `your-github-user/your-portfolio`
 
 ### Impostazioni build
 

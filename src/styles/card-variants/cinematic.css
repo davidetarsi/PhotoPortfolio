@@ -1,0 +1,46 @@
+/* Cinematic variant: 4/5 card, full-frame image, text over a gradient at
+   the bottom, subtle zoom on hover, rounded corners. */
+
+.album-card {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.album-card__cover {
+  position: absolute;
+  inset: 0;
+}
+
+.album-card__img {
+  height: 100%;
+}
+
+.album-card:hover .album-card__img {
+  transform: scale(1.04);
+}
+
+.album-card__info {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 36px var(--space-md) var(--space-md);
+  background: linear-gradient(transparent, var(--color-overlay));
+}
+
+.album-card__title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.25rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.album-card__desc {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+  margin: 4px 0 0;
+}

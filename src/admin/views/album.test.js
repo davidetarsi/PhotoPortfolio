@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { texts } from '../../../config/texts.config.js';
 import { renderAdminAlbum } from './album.js';
 
 const MANIFEST = [
@@ -198,7 +199,7 @@ describe('renderAdminAlbum', () => {
     const backLink = container.querySelector('.admin-back');
     const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
     backLink.dispatchEvent(evt);
-    expect(ctx.deps.confirm).toHaveBeenCalledWith('Ci sono modifiche non salvate. Uscire comunque?');
+    expect(ctx.deps.confirm).toHaveBeenCalledWith(texts.admin.album.unsavedChanges);
     expect(evt.defaultPrevented).toBe(true);
   });
 
@@ -272,7 +273,7 @@ describe('renderAdminAlbum', () => {
     renderAdminAlbum(container, ctx);
     await flush();
     expect(container.querySelector('.admin-sort-date__label').textContent).toBe('Ordina per:');
-    expect(container.querySelector('.admin-sort-date__value').textContent).toBe('Data');
+    expect(container.querySelector('.admin-sort-date__value').textContent).toBe(texts.admin.album.date);
   });
 
   it('default: vista griglia, bottone griglia attivo (aria-pressed)', async () => {

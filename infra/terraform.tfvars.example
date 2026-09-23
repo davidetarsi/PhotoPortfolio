@@ -1,0 +1,55 @@
+# Copy this file to terraform.tfvars, then replace every placeholder below.
+# terraform.tfvars is ignored by Git and must stay local. Never put the
+# CLOUDFLARE_API_TOKEN here: export it only in the current shell.
+#
+# Complete field reference, official Cloudflare links, existing-resource imports,
+# isolated smoke test and cleanup:
+# ../docs/runbook-cloudflare.md#3-terraform-path
+
+# Cloudflare Account ID. Dashboard: Account Home, press Cmd/Ctrl+K, then
+# select "Copy account ID".
+account_id = "paste-your-cloudflare-account-id"
+
+# Base name for resources created by Terraform. It becomes the production R2
+# bucket name.
+# Use the exact existing bucket prefix when importing live infrastructure.
+# For a disposable test, choose a unique name such as
+# "photo-portfolio-template-smoke-20260922".
+# Maintainers running the real smoke test must set enable_staging = true.
+project_name = "your-portfolio"
+
+# Existing Zero Trust team domain, without https://. Dashboard:
+# Zero Trust -> Settings -> Team name and domain.
+access_team_domain = "your-team.cloudflareaccess.com"
+
+# Public production hostname protected by Access, without https:// or a
+# trailing slash. For an isolated smoke test, use an unused subdomain from a
+# zone you control; no DNS record is required for that test.
+prod_hostname = "portfolio.example.com"
+
+# Staging is optional and disabled by default. If an existing installation
+# already has staging resources, set this to true BEFORE the first plan after
+# upgrading, or Terraform will propose destroying them.
+enable_staging = false
+
+# Required only when enable_staging is true. Leave empty for production-only
+# installations; see ../docs/staging.md for the two-step first deployment.
+staging_hostname = ""
+
+# Every address listed here can sign in to /admin through Cloudflare Access.
+admin_emails = ["you@example.com"]
+
+# Optional but recommended for production image delivery. Leave both empty to
+# keep the rate-limited r2.dev development URL. Zone ID: open the domain in the
+# Cloudflare dashboard and copy it from the API section.
+custom_photo_domain  = ""
+photo_domain_zone_id = ""
+
+# Keep true until a custom photo domain has been configured and verified.
+# Setting false before that would make production photos unreachable.
+keep_managed_domain = true
+
+# Turnstile protects the public contact form. The API token needs
+# Account -> Turnstile -> Edit. Set false only if you explicitly accept having
+# the honeypot as the form's sole anti-spam protection.
+enable_turnstile = true

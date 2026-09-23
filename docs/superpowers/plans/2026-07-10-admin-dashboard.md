@@ -3172,23 +3172,23 @@ Nessun TDD: checklist operativa. I passi marcati **[UMANO]** richiedono il panne
 ```bash
 git push   # Workers Builds builda e deploya
 ```
-Attendi il deploy, poi: `curl -s https://davidetarsi.com/api/data/albums` → atteso `{"error":"NOT_FOUND"}` (404: i JSON non esistono ancora).
+Attendi il deploy, poi: `curl -s https://portfolio.example/api/data/albums` → atteso `{"error":"NOT_FOUND"}` (404: i JSON non esistono ancora).
 
 - [ ] **Step 2: Migrazione dati**
 
 ```bash
 npm run migrate -- --dry-run   # controlla i JSON generati
 npm run migrate                # upload reale
-curl -s https://davidetarsi.com/api/data/albums   # atteso: {"albums":[…]} con sport e around-the-world
-curl -s https://davidetarsi.com/api/data/site     # atteso: {"name":"Davide Tarsi",…}
+curl -s https://portfolio.example/api/data/albums   # atteso: {"albums":[…]} con sport e around-the-world
+curl -s https://portfolio.example/api/data/site     # atteso: {"name":"Davide Tarsi",…}
 ```
 Verifica che home e pagine album del sito pubblico funzionino (ora leggono i dati runtime).
 
 - [ ] **Step 3 [UMANO]: Cloudflare Access (una tantum, ~10 minuti)**
 
-1. Pannello Cloudflare → Zero Trust (crea il team se è il primo accesso: scegli un nome team, es. `davidetarsi` → il team domain sarà `davidetarsi.cloudflareaccess.com`).
+1. Pannello Cloudflare → Zero Trust (crea il team se è il primo accesso: scegli un nome team, es. `your-github-user` → il team domain sarà `your-team.cloudflareaccess.com`).
 2. Access → Applications → **Add an application** → *Self-hosted*.
-3. Nome: `Portfolio Admin`. Public hostname: `davidetarsi.com`, path `admin`. **Add public hostname**: `davidetarsi.com`, path `api/admin`.
+3. Nome: `Portfolio Admin`. Public hostname: `portfolio.example`, path `admin`. **Add public hostname**: `portfolio.example`, path `api/admin`.
 4. Policy: nome `Solo io`, action *Allow*, include → *Emails* → la tua email.
 5. Identity providers: lascia *One-time PIN* (login via codice email).
 6. Salva. Dalla pagina dell'applicazione copia l'**AUD tag** (Application Audience).
@@ -3208,16 +3208,16 @@ git push
 - [ ] **Step 5: Verifica difesa in profondità**
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}' -X PUT https://davidetarsi.com/api/admin/site
+curl -s -o /dev/null -w '%{http_code}' -X PUT https://portfolio.example/api/admin/site
 ```
 Expected: `302` (redirect al login Access) oppure `401` (JWT gate del Worker). MAI `200`.
 
 - [ ] **Step 6 [UMANO]: E2E da Mac**
 
-1. Apri `https://davidetarsi.com/admin` → login One-time PIN → dashboard visibile.
+1. Apri `https://portfolio.example/admin` → login One-time PIN → dashboard visibile.
 2. Crea album di test "Prova Piano" → si apre la vista album vuota.
 3. Trascina 3-4 JPEG grandi → progress per file → griglia popolata.
-4. Apri `https://davidetarsi.com/prova-piano` in un'altra scheda → le foto ci sono, in ordine.
+4. Apri `https://portfolio.example/prova-piano` in un'altra scheda → le foto ci sono, in ordine.
 5. Riordina una foto (drag) → ricarica la scheda pubblica → ordine aggiornato.
 6. Elimina una foto dall'album (conferma) → scompare dalla griglia admin → ricarica la scheda pubblica → non c'è più.
 7. Imposta una cover → home → la card mostra la cover.

@@ -1,0 +1,44 @@
+/* From mockups/mockup-4-minimal.html: no frame, text below the image,
+   plenty of breathing room. No overlay: the photo stays whole. */
+
+.album-card {
+  display: block;
+  aspect-ratio: auto;
+  background: none;
+  border-radius: 0;
+  text-align: center;
+}
+
+.album-card__cover {
+  position: static;
+}
+
+.album-card__img {
+  height: auto;
+}
+
+.album-card__info {
+  position: static;
+  padding: var(--space-md) 0 0;
+  background: none;
+}
+
+.album-card__title {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.album-card__desc {
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 6px 0 0;
+}
+
+.album-cards {
+  gap: var(--space-xl);
+}

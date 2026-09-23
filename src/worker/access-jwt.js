@@ -1,10 +1,12 @@
-// src/worker/access-jwt.js
-// Difesa in profondità: anche se la policy Access saltasse, le rotte admin
-// restano chiuse. Verifica RS256 del JWT emesso da Cloudflare Access.
+/**
+ * Cloudflare Access JWT verification.
+ * Defense in depth: even if the Access policy were bypassed, admin routes stay closed.
+ * Verifies RS256 signatures from Cloudflare Access JWT tokens.
+ */
 
 const JWKS_TTL_MS = 3_600_000; // 1h
 
-// Cache module-level: sopravvive tra richieste nello stesso isolate.
+// Module-level cache: survives across requests within the same isolate.
 let jwksCache = null; // { teamDomain, fetchedAt, keys: Map<kid, CryptoKey> }
 
 export function _resetJwksCache() { jwksCache = null; }
@@ -44,6 +46,13 @@ async function getKey(kid, teamDomain, fetchJwks, now) {
   return jwksCache.keys.get(kid) ?? null;
 }
 
+/**
+ * Verifies a Cloudflare Access JWT from the request header.
+ * @param {Request} request - The incoming HTTP request.
+ * @param {object} env - Cloudflare Worker environment (ACCESS_TEAM_DOMAIN, ACCESS_AUD).
+ * @param {{fetchJwks?: Function, now?: Function}} deps - Injected dependencies for testing.
+ * @returns {Promise<{ok: true, payload?: object} | {ok: false}>} Verification result.
+ */
 export async function verifyAccessJwt(request, env, deps = {}) {
   const fetchJwks = deps.fetchJwks ?? defaultFetchJwks;
   const now = (deps.now ?? Date.now)();

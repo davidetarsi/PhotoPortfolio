@@ -24,7 +24,7 @@ function makeClient() {
   const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY } = process.env
   if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
     throw new Error(
-      "Variabili d'ambiente R2 mancanti. Controlla R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY nel file .env"
+      'Missing R2 credentials in .env: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY are required.'
     )
   }
   return new S3Client({
@@ -47,15 +47,15 @@ async function putObject(client, bucket, key, body, contentType) {
 }
 
 /**
- * Carica tutti i file .webp di una cartella su R2 sotto il prefix <albumSlug>/
- * e carica anche il manifest.json.
- * @param {string} albumSlug
- * @param {string} optimizedDir - percorso assoluto della cartella con i .webp
+ * Uploads all .webp files from a directory to R2 under <albumSlug>/ prefix
+ * and also uploads the manifest.json.
+ * @param {string} albumSlug - Album identifier for R2 path prefix.
+ * @param {string} optimizedDir - Absolute path to folder containing .webp files.
  * @returns {Promise<{ uploaded: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
 export async function uploadAlbum(albumSlug, optimizedDir) {
   const bucket = process.env.R2_BUCKET_NAME
-  if (!bucket) throw new Error('R2_BUCKET_NAME non impostato nel file .env')
+  if (!bucket) throw new Error('R2_BUCKET_NAME is missing from .env')
 
   const client = makeClient()
 

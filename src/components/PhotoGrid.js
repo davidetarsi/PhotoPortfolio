@@ -2,7 +2,7 @@ import '../styles/photo-grid.css'
 
 const MAX_SKELETONS = 12
 
-// Aspect ratio hardcodate per gli skeleton — variano per simulare un muro di foto reale.
+// Hardcoded aspect ratios for skeleton placeholders — varied to simulate a real photo wall.
 const SKELETON_SPECS = [
   { width: 4, height: 5 },
   { width: 3, height: 2 },
@@ -19,9 +19,12 @@ const SKELETON_SPECS = [
 ]
 
 /**
- * Restituisce un valore CSS `aspect-ratio` sicuro; fallback a 1/1 se le dimensioni
- * non sono numeri finiti positivi (manifest vecchio/malformato).
- * @returns {string}
+ * Returns a safe CSS `aspect-ratio` value.
+ * Falls back to 1/1 if dimensions aren't positive finite numbers
+ * (e.g., old or malformed manifest).
+ * @param {number} width - Image width.
+ * @param {number} height - Image height.
+ * @returns {string} CSS aspect-ratio value.
  */
 export function aspectRatio(width, height) {
   return Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0
@@ -30,8 +33,11 @@ export function aspectRatio(width, height) {
 }
 
 /**
- * Riempie il container con placeholder shimmer. Il layout (1 o 2 colonne) è gestito
- * interamente dal CSS multi-column — qui creiamo solo i box con l'aspect-ratio giusto.
+ * Renders shimmer placeholder boxes for skeleton loading.
+ * Layout (1 or 2 columns) is entirely CSS multi-column; we only create boxes
+ * with the correct aspect ratios.
+ * @param {HTMLElement} container - Element to render into.
+ * @param {number} count - Number of skeletons to show (max MAX_SKELETONS).
  */
 export function renderSkeletons(container, count = MAX_SKELETONS) {
   container.innerHTML = ''
@@ -45,9 +51,12 @@ export function renderSkeletons(container, count = MAX_SKELETONS) {
 }
 
 /**
- * Renderizza le foto nel container. Nessun calcolo di posizione: il CSS multi-column
- * distribuisce gli item in 1 colonna (mobile) o 2 (desktop) e gestisce il resize.
- * L'aspect-ratio inline riserva lo spazio prima del caricamento (no layout shift).
+ * Renders photos in a CSS multi-column grid.
+ * No position calculations: CSS multi-column handles 1 column (mobile) or 2 (desktop)
+ * and responds to resize. Inline aspect-ratio reserves space before load (no layout shift).
+ * @param {HTMLElement} container - Element to render into.
+ * @param {Array} photos - Array of photo objects with gridUrl, name, width, height.
+ * @param {Function} onPhotoClick - Callback(index, figElement) on photo click or Enter/Space.
  */
 export function renderGrid(container, photos, onPhotoClick) {
   container.innerHTML = ''
