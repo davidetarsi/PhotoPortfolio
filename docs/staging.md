@@ -168,12 +168,15 @@ the reviewed version preview.
 A deliberately separate Wrangler Worker must manage its own secrets; that setup is
 outside the verified workflow.
 
-Secrets are per-environment, and a missing one fails **open**, not closed: `verifyTurnstile`
-reads an absent secret as "Turnstile isn't in use here" and accepts every submission. So
-setting only one required binding leaves the other environment unguarded, with the widget
-still drawn on the page if its sitekey is set. Nothing in the UI tells you. Configure the
-secret bindings on the connected Worker before uploading the version, or decide
-deliberately that staging goes without.
+`versions secret put` attaches the value to a new Worker version without promoting it, so
+it is not active in production until that version is promoted. Before serving traffic,
+verify that every version intended for staging or production contains the
+`TURNSTILE_SECRET` binding. A missing binding fails **open**, not closed:
+`verifyTurnstile` reads an absent secret as "Turnstile isn't in use here" and accepts
+every submission. With the sitekey present but no secret on the target version, the
+widget is still drawn on the page but nothing validates behind it. Nothing in the UI
+tells you. Configure the secret binding on each target version before serving it, or
+decide deliberately that staging goes without.
 
 ### Git integration — Connect repository
 

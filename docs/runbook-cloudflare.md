@@ -216,7 +216,7 @@ The widget page then shows two values, and they go to **two different places** �
 | Value | Where it goes | Why |
 |---|---|---|
 | **Site Key** | `wrangler.json`, as `vars.TURNSTILE_SITEKEY` | it ends up in the HTML; it is not a secret |
-| **Secret Key** | `npx wrangler versions secret put TURNSTILE_SECRET` for production | the Worker validates tokens with it; it must never reach git |
+| **Secret Key** | `npx wrangler versions secret put TURNSTILE_SECRET` on the Worker version being prepared | the Worker validates tokens with it; it must never reach git |
 
 ```bash
 npx wrangler versions secret put TURNSTILE_SECRET
@@ -227,7 +227,15 @@ preparing Turnstile so the secret cannot become active before the public sitekey
 served. The ordinary `secret put` command deploys immediately and is only appropriate
 when an immediate production rollout is intentional.
 
-Secrets are per-environment, and a missing one fails **open**, not closed: `verifyTurnstile` reads an absent secret as "Turnstile isn't in use here" and accepts every submission. With the sitekey present but no secret, the widget is drawn on the page but nothing validates behind it. Nothing in the UI tells you. Set the production secret, or decide deliberately to use the honeypot alone. The [staging guide](staging.md) explains the same Worker's version-preview secret model.
+`versions secret put` attaches the value to a new Worker version without promoting it, so
+it is not active in production until that version is promoted. Before serving traffic,
+verify that every version intended for staging or production contains the
+`TURNSTILE_SECRET` binding. A missing binding fails **open**, not closed:
+`verifyTurnstile` reads an absent secret as "Turnstile isn't in use here" and accepts
+every submission. With the sitekey present but no secret on the target version, the
+widget is drawn on the page but nothing validates behind it. Nothing in the UI tells
+you. The [staging guide](staging.md) explains the same Worker's version-preview secret
+model.
 
 ## 6. Git integration — Connect repository
 
@@ -402,7 +410,7 @@ Terraform creates it (`enable_turnstile = true`, the default); on the manual pat
 | Value | Where | Why |
 |---|---|---|
 | **sitekey** | `wrangler.json`, as `vars.TURNSTILE_SITEKEY` — written by `npm run infra:sync` | it ends up in the HTML; it is not a secret |
-| **secret** | `npx wrangler versions secret put TURNSTILE_SECRET` for production | the Worker validates tokens with it; it must never reach git |
+| **secret** | `npx wrangler versions secret put TURNSTILE_SECRET` on the Worker version being prepared | the Worker validates tokens with it; it must never reach git |
 
 Take the secret from the Cloudflare dashboard, under Turnstile, on your widget's page.
 Production and the staging version URL belong to the same Worker. Configure the secret
