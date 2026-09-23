@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   fetchSite: vi.fn(),
@@ -13,6 +13,9 @@ vi.mock('../components/Nav.js', () => ({ renderNav: vi.fn() }));
 vi.mock('../components/Footer.js', () => ({ renderFooter: vi.fn() }));
 vi.mock('../components/PhotoGrid.js', () => ({ renderSkeletons: vi.fn(), renderGrid: vi.fn() }));
 vi.mock('../components/Lightbox.js', () => ({ createLightbox: vi.fn() }));
+vi.mock('../../config/site.config.js', () => ({
+  siteConfig: { r2PublicUrl: undefined },
+}));
 vi.mock('../../config/albums.config.js', () => ({
   albums: [{
     slug: 'nome-album',
@@ -23,6 +26,10 @@ vi.mock('../../config/albums.config.js', () => ({
 }));
 
 describe('album bootstrap from the build seed', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
@@ -54,6 +61,7 @@ describe('album bootstrap from the build seed', () => {
   });
 
   it('shows an explicit no-image state when the manifest exists but the public URL is absent', async () => {
+    vi.stubEnv('VITE_R2_PUBLIC_URL', 'https://ci.example.invalid');
     mocks.fetchConfig.mockResolvedValue({ ok: false, error: 'NOT_FOUND' });
     mocks.fetchManifest.mockResolvedValue({
       ok: true,
