@@ -42,17 +42,18 @@ A new staging bucket starts empty. Production photos and albums are not copied t
 there is no production-to-staging copy command in this template. Expect an empty portfolio
 until you add staging content yourself.
 
-## 4. Enable staging with Terraform
+## 4. Terraform resource model (cold bootstrap unresolved)
 
 > **Cold bootstrap limitation — not yet verified.** This section describes the resource
-> inventory and configuration for an existing workflow with a complete `env.staging`; it
-> is not a proven first-install sequence. A version upload needs the complete
+> inventory and configuration for an existing installation with a complete `env.staging`;
+> it is not a proven first-install sequence. A version upload needs the complete
 > `env.staging` block, including `ACCESS_AUD` obtained from the Access application, while
 > creating that Access application needs the generated version-preview hostname. Do not
-> assume that the steps below can bootstrap a new adopter in this order. The limitation
-> is non-blocking for Davide's existing site.
+> assume that the steps below can bootstrap a new adopter in this order. The verified
+> scope is an existing installation whose resources and bindings are already complete.
 
-In `infra/terraform.tfvars`, opt in to the optional staging resources:
+For an existing installation, the Terraform resource model records the optional staging
+resources in `infra/terraform.tfvars`:
 
 ```hcl
 enable_staging  = true
@@ -68,7 +69,7 @@ does not create a second Worker. The connected Worker dashboard publishes the st
 version preview using those bindings; keep the existing-state warning above in place
 before any `terraform plan` or `apply`.
 
-## 5. Enable staging manually
+## 5. Manual resource inventory (cold bootstrap unresolved)
 
 > **Cold bootstrap limitation — not yet verified.** The items below are a resource
 > inventory, not a validated first-install order. Access creation needs the generated
@@ -77,8 +78,9 @@ before any `terraform plan` or `apply`.
 > verified only after those dependencies are already satisfied. Do not present this
 > section as turnkey bootstrap for a new adopter.
 
-For an existing setup, confirm the following staging resources and settings. Their order
-for a new installation is intentionally not specified here.
+For an existing installation with a complete `env.staging`, the following inventory
+identifies the staging resources and settings. It is not a first-install sequence, and no
+order for a new installation is claimed here.
 
 ### R2 Buckets
 
@@ -214,29 +216,29 @@ values from the bucket, Access application, and Turnstile widget:
 Merge the `env` object into the existing JSON root; do not replace the production values.
 `TURNSTILE_SECRET` is a secret and does not belong in this file.
 
-## 6. Add staging to an existing production site
+## 6. Maintain an existing complete staging setup
 
-> **Cold bootstrap limitation — not yet verified.** This section covers adding resources
-> to an existing production site and assumes a complete `env.staging`; it does not prove
-> a first-time setup for a new adopter. The generated preview hostname is needed for the
-> Access application, while version upload needs `env.staging` with the Access-derived
-> `ACCESS_AUD`. This is non-blocking for Davide's existing site, but blocks calling the
-> optional staging path turnkey from zero.
+> **Cold bootstrap limitation — not yet verified.** This section is only for maintaining
+> or extending an existing installation whose resources and `env.staging` are complete;
+> it does not define a first-time setup for a new adopter. The generated preview hostname
+> is needed for the Access application, while version upload needs `env.staging` with the
+> Access-derived `ACCESS_AUD`. The verified scope is therefore an existing complete
+> workflow, not a turnkey path from zero.
 
-Adding staging later is additive: production keeps its current bucket, hostname, and
-configuration. With Terraform, set `enable_staging = true` and render the complete
-`env.staging` block. The connected Worker publishes the staging version preview with
-those bindings. If the widget is manual, add the generated preview hostname in its
-dashboard settings when required; until that hostname is listed, every staging form
-submission fails with `CHALLENGE_FAILED`. Set `TURNSTILE_SECRET` separately for staging
-with:
+For an existing installation, the staging environment is additive: production keeps its
+current bucket, hostname, and configuration. If Terraform already manages the staging
+resources, keep `enable_staging = true` and render the complete `env.staging` block. The
+connected Worker publishes the staging version preview with those bindings. If the widget
+is manual, keep the generated preview hostname in its dashboard settings when required;
+until that hostname is listed, every staging form submission fails with
+`CHALLENGE_FAILED`. Set `TURNSTILE_SECRET` separately for staging with:
 
 ```bash
 npx wrangler secret put TURNSTILE_SECRET --env staging
 ```
 
-For a manually managed installation, add the staging bucket, public `r2.dev` domain, and
-Access application described in [the manual procedure](#5-enable-staging-manually).
+For a manually managed installation, retain the staging bucket, public `r2.dev` domain,
+and Access application described in [the resource inventory](#5-manual-resource-inventory-cold-bootstrap-unresolved).
 The staging bucket stays empty unless you add content to it.
 
 If these manually created resources should later be managed by Terraform, first set
