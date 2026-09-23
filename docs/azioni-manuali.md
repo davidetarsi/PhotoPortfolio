@@ -294,8 +294,8 @@ Il form scrive i messaggi su R2 da solo, ma due cose restano da configurare, **e
 come secret e non come `vars`**:
 
 ```bash
-npx wrangler secret put TURNSTILE_SECRET      # dal pannello Turnstile
-npx wrangler secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
+npx wrangler versions secret put TURNSTILE_SECRET      # dal pannello Turnstile
+npx wrangler versions secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
 ```
 
 > **Il widget Turnstile del tuo sito non esiste ancora.** Lo smoke test della voce 7 ha
@@ -332,8 +332,11 @@ oppure rimandi Turnstile del tutto e fai **solo** `CONTACT_NOTIFY_URL`: è la pr
 della tabella, una configurazione legittima in cui il form funziona e l'honeypot continua
 a fermare i bot più ingenui.
 
-I secret sono **per ambiente**: `npx wrangler secret put TURNSTILE_SECRET` vale per la
-produzione, e serve un secondo giro con `--env staging`.
+Produzione e l'URL della versione staging appartengono allo stesso Worker. Configura i
+secret su quel Worker e carica la versione con i binding `env.staging`; non usare
+`{project-name}-staging`, che indicherebbe un Worker diverso invece della version preview
+verificata. Un Worker Wrangler deliberatamente separato deve gestire i propri secret ed è
+fuori dal workflow verificato.
 
 > ⚠️ **Non metterli in `wrangler.json`**, che è versionato: un URL Telegram contiene il
 > token del bot, e finirebbe su GitHub.
@@ -342,7 +345,9 @@ Per le notifiche la via più rapida è [ntfy.sh](https://ntfy.sh/): nessun accou
 un nome di topic **lungo e casuale** e installi l'app. Le tre ricette stanno nella
 [sezione 9 del runbook](runbook-cloudflare.md#9-contact-form-notifications-and-spam-protection).
 
-**Fatto quando:** invii un messaggio dal sito vero, arriva la notifica, e lo vedi in `/admin`.
+**Fatto quando:** staging e produzione accettano ciascuna un invio neutro protetto da
+Turnstile, lo salvano in `/admin` e consegnano una notifica ntfy che non contiene né
+email né corpo del messaggio.
 
 **E la verifica che nessun test può fare al posto tuo:** controlla che la notifica
 ricevuta **non contenga il testo del messaggio**. C'è un test automatico che lo
