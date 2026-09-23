@@ -200,9 +200,12 @@ Connect the repository to Cloudflare Workers & Pages (see [runbook](docs/runbook
 - Build output directory: `dist`
 - Production branch: `main`
 
-Cloudflare creates one production Worker from `main` that deploys on every push.
-
-A second, isolated environment is available but disabled by default; enable it only if you need deployment-level checks, following [`docs/staging.md`](docs/staging.md).
+Cloudflare connects one production Worker to `main`, which deploys on every push. An
+optional staging version-preview alias uses the same Worker with `env.staging` bindings
+and is disabled by default; enable it only for deployment-level checks, following
+[`docs/staging.md`](docs/staging.md). The existing complete workflow is verified, but
+the first-time cold bootstrap is not yet verified, so this optional path is not turnkey
+for a new adopter.
 
 ## 🖼️ Using the site once it's live
 
