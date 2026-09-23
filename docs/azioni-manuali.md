@@ -19,6 +19,7 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 | # | Azione | Blocca |
 |---|---|---|
 | 7B | Decidere se il sito vero passa sotto Terraform (con `import`) | niente, rimandabile |
+| 7C | Verificare e progettare il bootstrap iniziale di staging | non blocca il sito esistente; blocca il claim che staging sia turnkey per un nuovo adopter |
 | 8 | Dominio custom per le foto | niente d'altro, ma `r2.dev` è rate-limited |
 | **9** | **I due secret del form, più il widget Turnstile da creare a mano** | la protezione antispam e le notifiche |
 
@@ -57,10 +58,15 @@ un'operazione di scrittura.
 Le lezioni operative del piano restano queste: salvare prima la configurazione reale,
 non eseguire `npm run migrate` o `npm run infra:sync` dopo il merge se non richiesto,
 verificare test, build e CSP prima della promozione, e portare in produzione lo stesso
-tree già passato dai gate di staging. Se `main` e `staging` divergono, fermarsi invece
-di risolvere alla cieca. La voce 7, che era la più urgente, è chiusa: la configurazione
-Cloudflare è stata provata contro l'API vera. Resta la 9, che è l'unica con una
-conseguenza silenziosa — senza `TURNSTILE_SECRET` il form non si rompe, accetta tutto.
+tree già passato dai gate di staging. L'ascendenza o la divergenza tra i rami non
+predicono i conflitti per singolo file: `wrangler.json` va preservato esplicitamente
+anche quando Git non segnala un conflitto. Le configurazioni `config/*.config.js` sono
+fallback che diventano comportamento pubblico live quando R2 non è disponibile, quindi
+vanno migrate insieme alla configurazione reale. Se `main` e `staging` divergono,
+fermarsi invece di risolvere alla cieca. La voce 7, che era la più urgente, è chiusa:
+la configurazione Cloudflare è stata provata contro l'API vera. Resta la 9, che è
+l'unica con una conseguenza silenziosa — senza `TURNSTILE_SECRET` il form non si rompe,
+accetta tutto.
 
 ---
 
@@ -249,6 +255,18 @@ Turnstile del tuo sito non esiste. Finché non fai la 7B, crealo a mano — è l
 [voce 9](#9-i-due-secret-del-form-di-contatto).
 
 **Fatto quando:** `terraform plan` sulla tua infrastruttura vera risponde `No changes`.
+
+---
+
+### 7C. Verificare e progettare il bootstrap iniziale di staging
+
+Per il sito esistente di Davide non blocca nulla: il workflow con `env.staging` completo
+è stato verificato. Resta però da progettare e provare il primo setup per un nuovo
+adopter. La preview generata deve esistere prima di poter creare l'applicazione Access,
+mentre il comando `npx wrangler versions upload --env staging` richiede già un blocco
+`env.staging` completo, incluso `ACCESS_AUD` ricavato da Access. Finché questa dipendenza
+non ha una sequenza verificata, non si può descrivere staging come un'opzione turnkey
+per chi parte da zero.
 
 ---
 

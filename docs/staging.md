@@ -44,6 +44,14 @@ until you add staging content yourself.
 
 ## 4. Enable staging with Terraform
 
+> **Cold bootstrap limitation — not yet verified.** This section describes the resource
+> inventory and configuration for an existing workflow with a complete `env.staging`; it
+> is not a proven first-install sequence. A version upload needs the complete
+> `env.staging` block, including `ACCESS_AUD` obtained from the Access application, while
+> creating that Access application needs the generated version-preview hostname. Do not
+> assume that the steps below can bootstrap a new adopter in this order. The limitation
+> is non-blocking for Davide's existing site.
+
 In `infra/terraform.tfvars`, opt in to the optional staging resources:
 
 ```hcl
@@ -62,8 +70,15 @@ before any `terraform plan` or `apply`.
 
 ## 5. Enable staging manually
 
-Start with the production resources in the runbook's [manual path](runbook-cloudflare.md#5-manual-path--creating-resources-from-cloudflare-dashboard),
-then add the separate staging resources below.
+> **Cold bootstrap limitation — not yet verified.** The items below are a resource
+> inventory, not a validated first-install order. Access creation needs the generated
+> preview hostname; the non-production version upload needs a complete `env.staging`,
+> including the `ACCESS_AUD` returned by Access. The existing complete workflow is
+> verified only after those dependencies are already satisfied. Do not present this
+> section as turnkey bootstrap for a new adopter.
+
+For an existing setup, confirm the following staging resources and settings. Their order
+for a new installation is intentionally not specified here.
 
 ### R2 Buckets
 
@@ -200,6 +215,13 @@ Merge the `env` object into the existing JSON root; do not replace the productio
 `TURNSTILE_SECRET` is a secret and does not belong in this file.
 
 ## 6. Add staging to an existing production site
+
+> **Cold bootstrap limitation — not yet verified.** This section covers adding resources
+> to an existing production site and assumes a complete `env.staging`; it does not prove
+> a first-time setup for a new adopter. The generated preview hostname is needed for the
+> Access application, while version upload needs `env.staging` with the Access-derived
+> `ACCESS_AUD`. This is non-blocking for Davide's existing site, but blocks calling the
+> optional staging path turnkey from zero.
 
 Adding staging later is additive: production keeps its current bucket, hostname, and
 configuration. With Terraform, set `enable_staging = true` and render the complete
