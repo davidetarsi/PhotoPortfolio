@@ -19,6 +19,7 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 | # | Azione | Blocca |
 |---|---|---|
 | 7B | Decidere se il sito vero passa sotto Terraform (con `import`) | niente, rimandabile |
+| 7C | Verificare e progettare il bootstrap iniziale di staging | non blocca il sito esistente; blocca il claim che staging sia turnkey per un nuovo adopter |
 | 8 | Dominio custom per le foto | niente d'altro, ma `r2.dev` è rate-limited |
 | **9** | **I due secret del form, più il widget Turnstile da creare a mano** | la protezione antispam e le notifiche |
 
@@ -44,15 +45,28 @@ Ordine dei lavori di riferimento: [analisi §7](superpowers/specs/2026-09-20-tem
 
 | # | Azione | Blocca |
 |---|---|---|
-| 5 | Primo merge sito ← template (**aperta fino ai gate live**) | la chiusura della sincronizzazione |
-| 6 | ✅ Deploy key dedicata a `PhotoPortfolio`, verificata con accesso in scrittura | niente |
+| 5 | ✅ Primo merge sito ← template — verificato il 23 settembre 2026 | niente |
+| 6 | ✅ Deploy key dedicata a `PhotoPortfolio`, verificata con accesso in scrittura il 23 settembre 2026 | niente |
 
-La voce 5 resta aperta fino a quando i gate live di staging e produzione previsti dal
-piano non passano: il merge del template da solo non la chiude. Nessuna voce blocca la
-scrittura di altro codice. La voce 7, che era la più urgente, è
-chiusa: la configurazione Cloudflare non è più solo validata, è stata creata e distrutta
-contro l'API vera. Resta la 9, che è l'unica con una conseguenza silenziosa — senza
-`TURNSTILE_SECRET` il form non si rompe, accetta tutto.
+Le voci 5 e 6 sono chiuse. Il giro di sincronizzazione ha importato l'upstream
+`b171728198973c0c0678cafc51684ea747c7b2ce`, ha prodotto il merge downstream
+`79271528af6ed4aac8f264b44e147b282a51ba2f` e ha promosso lo stesso tree verificato
+su staging e produzione al commit `439725711ba25f6ab4afd0abd9a5e8324c326535` il
+23 settembre 2026. La deploy key dedicata a `PhotoPortfolio` è stata verificata con
+un'operazione di scrittura.
+
+Le lezioni operative del piano restano queste: salvare prima la configurazione reale,
+non eseguire `npm run migrate` o `npm run infra:sync` dopo il merge se non richiesto,
+verificare test, build e CSP prima della promozione, e portare in produzione lo stesso
+tree già passato dai gate di staging. L'ascendenza o la divergenza tra i rami non
+predicono i conflitti per singolo file: `wrangler.json` va preservato esplicitamente
+anche quando Git non segnala un conflitto. Le configurazioni `config/*.config.js` sono
+fallback che diventano comportamento pubblico live quando R2 non è disponibile, quindi
+vanno migrate insieme alla configurazione reale. Se `main` e `staging` divergono,
+fermarsi invece di risolvere alla cieca. La voce 7, che era la più urgente, è chiusa:
+la configurazione Cloudflare è stata provata contro l'API vera. Resta la 9, che è
+l'unica con una conseguenza silenziosa — senza `TURNSTILE_SECRET` il form non si rompe,
+accetta tutto.
 
 ---
 
@@ -83,7 +97,7 @@ Il README spiega di forkare, ma un bottone verde vince su un paragrafo.
 
 ---
 
-### 5. Primo merge sito ← template, con precauzioni
+### 5. Primo merge sito ← template, con precauzioni — chiuso il 23 settembre 2026
 
 **Dove:** sul tuo computer, nel repo `photoportfolio`.
 
@@ -158,8 +172,9 @@ seed vuoto.
 - **`/contatti` diventa `/about`.** I link già condivisi non si rompono: il Worker
   risponde `301` su `/contatti` (`src/worker.js:32`).
 
-La voce 5 resta aperta: dopo il merge e il ripristino, verifica che il sito regga ancora
-e chiudila solo quando anche i gate live di staging e produzione del piano sono passati:
+La voce 5 è chiusa: dopo il merge e il ripristino, il sito ha superato i gate locali,
+il deploy di staging, lo smoke read-only previsto e la promozione fast-forward in
+produzione al commit `439725711ba25f6ab4afd0abd9a5e8324c326535`.
 
 ```bash
 npm test && npm run build && head -2 dist/_headers
@@ -170,9 +185,10 @@ ripristino di `wrangler.json` è andato storto.
 
 **Fallo su `staging`, non su `main`.** Questo merge non "collega" il sito al template:
 porta i commit del template sul repo da cui Cloudflare fa il deploy, quindi il sito
-pubblico cambia nel momento in cui pushi. Il branch `staging` esiste, punta a un Worker e a un bucket
-separati (`photo-portfolio-staging`) e ha commit propri rispetto alla base condivisa: il
-merge con `upstream/main` è quindi un merge reale. Anche qui `wrangler.json` può essere
+pubblico cambia nel momento in cui pushi. Il branch `staging` viene pubblicato come
+version preview del Worker con i binding `env.staging`; non crea automaticamente un
+secondo Worker. Il branch ha commit propri rispetto alla base condivisa, quindi il
+merge con `upstream/main` è un merge reale. Anche qui `wrangler.json` può essere
 sovrascritto senza conflitto se non è cambiato sul ramo personale dopo quella base.
 
 Il giro completo, con `main` toccato solo alla fine e solo per allinearlo a ciò che hai
@@ -195,7 +211,7 @@ di applicare una risoluzione alla cieca.
 
 ---
 
-### 6. ✅ Una deploy key dedicata a `PhotoPortfolio` — verificata
+### 6. ✅ Una deploy key dedicata a `PhotoPortfolio` — verificata il 23 settembre 2026
 
 **Dove:** GitHub → `PhotoPortfolio` → Settings → Deploy keys.
 
@@ -239,6 +255,18 @@ Turnstile del tuo sito non esiste. Finché non fai la 7B, crealo a mano — è l
 [voce 9](#9-i-due-secret-del-form-di-contatto).
 
 **Fatto quando:** `terraform plan` sulla tua infrastruttura vera risponde `No changes`.
+
+---
+
+### 7C. Verificare e progettare il bootstrap iniziale di staging
+
+Per il sito esistente di Davide non blocca nulla: il workflow con `env.staging` completo
+è stato verificato. Resta però da progettare e provare il primo setup per un nuovo
+adopter. La preview generata deve esistere prima di poter creare l'applicazione Access,
+mentre il comando `npx wrangler versions upload --env staging` richiede già un blocco
+`env.staging` completo, incluso `ACCESS_AUD` ricavato da Access. Finché questa dipendenza
+non ha una sequenza verificata, non si può descrivere staging come un'opzione turnkey
+per chi parte da zero.
 
 ---
 

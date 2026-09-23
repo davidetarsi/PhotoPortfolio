@@ -1,9 +1,15 @@
 # Strategia di sincronizzazione tra template fotografico e sito personale
 
-**Data:** 2026-09-22
-**Stato:** decisione architetturale approvata; implementazione rinviata al completamento della prima versione del template fotografico
+**Data:** 2026-09-23
+**Stato:** prima sincronizzazione completata
 **Upstream:** `PhotoPortfolioTemplate`
 **Downstream:** `PhotoPortfolio`
+
+**Evidenza:** il primo sync ha importato `b171728198973c0c0678cafc51684ea747c7b2ce`,
+ha prodotto il merge downstream `79271528af6ed4aac8f264b44e147b282a51ba2f` e ha
+portato lo stesso stato verificato su staging e produzione al commit
+`439725711ba25f6ab4afd0abd9a5e8324c326535`. I dettagli e le verifiche sono nel
+[registro della sincronizzazione](upstream-sync-log.md).
 
 ## 1. Obiettivo
 
