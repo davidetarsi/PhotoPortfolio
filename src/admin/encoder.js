@@ -1,7 +1,6 @@
-// src/admin/encoder.js
-// Browser-only (canvas + createImageBitmap): niente test jsdom, verifica
-// manuale nel rollout. Safari non sa encodare WebP → fallback WASM lazy:
-// Chrome/Android non scaricano mai il chunk @jsquash/webp.
+// Browser-only (canvas + createImageBitmap): no jsdom tests, manual verification
+// in rollout. Safari cannot encode WebP → lazy WASM fallback: Chrome/Android
+// never download the @jsquash/webp chunk.
 
 import { extractCapturedAt } from './exif.js';
 
@@ -24,12 +23,17 @@ async function nativeWebpSupported() {
   canvas.width = canvas.height = 1;
   try {
     const blob = await canvasToBlob(canvas, 'image/webp', 0.8);
-    return blob.type === 'image/webp'; // Safari risponde con PNG
+    return blob.type === 'image/webp'; // Safari responds with PNG
   } catch {
     return false;
   }
 }
 
+/**
+ * Creates image processing dependencies for the admin panel.
+ * Detects native WebP support and provides either native or WASM-based encoder.
+ * @returns {Promise<{decode: Function, encode: Function, extractCapturedAt: Function}>} Object with image processing functions.
+ */
 export async function makeProcessDeps() {
   const decode = async file => {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
@@ -44,7 +48,7 @@ export async function makeProcessDeps() {
     };
   }
 
-  // Fallback Safari: libwebp compilato in WASM, import dinamico (chunk lazy).
+  // Safari fallback: libwebp compiled to WASM, dynamic import (lazy chunk).
   const { encode: wasmEncode } = await import('@jsquash/webp');
   return {
     decode,

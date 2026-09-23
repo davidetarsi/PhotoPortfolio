@@ -2,20 +2,20 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Portare l'ambiente di produzione (`davidetarsi.com`) allo stesso livello funzionale dello staging già live — R2 popolato, Cloudflare Access sulla dashboard admin — mantenendo il sito pubblico aperto a tutti (a differenza dello staging, dove Access protegge l'intero dominio).
+**Goal:** Portare l'ambiente di produzione (`portfolio.example`) allo stesso livello funzionale dello staging già live — R2 popolato, Cloudflare Access sulla dashboard admin — mantenendo il sito pubblico aperto a tutti (a differenza dello staging, dove Access protegge l'intero dominio).
 
-**Architecture:** Stesso Worker (`src/worker.js`), deploy separato per ambiente via `wrangler.json` (`env.staging` per staging, top-level per prod), entrambi su Git integration nativa Cloudflare (branch `staging` → Worker `photo-portfolio-staging`, branch `main` → Worker `photo-portfolio`). A differenza dello staging (dominio `workers.dev`, Access non può fare path-scoping), `davidetarsi.com` è una zona Cloudflare reale: Access può quindi proteggere solo `/admin` + `/api/admin/*`, lasciando il resto pubblico.
+**Architecture:** Stesso Worker (`src/worker.js`), deploy separato per ambiente via `wrangler.json` (`env.staging` per staging, top-level per prod), entrambi su Git integration nativa Cloudflare (branch `staging` → Worker `photo-portfolio-staging`, branch `main` → Worker `photo-portfolio`). A differenza dello staging (dominio `workers.dev`, Access non può fare path-scoping), `portfolio.example` è una zona Cloudflare reale: Access può quindi proteggere solo `/admin` + `/api/admin/*`, lasciando il resto pubblico.
 
 **Tech Stack:** Cloudflare Workers (static assets binding), Wrangler config (`wrangler.json`), Cloudflare R2, Cloudflare Access (Zero Trust).
 
 ## Global Constraints
 
-- `davidetarsi.com` è già una zona attiva nell'account Cloudflare dell'utente (confermato).
+- `portfolio.example` è già una zona attiva nell'account Cloudflare dell'utente (confermato).
 - Il deploy è automatico via Git integration nativa Cloudflare — **nessuna GitHub Actions da scrivere**. Il piano precedente (`docs/superpowers/plans/docs:superpowers:plans:2026-07-10-staging-prod-deploy.md.rtf`) proponeva un workflow Actions: è superato, non seguirlo.
 - Bucket R2 di produzione: `photo-portfolio` (già il default di `R2_BUCKET_NAME` in `.env`, non serve override per `npm run migrate` in prod, a differenza dello staging).
-- R2 public URL di produzione: `https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev` (confermato sia da `.env` `VITE_R2_PUBLIC_URL` sia dall'header CSP live su `davidetarsi.com`).
-- **Verificato via curl diretto**: `davidetarsi.com` oggi serve ancora il vecchio sito statico pre-migrazione Worker (`/api/data/site` → 404 con `content-length: 0`, nessun `content-type` — il Worker risponderebbe sempre con JSON via `jsonResponse()`).
-  - **CORREZIONE (post-esecuzione, confermata dall'utente + verificata via git):** la causa NON era un vecchio progetto Cloudflare Pages da scollegare — l'utente non ne ha mai avuto uno. `davidetarsi.com` è **sempre stato collegato al Worker `photo-portfolio`**. Il vero motivo: `origin/main` era fermo a `1a476a9` ("add album"), un commit precedente a tutta la riscrittura Worker/R2/admin — `src/worker/data-routes.js` non esisteva ancora in quella versione, quindi `env.ASSETS.fetch()` gestiva ogni richiesta (incluse `/api/data/*`) come asset statico non trovato → 404 senza corpo/content-type. Il lavoro di questa sessione (e di sessioni precedenti) era rimasto sul branch `staging`, mai promosso su `main` fino a questo piano. **Nessun cutover di dominio è stato necessario**: bastava portare `main` allo stesso punto di `staging` (`git checkout main && git merge --ff-only origin/staging && git push origin main`) perché la Git integration nativa di Cloudflare rideployasse lo stesso Worker, già collegato al dominio, con il codice aggiornato.
+- R2 public URL di produzione: `https://pub-xxxxxxxx.r2.dev` (confermato sia da `.env` `VITE_R2_PUBLIC_URL` sia dall'header CSP live su `portfolio.example`).
+- **Verificato via curl diretto**: `portfolio.example` oggi serve ancora il vecchio sito statico pre-migrazione Worker (`/api/data/site` → 404 con `content-length: 0`, nessun `content-type` — il Worker risponderebbe sempre con JSON via `jsonResponse()`).
+  - **CORREZIONE (post-esecuzione, confermata dall'utente + verificata via git):** la causa NON era un vecchio progetto Cloudflare Pages da scollegare — l'utente non ne ha mai avuto uno. `portfolio.example` è **sempre stato collegato al Worker `photo-portfolio`**. Il vero motivo: `origin/main` era fermo a `1a476a9` ("add album"), un commit precedente a tutta la riscrittura Worker/R2/admin — `src/worker/data-routes.js` non esisteva ancora in quella versione, quindi `env.ASSETS.fetch()` gestiva ogni richiesta (incluse `/api/data/*`) come asset statico non trovato → 404 senza corpo/content-type. Il lavoro di questa sessione (e di sessioni precedenti) era rimasto sul branch `staging`, mai promosso su `main` fino a questo piano. **Nessun cutover di dominio è stato necessario**: bastava portare `main` allo stesso punto di `staging` (`git checkout main && git merge --ff-only origin/staging && git push origin main`) perché la Git integration nativa di Cloudflare rideployasse lo stesso Worker, già collegato al dominio, con il codice aggiornato.
 - Prima di dichiarare il sito pronto, verificare sempre sull'URL `workers.dev` del Worker di produzione — mai fidarsi del dominio live finché non si sa con certezza cosa sta effettivamente servendo.
 - Nessuna modifica a `src/`, `config/`, `public/` in questo piano — solo `wrangler.json` e configurazione dashboard Cloudflare.
 
@@ -41,7 +41,7 @@ In `wrangler.json`, sostituisci il blocco top-level `r2_buckets` e `vars`:
   "vars": {
     "ACCESS_TEAM_DOMAIN": "",
     "ACCESS_AUD": "",
-    "R2_PUBLIC_URL": "https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev"
+    "R2_PUBLIC_URL": "https://pub-xxxxxxxx.r2.dev"
   },
 ```
 
@@ -90,17 +90,17 @@ Nota: questo scrive sul bucket R2 di produzione — conferma con l'utente prima 
 
 **Files:** nessuno — solo dashboard Cloudflare.
 
-A differenza dello staging (`workers.dev`, Access su tutto il dominio), qui va usato il flusso generale perché `davidetarsi.com` è una zona reale — permette di limitare Access a soli `/admin` e `/api/admin/*`, lasciando il resto pubblico.
+A differenza dello staging (`workers.dev`, Access su tutto il dominio), qui va usato il flusso generale perché `portfolio.example` è una zona reale — permette di limitare Access a soli `/admin` e `/api/admin/*`, lasciando il resto pubblico.
 
 - [x] **Step 1:** Cloudflare dashboard → **Zero Trust → Access controls → Applications → Create new application**
 - [x] **Step 2:** Seleziona **Self-hosted and private**
-- [x] **Step 3:** Nome libero, es. `Portfolio Admin Prod`. **Add public hostname**: Domain `davidetarsi.com`, path `admin`
-- [x] **Step 4:** Click di nuovo **Add public hostname**: stesso Domain `davidetarsi.com`, path `api/admin`
-- [x] **Step 5:** Access policies → crea policy: nome `Solo io`, decision **Allow**, include → **Emails** → `davidetarsi.dev@gmail.com`
+- [x] **Step 3:** Nome libero, es. `Portfolio Admin Prod`. **Add public hostname**: Domain `portfolio.example`, path `admin`
+- [x] **Step 4:** Click di nuovo **Add public hostname**: stesso Domain `portfolio.example`, path `api/admin`
+- [x] **Step 5:** Access policies → crea policy: nome `Solo io`, decision **Allow**, include → **Emails** → `admin@example.com`
 - [x] **Step 6:** Identity providers → lascia **One-time PIN**
 - [x] **Step 7:** Crea l'applicazione, poi apri la sua pagina e copia il valore **Audience (AUD) Tag**
 
-Il team domain dovrebbe essere lo stesso già usato per staging (`davidetarsi.cloudflareaccess.com`, stesso team Zero Trust) — verifica che coincida, cambia solo l'AUD (nuova applicazione).
+Il team domain dovrebbe essere lo stesso già usato per staging (`your-team.cloudflareaccess.com`, stesso team Zero Trust) — verifica che coincida, cambia solo l'AUD (nuova applicazione).
 
 - [x] **Step 8:** Riporta qui i due valori (team domain + AUD) prima di procedere a Task 4.
 
@@ -140,7 +140,7 @@ Questo push triggera il deploy nativo Cloudflare del Worker `photo-portfolio` (b
 
 **Files:** nessuno — solo verifica.
 
-Non testare ancora `davidetarsi.com` (punta ancora al vecchio sito). Il Worker `photo-portfolio` ha comunque il suo URL `workers.dev` di default, raggiungibile e già configurato con tutto quanto sopra — usalo per validare prima del cutover.
+Non testare ancora `portfolio.example` (punta ancora al vecchio sito). Il Worker `photo-portfolio` ha comunque il suo URL `workers.dev` di default, raggiungibile e già configurato con tutto quanto sopra — usalo per validare prima del cutover.
 
 - [x] **Step 1: Trova l'URL `workers.dev` del Worker di produzione**
 
@@ -159,49 +159,49 @@ Expected: entrambi `200` (conferma Task 1 + Task 2 corretti)
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" -X PUT https://<URL_TROVATO>/api/admin/site
 ```
-Expected: `401` (il Worker rifiuta senza header `Cf-Access-Jwt-Assertion` — su questo URL Access non intercetta la richiesta perché l'applicazione Task 3 è scoped a `davidetarsi.com`, non a `workers.dev`; qui si verifica solo che il codice del Worker fallisca chiuso, non il flusso di login completo — quello si testa in Task 7, dopo il cutover)
+Expected: `401` (il Worker rifiuta senza header `Cf-Access-Jwt-Assertion` — su questo URL Access non intercetta la richiesta perché l'applicazione Task 3 è scoped a `portfolio.example`, non a `workers.dev`; qui si verifica solo che il codice del Worker fallisca chiuso, non il flusso di login completo — quello si testa in Task 7, dopo il cutover)
 
 ---
 
 ### Task 6: Portare `main` allo stesso punto di `staging`
 
-> **Rinominato in corso d'opera.** Il piano originale ipotizzava un cutover di dominio (scollegare `davidetarsi.com` da un vecchio progetto Cloudflare Pages e ricollegarlo al Worker). Ipotesi sbagliata: l'utente non ha mai avuto un progetto Pages, `davidetarsi.com` è sempre stato sul Worker `photo-portfolio`. Il vero blocco era che `origin/main` non veniva aggiornato da prima di questa sessione — vedi Global Constraints. Il fix reale è stato un fast-forward di branch, non un'azione da dashboard.
+> **Rinominato in corso d'opera.** Il piano originale ipotizzava un cutover di dominio (scollegare `portfolio.example` da un vecchio progetto Cloudflare Pages e ricollegarlo al Worker). Ipotesi sbagliata: l'utente non ha mai avuto un progetto Pages, `portfolio.example` è sempre stato sul Worker `photo-portfolio`. Il vero blocco era che `origin/main` non veniva aggiornato da prima di questa sessione — vedi Global Constraints. Il fix reale è stato un fast-forward di branch, non un'azione da dashboard.
 
 **Files:** nessuno.
 
 - [x] **Step 1:** `git checkout main`
 - [x] **Step 2:** `git merge --ff-only origin/staging` (pulito, `origin/main` non aveva nulla che `staging` non avesse già — verificato con `git log origin/staging..origin/main` vuoto prima del merge)
-- [x] **Step 3:** `git push origin main` — 47 commit, triggera il deploy automatico via Git integration nativa Cloudflare sullo stesso Worker `photo-portfolio` già collegato a `davidetarsi.com`
+- [x] **Step 3:** `git push origin main` — 47 commit, triggera il deploy automatico via Git integration nativa Cloudflare sullo stesso Worker `photo-portfolio` già collegato a `portfolio.example`
 - [x] **Step 4:** `git checkout staging` per tornare al branch di lavoro
 
 ---
 
-### Task 7: Verifica end-to-end su `davidetarsi.com`
+### Task 7: Verifica end-to-end su `portfolio.example`
 
 **Files:** nessuno — solo verifica.
 
 - [x] **Step 1: Dati pubblici**
 
 ```bash
-curl -s https://davidetarsi.com/api/data/site
-curl -s https://davidetarsi.com/api/data/albums
+curl -s https://portfolio.example/api/data/site
+curl -s https://portfolio.example/api/data/albums
 ```
 Expected: JSON reale (non più `content-length: 0`) — `{"name":"Davide Tarsi",...}` e `{"albums":[...]}`
 
 - [x] **Step 2: Sito pubblico resta aperto**
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://davidetarsi.com/
+curl -s -o /dev/null -w "%{http_code}\n" https://portfolio.example/
 ```
 Expected: `200`, nessun redirect a login (a differenza dello staging, qui la home non è protetta)
 
 - [x] **Step 3: Dashboard protetta**
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://davidetarsi.com/admin
+curl -s -o /dev/null -w "%{http_code}\n" https://portfolio.example/admin
 ```
 Expected: redirect verso login Access (`302`) — non più `200` diretto
 
 - [ ] **Step 4 [UMANO]: Login reale**
 
-Apri `https://davidetarsi.com/admin` nel browser → dovresti vedere il prompt Access One-Time PIN → dopo il login, dashboard visibile.
+Apri `https://portfolio.example/admin` nel browser → dovresti vedere il prompt Access One-Time PIN → dopo il login, dashboard visibile.

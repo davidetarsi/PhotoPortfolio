@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { resolveSiteContent, albumsToCards } from './home-logic.js';
+import { resolveSiteContent, resolveAlbums, albumsToCards } from './home-logic.js';
 
-const BUILD = { name: 'Build Name', bio: 'Build bio', heroImageUrl: 'https://pub.r2.dev/sport/hero.webp', social: { x: 'y' }, r2PublicUrl: 'https://pub.r2.dev' };
+const BUILD = { name: 'Build Name', bio: 'Build bio', heroImage: { album: 'sport', name: 'hero.webp' }, social: { x: 'y' }, r2PublicUrl: 'https://pub.r2.dev' };
 
 describe('resolveSiteContent', () => {
   it('site.json ok → usa i dati runtime e costruisce heroUrl dalla referenza', () => {
@@ -19,6 +19,15 @@ describe('resolveSiteContent', () => {
       name: 'Build Name', bio: 'Build bio', social: { x: 'y' }, heroUrl: 'https://pub.r2.dev/sport/hero.webp',
     });
   });
+
+  it('hero runtime con dominio pubblico assente → heroUrl null', () => {
+    const site = { name: 'Runtime', bio: 'B', hero: { album: 'sport', name: 'a.webp' }, social: {} };
+    expect(resolveSiteContent({ ok: true, data: site }, { ...BUILD, r2PublicUrl: undefined }).heroUrl).toBeNull();
+  });
+
+  it('hero seed con dominio pubblico assente → heroUrl null', () => {
+    expect(resolveSiteContent({ ok: false, error: 'NETWORK' }, { ...BUILD, r2PublicUrl: undefined }).heroUrl).toBeNull();
+  });
 });
 
 describe('albumsToCards', () => {
@@ -32,4 +41,37 @@ describe('albumsToCards', () => {
       { slug: 'x', title: 'X', description: '', coverUrl: null },
     ]);
   });
+
+  it('cover presente senza dominio pubblico → coverUrl null', () => {
+    expect(albumsToCards([
+      { slug: 'sport', title: 'Sport', description: 'd', coverName: 'c.webp' },
+    ], undefined)).toEqual([
+      { slug: 'sport', title: 'Sport', description: 'd', coverUrl: null },
+    ]);
+  });
+});
+
+describe('resolveAlbums', () => {
+  const seed = [
+    { slug: 'seed', title: 'Seed', description: '', coverName: '' },
+  ];
+
+  it('returns runtime albums unchanged when the fetch succeeds', () => {
+    const runtime = [{ slug: 'live', title: 'Live', description: '', coverName: 'cover.webp' }];
+    expect(resolveAlbums({ ok: true, data: runtime }, seed)).toBe(runtime);
+  });
+
+  it('falls back only on NOT_FOUND and normalizes an empty coverName to null', () => {
+    expect(resolveAlbums({ ok: false, error: 'NOT_FOUND' }, seed)).toEqual([
+      { slug: 'seed', title: 'Seed', description: '', coverName: null },
+    ]);
+    expect(seed[0].coverName).toBe('');
+  });
+
+  it.each(['NETWORK', 'UNKNOWN', 'MALFORMED'])(
+    'returns null for %s so the caller keeps the error visible',
+    error => {
+      expect(resolveAlbums({ ok: false, error }, seed)).toBeNull();
+    },
+  );
 });

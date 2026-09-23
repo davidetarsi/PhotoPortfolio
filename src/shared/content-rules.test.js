@@ -15,7 +15,7 @@ describe('regex e costanti', () => {
   });
 
   it('RESERVED_SLUGS contiene le rotte del sito', () => {
-    for (const s of ['admin', 'api', 'assets', 'contatti']) expect(RESERVED_SLUGS).toContain(s);
+    for (const s of ['admin', 'api', 'assets', 'about']) expect(RESERVED_SLUGS).toContain(s);
   });
 
   it('PHOTO_NAME_RE accetta nomi legacy con maiuscole e rifiuta path traversal', () => {

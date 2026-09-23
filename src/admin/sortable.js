@@ -1,6 +1,13 @@
-// Drag & drop minimale per liste verticali. La logica di riordino è pura
-// (moveItem); il DOM emette solo (from, to).
+// Minimal drag & drop for vertical lists. Reorder logic is pure (moveItem);
+// DOM only emits (from, to).
 
+/**
+ * Moves an item in an array from one index to another.
+ * @param {Array} arr - The array to reorder.
+ * @param {number} from - Source index.
+ * @param {number} to - Destination index.
+ * @returns {Array} New array with the item moved, or original if indices are invalid.
+ */
 export function moveItem(arr, from, to) {
   const copy = [...arr];
   if (from === to || from < 0 || from >= copy.length || to < 0 || to >= copy.length) return copy;
@@ -9,6 +16,13 @@ export function moveItem(arr, from, to) {
   return copy;
 }
 
+/**
+ * Attaches drag & drop functionality to a list element.
+ * Calls onMove(from, to) when an item is dragged to a new position.
+ * Children with draggable=true are sortable.
+ * @param {HTMLElement} listEl - The container element (typically ul or div).
+ * @param {Function} onMove - Callback(fromIndex, toIndex) when item is moved.
+ */
 export function attachSortable(listEl, onMove) {
   let fromIndex = null;
   const indexOf = el => [...listEl.children].indexOf(el.closest('[draggable]'));

@@ -1,7 +1,7 @@
 .lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(10, 9, 8, 0.96);
+  background: var(--color-lightbox-backdrop);
   display: none;
   align-items: center;
   justify-content: center;

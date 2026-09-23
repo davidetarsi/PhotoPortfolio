@@ -1,6 +1,6 @@
 // src/admin/pipeline.test.js
 import { describe, it, expect, vi } from 'vitest';
-import { targetDimensions, shouldUploadAsIs, processFile, MAX_DIMENSION, WEBP_QUALITY } from './pipeline.js';
+import { targetDimensions, shouldUploadAsIs, processFile, partitionBySupport, MAX_DIMENSION, WEBP_QUALITY } from './pipeline.js';
 
 describe('targetDimensions', () => {
   it('riduce il lato lungo a 1900 mantenendo l\'aspect ratio', () => {
@@ -56,5 +56,47 @@ describe('processFile', () => {
   });
   it('MAX_DIMENSION è 1900 (stesso limite di compress.js)', () => {
     expect(MAX_DIMENSION).toBe(1900);
+  });
+});
+
+describe('partitionBySupport', () => {
+  const file = (name, type) => ({ name, type });
+
+  it('tiene jpeg, png e webp', () => {
+    const { supported, unsupported } = partitionBySupport([
+      file('a.jpg', 'image/jpeg'), file('b.png', 'image/png'), file('c.webp', 'image/webp'),
+    ]);
+    expect(supported).toHaveLength(3);
+    expect(unsupported).toHaveLength(0);
+  });
+
+  it('scarta HEIC, che il browser non sa decodificare', () => {
+    const { supported, unsupported } = partitionBySupport([file('IMG_0001.HEIC', 'image/heic')]);
+    expect(supported).toHaveLength(0);
+    expect(unsupported.map(f => f.name)).toEqual(['IMG_0001.HEIC']);
+  });
+
+  it('riconosce HEIC anche quando il browser non ne indovina il MIME', () => {
+    // Chrome e Firefox non conoscono HEIC: File.type resta stringa vuota.
+    // Senza il controllo sull'estensione finirebbe nella pipeline e fallirebbe
+    // a decodifica, col messaggio sbagliato ("riprova").
+    const { unsupported } = partitionBySupport([file('foto.heic', '')]);
+    expect(unsupported).toHaveLength(1);
+  });
+
+  it('scarta anche TIFF', () => {
+    expect(partitionBySupport([file('scan.tiff', 'image/tiff')]).unsupported).toHaveLength(1);
+  });
+
+  it('divide un gruppo misto conservando l ordine', () => {
+    const { supported, unsupported } = partitionBySupport([
+      file('a.jpg', 'image/jpeg'), file('b.heic', 'image/heic'), file('c.png', 'image/png'),
+    ]);
+    expect(supported.map(f => f.name)).toEqual(['a.jpg', 'c.png']);
+    expect(unsupported.map(f => f.name)).toEqual(['b.heic']);
+  });
+
+  it('su un elenco vuoto non esplode', () => {
+    expect(partitionBySupport([])).toEqual({ supported: [], unsupported: [] });
   });
 });

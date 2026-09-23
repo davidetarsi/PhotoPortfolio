@@ -10,7 +10,7 @@ const WEBP_QUALITY = 85;
 const CONCURRENCY = 4;
 
 /**
- * @param {string[]} argv - Array di argomenti CLI (es. process.argv.slice(2)).
+ * @param {string[]} argv - Array of CLI arguments (e.g. process.argv.slice(2)).
  * @returns {{ input: string | null, help: boolean, manifestOnly: boolean }}
  */
 export function parseArgs(argv) {
@@ -24,7 +24,7 @@ export function parseArgs(argv) {
 }
 
 /**
- * @param {string} filename - Nome del file con estensione.
+ * @param {string} filename - Filename with extension.
  * @returns {boolean}
  */
 export function isSupportedFile(filename) {
@@ -32,8 +32,8 @@ export function isSupportedFile(filename) {
 }
 
 /**
- * @param {string} inPath - Percorso assoluto del file sorgente.
- * @param {string} outPath - Percorso assoluto del file di output (.webp).
+ * @param {string} inPath - Absolute path to source image file.
+ * @param {string} outPath - Absolute path for output .webp file.
  * @returns {Promise<{width: number, height: number, format: string, ...}>}
  */
 export async function processImage(inPath, outPath) {
@@ -50,9 +50,9 @@ export async function processImage(inPath, outPath) {
 }
 
 /**
- * Legge i .webp già presenti in optimizedDir e (ri)scrive manifest.json con dimensioni.
- * Non tocca i file immagine — utile quando le foto sono già in formato webp.
- * @param {string} optimizedDir - Percorso assoluto della cartella contenente i .webp.
+ * Reads existing .webp files and writes manifest.json with dimensions.
+ * Does not touch image files — useful when photos are already in webp format.
+ * @param {string} optimizedDir - Absolute path to folder containing .webp files.
  * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
 export async function buildManifest(optimizedDir) {
@@ -71,7 +71,7 @@ export async function buildManifest(optimizedDir) {
           const meta = await sharp(join(optimizedDir, file)).metadata();
           return { name: file, width: meta.width, height: meta.height };
         } catch (err) {
-          process.stderr.write(`  ✗ Errore su ${file}: ${err.message}\n`);
+          process.stderr.write(`  ✗ Error on ${file}: ${err.message}\n`);
           return null;
         }
       })
@@ -88,12 +88,13 @@ export async function buildManifest(optimizedDir) {
 }
 
 /**
- * @param {string} originaliDir - Percorso assoluto della cartella sorgente.
- * @param {string} optimizedDir - Percorso assoluto della cartella di output.
+ * Processes all images in source directory and writes optimized .webp files with manifest.
+ * @param {string} sourceDir - Absolute path to source image folder.
+ * @param {string} optimizedDir - Absolute path for output folder.
  * @returns {Promise<{ ok: number, errors: number, elapsed: number, manifest: Array<{name: string, width: number, height: number}> }>}
  */
-export async function processDir(originaliDir, optimizedDir) {
-  const files = (await readdir(originaliDir)).filter(isSupportedFile);
+export async function processDir(sourceDir, optimizedDir) {
+  const files = (await readdir(sourceDir)).filter(isSupportedFile);
 
   await rm(optimizedDir, { recursive: true, force: true });
   await mkdir(optimizedDir, { recursive: true });
@@ -110,10 +111,10 @@ export async function processDir(originaliDir, optimizedDir) {
         const outName = basename(file, extname(file)) + '.webp';
         process.stdout.write(`⚙  [${idx}/${files.length}] ${file} → ${outName}\n`);
         try {
-          const info = await processImage(join(originaliDir, file), join(optimizedDir, outName));
+          const info = await processImage(join(sourceDir, file), join(optimizedDir, outName));
           return { name: outName, width: info.width, height: info.height };
         } catch (err) {
-          process.stderr.write(`  ✗ Errore su ${file}: ${err.message}\n`);
+          process.stderr.write(`  ✗ Error on ${file}: ${err.message}\n`);
           return null;
         }
       })
@@ -135,17 +136,17 @@ async function main() {
 
   if (args.help) {
     process.stdout.write(`
-Uso: npm run compress -- --input <percorso> [--manifest-only]
+Usage: npm run compress -- --input <path> [--manifest-only]
 
-  --input <percorso>   Cartella root contenente originali/ (e optimized/)
-  --manifest-only      Legge le dimensioni dai .webp già in optimized/ senza ricomprimere
-  --help               Mostra questo messaggio
+  --input <path>       Root folder containing source/ (and optimized/)
+  --manifest-only      Read dimensions from .webp files in optimized/ without recompressing
+  --help               Show this message
 \n`);
     process.exit(0);
   }
 
   if (!args.input) {
-    process.stderr.write('Errore: --input è obbligatorio.\n');
+    process.stderr.write('Error: --input is required.\n');
     process.exit(1);
   }
 
@@ -153,13 +154,13 @@ Uso: npm run compress -- --input <percorso> [--manifest-only]
   const optimizedDir = join(inputRoot, 'optimized');
 
   if (!existsSync(inputRoot)) {
-    process.stderr.write(`Errore: la cartella "${inputRoot}" non esiste.\n`);
+    process.stderr.write(`Error: folder "${inputRoot}" not found.\n`);
     process.exit(1);
   }
 
   if (args.manifestOnly) {
     if (!existsSync(optimizedDir)) {
-      process.stderr.write(`Errore: la cartella "optimized/" non esiste in "${inputRoot}".\n`);
+      process.stderr.write(`Error: folder "optimized/" not found in "${inputRoot}".\n`);
       process.exit(1);
     }
     const allFiles = (await readdir(optimizedDir)).filter(f => extname(f).toLowerCase() === '.webp');
@@ -167,30 +168,30 @@ Uso: npm run compress -- --input <percorso> [--manifest-only]
     const { ok, errors, elapsed } = await buildManifest(optimizedDir);
     const secs = (elapsed / 1000).toFixed(1);
     process.stdout.write(
-      `✅ Completato: ${ok} file indicizzati${errors > 0 ? `, ${errors} errori` : ''} in ${secs}s\n`
+      `✅ Done: ${ok} files indexed${errors > 0 ? `, ${errors} errors` : ''} in ${secs}s\n`
     );
-    process.stdout.write(`📋 manifest.json generato (${ok} file con dimensioni)\n`);
+    process.stdout.write(`📋 manifest.json generated (${ok} files with dimensions)\n`);
     return;
   }
 
-  const originaliDir = join(inputRoot, 'originali');
+  const sourceDir = join(inputRoot, 'source');
 
-  if (!existsSync(originaliDir)) {
-    process.stderr.write(`Errore: la cartella "originali/" non esiste in "${inputRoot}".\n`);
+  if (!existsSync(sourceDir)) {
+    process.stderr.write(`Error: folder "source/" not found in "${inputRoot}".\n`);
     process.exit(1);
   }
 
-  const allFiles = (await readdir(originaliDir)).filter(isSupportedFile);
-  process.stdout.write(`📁 Input:  ${originaliDir}  (${allFiles.length} foto)\n`);
-  process.stdout.write('🗑  Svuoto optimized/...\n');
+  const allFiles = (await readdir(sourceDir)).filter(isSupportedFile);
+  process.stdout.write(`📁 Input:  ${sourceDir}  (${allFiles.length} photos)\n`);
+  process.stdout.write('🗑  Clearing optimized/...\n');
 
-  const { ok, errors, elapsed } = await processDir(originaliDir, optimizedDir);
+  const { ok, errors, elapsed } = await processDir(sourceDir, optimizedDir);
 
   const secs = (elapsed / 1000).toFixed(1);
   process.stdout.write(
-    `✅ Completato: ${ok} foto ottimizzate${errors > 0 ? `, ${errors} errori` : ''} in ${secs}s\n`
+    `✅ Done: ${ok} photos optimized${errors > 0 ? `, ${errors} errors` : ''} in ${secs}s\n`
   );
-  process.stdout.write(`📋 manifest.json generato (${ok} file con dimensioni)\n`);
+  process.stdout.write(`📋 manifest.json generated (${ok} files with dimensions)\n`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

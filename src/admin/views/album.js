@@ -1,12 +1,28 @@
 import { photoUrl } from '../../providers/r2.js';
 import { moveItem } from '../sortable.js';
+import { partitionBySupport } from '../pipeline.js';
+import { texts } from '../../../config/texts.config.js';
+import { siteConfig } from '../../../config/site.config.js';
+import { formatText } from '../../utils/formatText.js';
 import { createStatus } from '../status.js';
 import { topBarHtml } from './top-bar.js';
 
+/**
+ * Builds a pending album object with updated description and cover.
+ * @param {Object} changes - The pending changes {description, coverName}.
+ * @param {Object} currentAlbum - The current album object.
+ * @returns {Object} New album object with merged changes.
+ */
 export function buildPendingAlbum({ description, coverName }, currentAlbum) {
   return { ...currentAlbum, description, coverName };
 }
 
+/**
+ * Renders the admin album editor view.
+ * Handles photo upload, reordering, cover selection, and album metadata.
+ * @param {HTMLElement} container - The container to render into.
+ * @param {Object} ctx - Admin context with albums, API, and dependencies.
+ */
 export function renderAdminAlbum(container, ctx) {
   const { slug, r2PublicUrl, api, deps } = ctx;
   const album = ctx.albums.find(a => a.slug === slug);
@@ -27,7 +43,7 @@ export function renderAdminAlbum(container, ctx) {
         </div>
         <button class="admin-sort-date" type="button">
           <span class="admin-sort-date__label">Ordina per:</span>
-          <span class="admin-sort-date__value">Data</span>
+          <span class="admin-sort-date__value">${texts.admin.album.date}</span>
         </button>
       </div>
       <div class="admin-photo-grid"></div>
@@ -36,10 +52,10 @@ export function renderAdminAlbum(container, ctx) {
           Trascina qui le foto o <span class="admin-dropzone__browse">scegli i file da caricare</span>
           <input class="admin-dropzone__input" type="file" multiple accept="image/jpeg,image/png,image/webp">
         </label>
-        <p class="admin-dropzone__constraints">JPG, PNG, WebP fino a 20MB</p>
+        <p class="admin-dropzone__constraints">${texts.admin.album.dropzoneConstraints}</p>
       </div>
       <ul class="admin-progress"></ul>
-      <button class="admin-save-album">Salva</button>
+      <button class="admin-save-album">${texts.admin.album.save}</button>
       <p class="admin-status" role="status">
         <span class="admin-status__badge"></span>
         <span class="admin-status__text"></span>
@@ -61,15 +77,14 @@ export function renderAdminAlbum(container, ctx) {
   function clearDirty() {
     if (detachGuard) { detachGuard(); detachGuard = null; }
   }
-  // Se si esce dall'album sporco con un hashchange che non passa dal click
-  // handler del back-link (Back/Forward del browser, o un navigate()
-  // programmatico), il router in admin.js sovrascrive root.innerHTML e
-  // scarta questa closure senza mai chiamare clearDirty(): il listener
-  // beforeunload agganciato da markDirty() resterebbe attaccato a window
-  // per il resto della sessione SPA (si accumula ad ogni album sporco
-  // abbandonato così), causando poi un prompt "Leave site?" fantasma su un
-  // refresh/chiusura futura senza modifiche pending. { once: true } fa sì
-  // che questo listener stesso non si accumuli mai.
+  // If exiting the album with unsaved changes via hashchange outside the
+  // back-link handler (browser Back/Forward, or programmatic navigate()), the
+  // router in admin.js overwrites root.innerHTML and discards this closure
+  // without calling clearDirty(): the beforeunload listener attached by
+  // markDirty() stays bound to window for the rest of the SPA session
+  // (accumulates for each dirty album abandoned this way), causing a phantom
+  // "Leave site?" prompt on future refresh/close without pending changes.
+  // { once: true } ensures this listener itself never accumulates.
   window.addEventListener('hashchange', clearDirty, { once: true });
   q('[name="album-description"]').value = pending.description;
   q('[name="album-description"]').addEventListener('input', () => {
@@ -83,23 +98,23 @@ export function renderAdminAlbum(container, ctx) {
   function formatPhotoDate(entry) {
     const ts = entry.capturedAt ?? entry.uploadedAt;
     if (ts == null) return '—';
-    // timeZone: 'UTC' esplicito — capturedAt/uploadedAt sono epoch ms senza
-    // fuso orario associato, e senza forzare UTC il rendering dipende dal
-    // fuso della macchina che esegue il codice (rischio concreto anche nei
-    // test: una mezzanotte UTC può ricadere sul giorno prima in fusi < 0).
-    return new Date(ts).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+    // Explicit timeZone: 'UTC' — capturedAt/uploadedAt are epoch ms without
+    // associated timezone, and without forcing UTC rendering depends on the
+    // machine's timezone (real risk even in tests: UTC midnight may fall on
+    // the previous day in negative timezones).
+    return new Date(ts).toLocaleDateString(siteConfig.language || 'it', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
   }
 
   function handleCoverClick(entry) {
     pending.coverName = entry.name;
     markDirty();
     renderPhotos();
-    say(`Cover selezionata: ${entry.name} (premi Salva per confermare).`);
+    say(formatText(texts.admin.album.coverSelected, { nome: entry.name }));
   }
 
   function handleDeleteClick(entry) {
     return run(async () => {
-      if (!deps.confirm(`Eliminare ${entry.name}?`)) return;
+      if (!deps.confirm(formatText(texts.admin.album.confirmDeletePhoto, { nome: entry.name }))) return;
       await api.deletePhoto(slug, entry.name);
       manifest = manifest.filter(e => e.name !== entry.name);
       renderPhotos();
@@ -113,8 +128,8 @@ export function renderAdminAlbum(container, ctx) {
     cell.innerHTML = `
       <img class="admin-photo__img" alt="" loading="lazy">
       <div class="admin-photo__actions">
-        <button class="admin-photo__cover${isCover ? ' admin-photo__cover--selected' : ''}" title="Usa come cover">Cover</button>
-        <button class="admin-photo__delete" title="Elimina">✕</button>
+        <button class="admin-photo__cover${isCover ? ' admin-photo__cover--selected' : ''}" title="${texts.admin.album.coverAsButton}">Cover</button>
+        <button class="admin-photo__delete" title="${texts.admin.album.deletePhoto}">✕</button>
       </div>
     `;
     cell.querySelector('.admin-photo__img').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
@@ -132,8 +147,8 @@ export function renderAdminAlbum(container, ctx) {
       <span class="admin-photo-row__name"></span>
       <span class="admin-photo-row__date"></span>
       <div class="admin-photo-row__actions">
-        <button class="admin-photo-row__cover${isCover ? ' admin-photo-row__cover--selected' : ''}" title="Usa come cover">Cover</button>
-        <button class="admin-photo-row__delete" title="Elimina">✕</button>
+        <button class="admin-photo-row__cover${isCover ? ' admin-photo-row__cover--selected' : ''}" title="${texts.admin.album.coverAsButton}">Cover</button>
+        <button class="admin-photo-row__delete" title="${texts.admin.album.deletePhoto}">✕</button>
       </div>
     `;
     row.querySelector('.admin-photo-row__thumb').setAttribute('src', photoUrl(r2PublicUrl, slug, entry.name));
@@ -157,6 +172,19 @@ export function renderAdminAlbum(container, ctx) {
 
   async function startUpload(files) {
     if (files.length === 0) return;
+
+    // Il trascinamento ignora l'attributo `accept` del selettore: un HEIC
+    // arriva fin qui. Va fermato adesso, perche' piu' avanti fallirebbe a
+    // decodifica e l'utente leggerebbe "riprova", che per un HEIC non
+    // funzionera' mai.
+    const { supported, unsupported } = partitionBySupport([...files]);
+    if (unsupported.length > 0) {
+      say(formatText(texts.admin.album.unsupportedFormat,
+        { elenco: unsupported.map(f => f.name).join(', ') }), true);
+    }
+    if (supported.length === 0) return;
+    files = supported;
+
     const progress = q('.admin-progress');
     progress.innerHTML = '';
     const rows = new Map();
@@ -174,22 +202,22 @@ export function renderAdminAlbum(container, ctx) {
             rows.set(name, li);
             progress.appendChild(li);
           }
-          rows.get(name).textContent = `${name} — ${phase}`;
+          rows.get(name).textContent = formatText(texts.admin.album.uploadProgress, { nome: name, fase: phase });
         },
       });
       manifest = result.manifest;
       renderPhotos();
       say(result.failed.length === 0
-        ? `Caricate ${result.uploaded.length} foto.`
-        : `Caricate ${result.uploaded.length}, fallite ${result.failed.length}: riprova trascinandole di nuovo.`,
+        ? formatText(texts.admin.album.uploadSuccess, { n: result.uploaded.length })
+        : formatText(texts.admin.album.uploadPartial, { uploaded: result.uploaded.length, failed: result.failed.length }),
       result.failed.length > 0);
     });
   }
 
-  // Attaccato una sola volta: il nodo .admin-photo-grid è creato una volta
-  // sola dal template sopra, renderPhotos() ne pulisce solo i figli. Farlo
-  // dentro renderPhotos() accumulerebbe listener ad ogni render (ogni drag
-  // ne farebbe scattare N, ognuno con la propria putManifest + re-render).
+  // Attached once: the .admin-photo-grid node is created once in the template,
+  // renderPhotos() only clears its children. Doing this inside renderPhotos()
+  // would accumulate listeners on every render (every drag would trigger N,
+  // each with its own putManifest + re-render).
   deps.attachSortable(q('.admin-photo-grid'), (from, to) => run(async () => {
     const reordered = moveItem(manifest, from, to);
     await api.putManifest(slug, reordered);
@@ -213,7 +241,7 @@ export function renderAdminAlbum(container, ctx) {
     await api.putManifest(slug, sorted);
     manifest = sorted;
     renderPhotos();
-    say('Foto ordinate per data.');
+    say(texts.admin.album.sortedByDate);
   }));
 
   q('.admin-save-album').addEventListener('click', () => run(async () => {
@@ -222,15 +250,14 @@ export function renderAdminAlbum(container, ctx) {
     await api.putAlbums(updatedAlbums);
     ctx.albums = updatedAlbums;
     clearDirty();
-    say('Album salvato.');
+    say(texts.admin.album.saved);
   }));
 
-  // detachGuard è non-null solo quando c'è una modifica pending: usato
-  // direttamente come proxy di "dirty" invece di un booleano separato da
-  // tenere sincronizzato.
+  // detachGuard is non-null only when there are pending changes: used directly
+  // as a proxy for "dirty" instead of a separate boolean to keep in sync.
   q('.admin-back').addEventListener('click', e => {
-    if (!detachGuard) return; // niente pending, naviga libero
-    if (!deps.confirm('Ci sono modifiche non salvate. Uscire comunque?')) {
+    if (!detachGuard) return; // No pending changes, navigate freely.
+    if (!deps.confirm(texts.admin.album.unsavedChanges)) {
       e.preventDefault();
     } else {
       clearDirty();
@@ -248,11 +275,11 @@ export function renderAdminAlbum(container, ctx) {
     startUpload(e.dataTransfer?.files ?? []);
   });
 
-  // Bootstrap: manifest 404 = album appena creato, griglia vuota.
+  // Bootstrap: manifest 404 = newly created album, empty grid.
   run(async () => {
     const res = await deps.fetchManifest(slug);
     if (res.ok) manifest = res.data;
-    else if (res.error !== 'NOT_FOUND') { say('Impossibile caricare il manifest.', true); return; }
+    else if (res.error !== 'NOT_FOUND') { say(texts.admin.album.manifestError, true); return; }
     renderPhotos();
   });
 }

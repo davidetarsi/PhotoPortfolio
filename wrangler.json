@@ -7,23 +7,31 @@
     "binding": "ASSETS"
   },
   "r2_buckets": [
-    { "binding": "BUCKET", "bucket_name": "photo-portfolio" }
+    {
+      "binding": "BUCKET",
+      "bucket_name": "photo-portfolio"
+    }
   ],
   "vars": {
     "ACCESS_TEAM_DOMAIN": "davidetarsi.cloudflareaccess.com",
     "ACCESS_AUD": "1f3180951737ca601e897af4841630a61ffb53689ebbcf8aa311c7f64e645aee",
-    "R2_PUBLIC_URL": "https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev"
+    "R2_PUBLIC_URL": "https://pub-f795b3dcc64b49348b6805cd460aa1e7.r2.dev",
+    "TURNSTILE_SITEKEY": ""
   },
   "env": {
     "staging": {
       "name": "photo-portfolio-staging",
       "r2_buckets": [
-        { "binding": "BUCKET", "bucket_name": "photo-portfolio-staging" }
+        {
+          "binding": "BUCKET",
+          "bucket_name": "photo-portfolio-staging"
+        }
       ],
       "vars": {
         "ACCESS_TEAM_DOMAIN": "davidetarsi.cloudflareaccess.com",
         "ACCESS_AUD": "1b8042c7d55fe738d2a0f5ff5724bbe52fe1e78ab49a5f94c61992d6d3fb6864",
-        "R2_PUBLIC_URL": "https://pub-a7de17dec08048a281f2c978f99ed4ca.r2.dev"
+        "R2_PUBLIC_URL": "https://pub-a7de17dec08048a281f2c978f99ed4ca.r2.dev",
+        "TURNSTILE_SITEKEY": ""
       }
     }
   }

@@ -1,5 +1,11 @@
 import '../styles/album-card.css';
+import '../../theme/card.css';
 
+/**
+ * Creates an album card element for display in the album grid.
+ * @param {{slug: string, title: string, description: string, coverUrl: string|null}} card - Card data.
+ * @returns {HTMLElement} Link element styled as an album card.
+ */
 export function createAlbumCard({ slug, title, description, coverUrl }) {
   const a = document.createElement('a');
   a.className = 'album-card';

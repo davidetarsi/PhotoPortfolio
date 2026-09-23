@@ -1,5 +1,11 @@
 import '../styles/hero.css';
 
+/**
+ * Renders the hero section with background image, name, and bio.
+ * @param {HTMLElement} container - Element to render into.
+ * @param {{name: string, bio: string, heroUrl: string|null}} site - Site data.
+ * @param {object} texts - UI text strings.
+ */
 export function renderHero(container, { name, bio, heroUrl }, texts) {
   const imgHtml = heroUrl ? `<img class="hero__bg" alt="" fetchpriority="high" decoding="sync">` : '';
   container.innerHTML = `

@@ -70,4 +70,16 @@ describe('uploadAlbum', () => {
     expect(result.uploaded).toBe(2)
     expect(result.manifest).toEqual(fakeManifest)
   })
+
+  it('reports a missing bucket in English', async () => {
+    delete process.env.R2_BUCKET_NAME
+    await expect(uploadAlbum('sport-album', '/fake/dir'))
+      .rejects.toThrow('R2_BUCKET_NAME is missing from .env')
+  })
+
+  it('reports missing R2 credentials in English', async () => {
+    delete process.env.R2_SECRET_ACCESS_KEY
+    await expect(uploadAlbum('sport-album', '/fake/dir'))
+      .rejects.toThrow('Missing R2 credentials in .env')
+  })
 })

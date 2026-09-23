@@ -1,5 +1,15 @@
+/**
+ * Creates a lightbox component for fullscreen photo viewing.
+ * Handles keyboard navigation (Tab focus trap, Escape to close, arrows to navigate),
+ * touch swipe gestures, and click-outside-to-close.
+ */
 import '../styles/lightbox.css';
 
+/**
+ * Instantiates a lightbox with photo array.
+ * @param {Array} photos - Array of photo objects with fullUrl, name.
+ * @returns {object} Object with open(index, triggerEl), close(), and destroy() methods.
+ */
 export function createLightbox(photos) {
   const el = document.createElement('div');
   el.className = 'lightbox';
@@ -46,11 +56,11 @@ export function createLightbox(photos) {
     if (_triggerEl) { _triggerEl.focus(); _triggerEl = null; }
   }
 
-  // Per chi crea più lightbox nella vita di una stessa pagina (es. l'anteprima
-  // admin, che cambia foto ad ogni album aperto): rimuove il nodo dal body.
-  // Non c'è un modo per staccare il keydown su document da qui, ma una volta
-  // chiusa e rimossa resta innocua (la guardia "classList.contains('lightbox--open')"
-  // in cima al listener non scatta più).
+  // For code that creates multiple lightboxes in a page's lifetime (e.g., admin preview
+  // changing photos per album): removes the element from the DOM.
+  // There is no way to unbind the document keydown listener from here, but once
+  // closed and removed it stays harmless (the guard "classList.contains('lightbox--open')"
+  // at the top of the listener will never trigger again).
   function destroy() {
     close();
     el.remove();
