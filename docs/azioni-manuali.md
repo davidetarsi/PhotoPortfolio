@@ -93,7 +93,7 @@ Il README spiega di forkare, ma un bottone verde vince su un paragrafo.
 > produzione i segnaposto del template. Sotto c'è quello che succede davvero.
 >
 > La versione generica di questa procedura, per chiunque usi il template, sta in
-> [`docs/upgrading.md`](upgrading.md). Qui restano solo i numeri del tuo caso.
+> [`docs/upgrading.md`](upgrading.md). Qui restano solo le peculiarità del tuo caso.
 
 **Il primo aggiornamento non è un fast-forward:** lo `staging` personale ha commit
 propri, quindi il merge con il template è un merge reale. `wrangler.json`, però, verrà
@@ -101,7 +101,7 @@ comunque sovrascritto senza conflitto: è rimasto invariato sul ramo personale d
 base comune, perciò Git vede la versione del template come l'unica modifica di quel
 file. Senza un ripristino esplicito, accetterebbe in silenzio i segnaposto.
 
-Su 139 file la maggior parte è lavoro nuovo che vuoi, ma tre casi vanno gestiti a mano:
+La maggior parte dei file è lavoro nuovo che vuoi, ma tre casi vanno gestiti a mano:
 
 | File | Cosa succede | Va bene? |
 |---|---|---|
@@ -133,10 +133,13 @@ Le configurazioni personalizzate in `config/*.config.js` vanno migrate durante l
 passaggio. Ora sono il fallback pubblico quando R2 restituisce `NOT_FOUND`: lasciare i
 seed neutri del template cambierebbe il contenuto visibile del sito anche se R2 è vuoto.
 
-**Quel commit finale non è cosmetico: è quello che rende il sito un ramo suo.** Da lì in
-poi `photoportfolio` ha almeno un commit che il template non ha, i merge successivi
-saranno merge veri, e `wrangler.json` andrà in conflitto davvero. Solo **da quel momento**
-vale la vecchia ricetta, che ora è giusto tenere per il futuro:
+Il commit che ripristina la configurazione conserva i valori reali, ma non rende
+automaticamente il repository divergente: il ramo personale può avere commit propri già
+prima di questo passaggio. Nei merge futuri la presenza di commit su entrambi i rami non
+garantisce un conflitto su ogni file. Per ogni file, preserva esplicitamente i valori
+personali quando il downstream non lo ha modificato dopo la base comune; usa `--ours`
+solo dopo aver ispezionato un conflitto reale e aver aggiunto eventuali nuove chiavi
+introdotte dal template:
 
 ```bash
 git checkout --ours wrangler.json && git add wrangler.json    # dal secondo merge in poi
@@ -166,8 +169,8 @@ La riga CSP deve contenere i tuoi URL R2 veri. Se contiene `pub-xxxxxxxx`, il
 ripristino di `wrangler.json` è andato storto.
 
 **Fallo su `staging`, non su `main`.** Questo merge non "collega" il sito al template:
-porta 205 commit sul repo da cui Cloudflare fa il deploy, quindi il sito pubblico cambia
-nel momento in cui pushi. Il branch `staging` esiste, punta a un Worker e a un bucket
+porta i commit del template sul repo da cui Cloudflare fa il deploy, quindi il sito
+pubblico cambia nel momento in cui pushi. Il branch `staging` esiste, punta a un Worker e a un bucket
 separati (`photo-portfolio-staging`) e ha commit propri rispetto alla base condivisa: il
 merge con `upstream/main` è quindi un merge reale. Anche qui `wrangler.json` può essere
 sovrascritto senza conflitto se non è cambiato sul ramo personale dopo quella base.
@@ -176,19 +179,19 @@ Il giro completo, con `main` toccato solo alla fine e solo per allinearlo a ciò
 già visto funzionare:
 
 ```bash
-git checkout staging && git merge upstream/main    # fast-forward
+git checkout staging && git merge --no-ff upstream/main  # merge reale; ispeziona i conflitti
 #   ...ripristino di wrangler.json e commit, come sopra...
 git push origin staging                            # Cloudflare deploya lo staging
 
 #   guardi il sito di staging: home, un album, /admin, e il form
 #   quando sei convinto:
-git checkout main && git merge staging             # fast-forward: stessi byte
+git checkout main && git merge staging             # promuove lo stesso tree verificato
 git push origin main
 ```
 
-Il secondo merge è un fast-forward perché `staging` contiene già tutto: in produzione
-finiscono gli stessi identici byte che hai verificato, non una seconda risoluzione fatta
-a mano.
+In produzione devono finire gli stessi identici byte verificati su `staging`. Se Git
+segnala divergenza durante la promozione su `main`, fermati e ispeziona il merge invece
+di applicare una risoluzione alla cieca.
 
 ---
 
