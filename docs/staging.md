@@ -1,7 +1,9 @@
 # Optional staging environment
 
-Staging is a second, isolated Cloudflare deployment. It is disabled by default; follow
-this guide only if you need deployment-level checks before promoting an update.
+Staging is an opt-in version preview of the connected Cloudflare Worker. It is disabled
+by default; follow this guide only if you need deployment-level checks before promoting
+an update. It uses the same connected Worker as production, with the `env.staging`
+bindings for its bucket, public URL, Access audience, and Turnstile values.
 
 > **Existing staging users: preserve it before planning**
 >
@@ -19,18 +21,20 @@ this guide only if you need deployment-level checks before promoting an update.
 ## 1. What staging is, and what it is not
 
 Staging lets you verify that a build deploys, Cloudflare Access login works, admin routes
-are reachable, and the contact form submits. It separates the deployed code and Worker
-from production.
+are reachable, and the contact form submits. It publishes a generated version-preview
+alias of the connected Worker with the `env.staging` bindings; it does not create a
+second Worker automatically.
 
 It does not mirror production content and does not add draft/publish semantics. The two
-environments have separate buckets and separate deployments.
+environments have separate bindings and content, while the dashboard continues to manage
+one Worker.
 
 ## 2. Do you need it?
 
 Local `npm run dev` runs Vite and cannot exercise the Worker APIs. Local `wrangler dev`
 cannot provide the Cloudflare Access header that protects `/admin`; the Worker rejects
-admin requests without it. A deployed staging Worker can check those integration points
-before you update production. It is not a preview of production albums or photos.
+admin requests without it. A deployed version preview can check those integration points
+before you update production. It is not a copy of production albums or photos.
 
 ## 3. The staging bucket starts empty
 
@@ -40,7 +44,7 @@ until you add staging content yourself.
 
 ## 4. Enable staging with Terraform
 
-In `infra/terraform.tfvars`, opt in and leave the hostname empty until the first deploy:
+In `infra/terraform.tfvars`, opt in to the optional staging resources:
 
 ```hcl
 enable_staging  = true
@@ -50,35 +54,11 @@ staging_hostname = ""
 If this Terraform state already has staging resources, follow the warning in
 [`docs/upgrading.md`](upgrading.md) before the first plan after updating the template.
 
-> The following Cloudflare dashboard labels were copied from the previously working runbook. Verify them during the next live staging setup before removing this note; do not rewrite them from memory.
-
-Cloudflare assigns a `workers.dev` hostname (e.g.,
-`mario-portfolio-staging.xxxxx.workers.dev`) only after the Worker's first deploy. So on
-first deploy you don't know this value yet — you can't write it in `terraform.tfvars` and
-run `terraform apply` straight away.
-
-Solution: apply **only the buckets** on first pass:
-
-```bash
-terraform apply -target=cloudflare_r2_bucket.prod -target=cloudflare_r2_bucket.staging
-```
-
-Then do the first deploy (see [Git integration](#git-integration--connect-repository)
-below). After deploy, read the assigned `workers.dev` domain from Cloudflare dashboard:
-
-```bash
-# Cloudflare dashboard → Workers & Pages → photo-portfolio-staging → Settings → Domains & Routes
-# Copy the URL in format mario-portfolio-staging.xxxxx.workers.dev
-```
-
-Fill the value in `terraform.tfvars` and run the full apply:
-
-```bash
-terraform apply  # Now apply everything, including Access and r2.dev managed domains
-```
-
-Then follow the production Terraform path in the [Cloudflare runbook](runbook-cloudflare.md)
-to export outputs, run `npm run infra:sync`, and build the site.
+Terraform provisions the optional staging bucket, managed domain, and Access resources;
+their outputs are rendered into the `env.staging` block by `npm run infra:sync`. This
+does not create a second Worker. The connected Worker dashboard publishes the staging
+version preview using those bindings; keep the existing-state warning above in place
+before any `terraform plan` or `apply`.
 
 ## 5. Enable staging manually
 
@@ -102,17 +82,17 @@ These domains expose photos — they're rate-limited and uncached, suitable only
 development. Before production, consider a custom domain (see the runbook's
 [custom-domain section](runbook-cloudflare.md#8-custom-domain-for-photos)).
 
-### Access application for staging
+### Access application for the staging version preview
 
-If using `workers.dev` for staging, Access can't do path-scoping on that domain — it
-protects the entire subdomain. Create a separate application that protects all of
-`mario-portfolio-staging.xxxxx.workers.dev`:
+If the staging version preview is protected by Access, configure the policy for the
+preview hostname shown by Workers Builds. Access may protect the whole preview hostname
+when path-scoping is unavailable; do not create a second Worker for this purpose.
 
 1. Cloudflare dashboard → **Zero Trust → Access → Applications → Create new application**
 2. Select **Self-hosted and private**
 3. Name: e.g. `mario-portfolio admin (staging)`
-4. **Add public hostname:** enter the staging `workers.dev` hostname; Access protects the
-   whole subdomain, so do not add a path.
+4. **Add public hostname:** enter the generated staging version-preview hostname; if
+   Access protects the whole hostname, do not add a path.
 5. Access policies → **Create new policy**:
    - Name: `Just me`
    - Decision: **Allow**
@@ -140,15 +120,15 @@ explains what you give up.
 
 1. Cloudflare dashboard → **Turnstile → Add widget**
 2. Name: e.g. `mario-portfolio contact form`
-3. **Hostnames:** add the production hostname *and* the staging one (e.g. `mario.com` and
-   `mario-portfolio-staging.xxxxx.workers.dev`). One widget covers both. A hostname that
-   isn't listed fails validation, so a staging form pointed at a prod-only widget answers
-   `CHALLENGE_FAILED` every time.
+3. **Hostnames:** add the production hostname and the generated staging version-preview
+   hostname when the preview form is protected by Turnstile. One widget can cover both.
+   A hostname that isn't listed fails validation, so a staging form pointed at a prod-only
+   widget answers `CHALLENGE_FAILED` every time.
 4. Widget Mode: **Managed**
 5. Create
 
-The staging hostname isn't known before the first deploy (see [the two-step procedure](#4-enable-staging-with-terraform)).
-Create the widget with production only, and add staging once Cloudflare has assigned it.
+The staging preview hostname is supplied by Workers Builds. Add it to the widget after
+the first version preview when the preview form needs Turnstile validation.
 
 The widget page then shows two values, and they go to **two different places** — never
 both into `wrangler.json`:
@@ -171,28 +151,25 @@ tells you. Set it in both environments, or decide deliberately that staging goes
 
 ### Git integration — Connect repository
 
-Cloudflare lets you deploy the Worker directly from Git — no GitHub Actions needed, it's
-native.
+Cloudflare Workers Builds deploys the connected Worker directly from Git — no GitHub
+Actions are needed.
 
-1. Cloudflare dashboard → **Workers & Pages → Create application → Pages**
+1. Cloudflare dashboard → **Workers & Pages → select the connected Worker**
 2. Connect your GitHub account (if not done yet)
 3. Select the portfolio repository
-4. Configure the build:
+4. Configure the builds:
    - **Build command:** `npm test && npm run build`
-   - **Build output directory:** `dist`
+   - **Deploy command:** `npx wrangler deploy`
    - **Root directory:** `/` (leave default)
+   - **Production branch:** `main`
+   - **Non-production builds:** enabled
+   - **Version command:** `npx wrangler versions upload --env staging`
 5. Environment: add environment variables only if your fork requires them; the standard
    template reads its non-secret Cloudflare configuration from `wrangler.json`.
-6. **Production branch:** `main` (for production Worker)
-7. **Staging branch:** `staging` (for staging Worker)
 
-Cloudflare creates two Workers automatically:
-- `{project-name}` from `main` branch (reachable on
-  `{project-name}.{account-subdomain}.workers.dev` and linked to custom domain if configured)
-- `{project-name}-staging` from `staging` branch (reachable on
-  `{project-name}-staging.{account-subdomain}.workers.dev`)
-
-Every push triggers a new deploy automatically.
+The production branch runs the deploy command. A non-production build runs the version
+command and publishes a generated version-preview alias of the same Worker, using the
+`env.staging` bindings. It does not create a second Worker automatically.
 
 ### Add the staging environment to `wrangler.json` manually
 
@@ -225,24 +202,24 @@ Merge the `env` object into the existing JSON root; do not replace the productio
 ## 6. Add staging to an existing production site
 
 Adding staging later is additive: production keeps its current bucket, hostname, and
-configuration. With Terraform, set `enable_staging = true` and follow the
-[two-step hostname procedure](#4-enable-staging-with-terraform). If Terraform manages
-Turnstile, applying the staging hostname updates the widget. If the widget is manual, add
-the staging hostname in its dashboard settings. Until that hostname is listed, every
-staging form submission fails with `CHALLENGE_FAILED`. Set `TURNSTILE_SECRET` separately
-for staging with:
+configuration. With Terraform, set `enable_staging = true` and render the complete
+`env.staging` block. The connected Worker publishes the staging version preview with
+those bindings. If the widget is manual, add the generated preview hostname in its
+dashboard settings when required; until that hostname is listed, every staging form
+submission fails with `CHALLENGE_FAILED`. Set `TURNSTILE_SECRET` separately for staging
+with:
 
 ```bash
 npx wrangler secret put TURNSTILE_SECRET --env staging
 ```
 
-For a manually managed installation, add the staging bucket, public `r2.dev` domain,
-Access application, and Git branch described in [the manual procedure](#5-enable-staging-manually).
+For a manually managed installation, add the staging bucket, public `r2.dev` domain, and
+Access application described in [the manual procedure](#5-enable-staging-manually).
 The staging bucket stays empty unless you add content to it.
 
 If these manually created resources should later be managed by Terraform, first set
-`enable_staging = true`, complete the hostname setup, and then import the three staging
-resources using their counted Terraform addresses:
+`enable_staging = true`, complete the staging bindings setup, and then import the three
+staging resources using their counted Terraform addresses:
 
 ```bash
 terraform import 'cloudflare_r2_bucket.staging[0]' {account_id}/{bucket-name}-staging
@@ -256,9 +233,11 @@ staging outputs.
 
 ## 7. Upgrade through staging
 
-An update is not a code review, it is a deployment: the moment you push, Cloudflare builds
-and your visitors get it. When you explicitly enable staging, it is a separate Worker with
-its own bucket, so you can verify an update there without touching production.
+An update is not a code review, it is a deployment. A push to `main` runs the production
+deploy command; a non-production push runs the version command and publishes a generated
+version-preview alias of the same Worker with `env.staging`. The alias has its own bucket
+and bindings, so you can verify an update without touching production or creating a second
+Worker.
 
 ```bash
 git checkout staging
@@ -275,15 +254,16 @@ restore failed — stop, do not push.
 git push origin staging
 ```
 
-Now open your staging site and click through it: the home page, an album, `/admin`, and the
-contact form. When you are satisfied:
+Workers Builds runs `npx wrangler versions upload --env staging` for the non-production
+build and exposes the generated version-preview alias. Open that alias and click through
+the home page, an album, `/admin`, and the contact form. When you are satisfied:
 
 ```bash
-git checkout main && git merge staging    # fast-forward: the same bytes you just tested
+git checkout main && git merge --ff-only staging    # promote the same bytes you just tested
 git push origin main
 ```
 
-The second merge resolves nothing a second time. `staging` already contains everything, so
+The promotion resolves nothing a second time. `staging` already contains everything, so
 production gets exactly the bytes you verified — not a second hand-made resolution that
 might differ from the first.
 
