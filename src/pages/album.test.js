@@ -13,6 +13,14 @@ vi.mock('../components/Nav.js', () => ({ renderNav: vi.fn() }));
 vi.mock('../components/Footer.js', () => ({ renderFooter: vi.fn() }));
 vi.mock('../components/PhotoGrid.js', () => ({ renderSkeletons: vi.fn(), renderGrid: vi.fn() }));
 vi.mock('../components/Lightbox.js', () => ({ createLightbox: vi.fn() }));
+vi.mock('../../config/albums.config.js', () => ({
+  albums: [{
+    slug: 'nome-album',
+    title: 'Titolo Album',
+    description: 'Descrizione breve dell\'album.',
+    coverName: '',
+  }],
+}));
 
 describe('album bootstrap from the build seed', () => {
   beforeEach(() => {
