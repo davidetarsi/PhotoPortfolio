@@ -1,8 +1,14 @@
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 import { adminConfig } from '../config/admin.config.js';
 import { albums } from '../config/albums.config.js';
 import { siteConfig } from '../config/site.config.js';
 import { texts } from '../config/texts.config.js';
+
+const wrangler = JSON.parse(
+  readFileSync(new URL('../wrangler.json', new URL(import.meta.url)), 'utf8'),
+);
 
 describe('personal site seed configuration', () => {
   it('keeps the personal identity and the new hero shape', () => {
@@ -48,5 +54,18 @@ describe('personal site seed configuration', () => {
       delete: expect.any(String),
     });
     expect(adminConfig.backgroundImageUrl).toBeTruthy();
+  });
+
+  it('configures one public Turnstile sitekey without committing secrets', () => {
+    const production = wrangler.vars.TURNSTILE_SITEKEY;
+    const staging = wrangler.env.staging.vars.TURNSTILE_SITEKEY;
+
+    expect(production).toEqual(expect.any(String));
+    expect(production.length).toBeGreaterThan(10);
+    expect(staging).toBe(production);
+
+    const serialized = JSON.stringify(wrangler);
+    expect(serialized).not.toContain('TURNSTILE_SECRET');
+    expect(serialized).not.toContain('CONTACT_NOTIFY_URL');
   });
 });

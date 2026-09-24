@@ -1,6 +1,6 @@
 import '../styles/contact-form.css';
 
-const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
 let turnstileLoaded = false;
 
@@ -56,6 +56,11 @@ export function createContactForm(siteConfig, texts) {
   submitBtn.textContent = texts.about.form.submitLabel;
 
   const feedbackEl = form.querySelector('.contact-form__feedback');
+  const challengeErrorMessage = texts.about.form.challengeErrorMessage
+    ?? texts.about.form.errorMessage;
+  const challengeExpiredMessage = texts.about.form.challengeExpiredMessage
+    ?? challengeErrorMessage;
+  let turnstileWidgetId = null;
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -73,10 +78,17 @@ export function createContactForm(siteConfig, texts) {
       const subjectVal = form.querySelector('[name="subject"]').value.trim();
       if (subjectVal) payload.subject = subjectVal;
 
-      // Add Turnstile token if available.
-      if (window.turnstile && hasTurnstile) {
-        const token = window.turnstile.getResponse();
-        if (token) payload['cf-turnstile-response'] = token;
+      // A configured widget must provide a token before the request leaves the
+      // browser. Otherwise the Worker can only reject it as CHALLENGE_FAILED.
+      if (hasTurnstile) {
+        const token = window.turnstile && turnstileWidgetId !== null
+          ? window.turnstile.getResponse(turnstileWidgetId)
+          : '';
+        if (!token) {
+          feedbackEl.textContent = challengeErrorMessage;
+          return;
+        }
+        payload['cf-turnstile-response'] = token;
       }
 
       const res = await fetch('/api/contact', {
@@ -88,12 +100,19 @@ export function createContactForm(siteConfig, texts) {
       if (data.ok) {
         feedbackEl.textContent = texts.about.form.successMessage;
         form.reset();
-        // Reset Turnstile if available.
-        if (window.turnstile && hasTurnstile) {
-          window.turnstile.reset();
+        if (window.turnstile && turnstileWidgetId !== null) {
+          window.turnstile.reset(turnstileWidgetId);
         }
       } else {
-        feedbackEl.textContent = texts.about.form.errorMessage;
+        console.warn('[ContactForm] submission rejected:', res.status, data?.error ?? 'UNKNOWN');
+        if (data?.error === 'CHALLENGE_FAILED') {
+          feedbackEl.textContent = challengeErrorMessage;
+          if (window.turnstile && turnstileWidgetId !== null) {
+            window.turnstile.reset(turnstileWidgetId);
+          }
+        } else {
+          feedbackEl.textContent = texts.about.form.errorMessage;
+        }
       }
     } catch (err) {
       console.error('[ContactForm] submit error:', err);
@@ -108,10 +127,20 @@ export function createContactForm(siteConfig, texts) {
     loadTurnstile().then(() => {
       const turnstileDiv = form.querySelector('.contact-form__turnstile');
       if (turnstileDiv && window.turnstile) {
-        window.turnstile.render(turnstileDiv, {
+        turnstileWidgetId = window.turnstile.render(turnstileDiv, {
           sitekey: siteConfig.turnstileSitekey,
           theme: 'auto',
           appearance: 'interaction-only',
+          'error-callback': (code) => {
+            console.error('[ContactForm] Turnstile error:', code);
+            feedbackEl.textContent = challengeErrorMessage;
+          },
+          'expired-callback': () => {
+            feedbackEl.textContent = challengeExpiredMessage;
+            if (turnstileWidgetId !== null) {
+              window.turnstile.reset(turnstileWidgetId);
+            }
+          },
         });
       }
     });

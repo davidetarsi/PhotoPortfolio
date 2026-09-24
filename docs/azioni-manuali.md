@@ -263,10 +263,13 @@ Turnstile del tuo sito non esiste. Finché non fai la 7B, crealo a mano — è l
 Per il sito esistente di Davide non blocca nulla: il workflow con `env.staging` completo
 è stato verificato. Resta però da progettare e provare il primo setup per un nuovo
 adopter. La preview generata deve esistere prima di poter creare l'applicazione Access,
-mentre il comando `npx wrangler versions upload --env staging` richiede già un blocco
-`env.staging` completo, incluso `ACCESS_AUD` ricavato da Access. Finché questa dipendenza
-non ha una sequenza verificata, non si può descrivere staging come un'opzione turnkey
-per chi parte da zero.
+mentre il comando completo `npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging`
+richiede già un blocco `env.staging` completo, incluso `ACCESS_AUD` ricavato da Access.
+`--env staging` seleziona quei binding, ma senza `--name {worker-name}` Wrangler può
+targettare il Worker separato indicato da `env.staging.name`. `--preview-alias staging`
+pubblica l'URL alias della versione sul Worker top-level. Finché questa dipendenza non ha
+una sequenza verificata, non si può descrivere staging come un'opzione turnkey per chi
+parte da zero.
 
 ---
 
@@ -294,9 +297,12 @@ Il form scrive i messaggi su R2 da solo, ma due cose restano da configurare, **e
 come secret e non come `vars`**:
 
 ```bash
-npx wrangler secret put TURNSTILE_SECRET      # dal pannello Turnstile
-npx wrangler secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
+npx wrangler versions secret put TURNSTILE_SECRET      # dal pannello Turnstile
+npx wrangler versions secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
 ```
+
+Questi comandi devono restare senza `--env staging`: i secret sono configurati sul Worker
+top-level e non su un Worker separato nominato dall'ambiente Wrangler.
 
 > **Il widget Turnstile del tuo sito non esiste ancora.** Lo smoke test della voce 7 ha
 > creato le otto risorse e poi le ha distrutte, widget compreso. Finché non decidi la
@@ -332,8 +338,19 @@ oppure rimandi Turnstile del tutto e fai **solo** `CONTACT_NOTIFY_URL`: è la pr
 della tabella, una configurazione legittima in cui il form funziona e l'honeypot continua
 a fermare i bot più ingenui.
 
-I secret sono **per ambiente**: `npx wrangler secret put TURNSTILE_SECRET` vale per la
-produzione, e serve un secondo giro con `--env staging`.
+Produzione e l'URL della versione staging appartengono allo stesso Worker. Configura i
+secret su quel Worker con i comandi sopra e carica la versione con:
+
+```bash
+npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging
+```
+
+Qui `--env staging` seleziona i binding di staging, `--name {worker-name}` forza il
+Worker top-level anche se `env.staging.name` contiene `{project-name}-staging`, e
+`--preview-alias staging` crea l'alias URL della version preview. Non omettere `--name` e
+non usare `{project-name}-staging` come target: indicherebbe un Worker diverso. Un Worker
+Wrangler deliberatamente separato deve gestire i propri secret ed è fuori dal workflow
+verificato.
 
 > ⚠️ **Non metterli in `wrangler.json`**, che è versionato: un URL Telegram contiene il
 > token del bot, e finirebbe su GitHub.
@@ -342,7 +359,9 @@ Per le notifiche la via più rapida è [ntfy.sh](https://ntfy.sh/): nessun accou
 un nome di topic **lungo e casuale** e installi l'app. Le tre ricette stanno nella
 [sezione 9 del runbook](runbook-cloudflare.md#9-contact-form-notifications-and-spam-protection).
 
-**Fatto quando:** invii un messaggio dal sito vero, arriva la notifica, e lo vedi in `/admin`.
+**Fatto quando:** staging e produzione accettano ciascuna un invio neutro protetto da
+Turnstile, lo salvano in `/admin` e consegnano una notifica ntfy che non contiene né
+email né corpo del messaggio.
 
 **E la verifica che nessun test può fare al posto tuo:** controlla che la notifica
 ricevuta **non contenga il testo del messaggio**. C'è un test automatico che lo

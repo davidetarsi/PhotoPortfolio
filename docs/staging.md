@@ -153,18 +153,41 @@ both into `wrangler.json`:
 | Value | Where it goes | Why |
 |---|---|---|
 | **Site Key** | `wrangler.json`, as `vars.TURNSTILE_SITEKEY`, and again under `env.staging.vars` | it ends up in the HTML; it is not a secret |
-| **Secret Key** | `wrangler secret put`, once per environment | the Worker validates tokens with it; it must never reach git |
+| **Secret Key** | `npx wrangler versions secret put TURNSTILE_SECRET` on the connected Worker | the Worker validates tokens with it; it must never reach git |
 
 ```bash
-npx wrangler secret put TURNSTILE_SECRET
-npx wrangler secret put TURNSTILE_SECRET --env staging
+npx wrangler versions secret put CONTACT_NOTIFY_URL
+npx wrangler versions secret put TURNSTILE_SECRET
 ```
 
-Secrets are per-environment, and a missing one fails **open**, not closed: `verifyTurnstile`
-reads an absent secret as "Turnstile isn't in use here" and accepts every submission. So
-setting it only for production doesn't break staging — it silently leaves it unguarded,
-with the widget still drawn on the page if the staging sitekey is set. Nothing in the UI
-tells you. Set it in both environments, or decide deliberately that staging goes without.
+These commands must omit `--env staging`: the secrets remain attached to the top-level
+Worker and are then retained by versions uploaded to that Worker. The staging environment
+selects the version's public bindings, not a second set of secrets.
+
+Production and the staging version URL belong to the same Worker. Configure the secret
+bindings on that Worker and upload the staging version with:
+
+```bash
+npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging
+```
+
+Here `--env staging` selects the `env.staging` bindings, `--name {worker-name}` forces
+the top-level Worker, and `--preview-alias staging` publishes the version-preview URL.
+Do not target `{project-name}-staging`; that would configure a different Worker instead
+of the reviewed version preview.
+
+A deliberately separate Wrangler Worker must manage its own secrets; that setup is
+outside the verified workflow.
+
+`versions secret put` attaches the value to a new Worker version without promoting it, so
+it is not active in production until that version is promoted. Before serving traffic,
+verify that every version intended for staging or production contains the
+`TURNSTILE_SECRET` binding. A missing binding fails **open**, not closed:
+`verifyTurnstile` reads an absent secret as "Turnstile isn't in use here" and accepts
+every submission. With the sitekey present but no secret on the target version, the
+widget is still drawn on the page but nothing validates behind it. Nothing in the UI
+tells you. Configure the secret binding on each target version before serving it, or
+decide deliberately that staging goes without.
 
 ### Git integration — Connect repository
 
@@ -180,13 +203,24 @@ Actions are needed.
    - **Root directory:** `/` (leave default)
    - **Production branch:** `main`
    - **Non-production builds:** enabled
-   - **Version command:** `npx wrangler versions upload --env staging`
+   - **Version command:** `npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging`
 5. Environment: add environment variables only if your fork requires them; the standard
    template reads its non-secret Cloudflare configuration from `wrangler.json`.
 
+The version command must include all three flags. `--env staging` selects the
+`env.staging` bindings, but if that environment has its own `name` it also selects that
+Worker; the generated configuration commonly names it `{project-name}-staging`.
+`--name {worker-name}` overrides that target and forces the upload onto the top-level
+Worker, while `--preview-alias staging` publishes the version under the stable `staging`
+preview alias. Omitting `--name` can create or update a separate Worker.
+A Workers Builds job may additionally anchor the upload to its connected Worker context;
+that hosted context does not change local Wrangler behavior, so keep `--name` explicit.
+
 The production branch runs the deploy command. A non-production build runs the version
-command and publishes a generated version-preview alias of the same Worker, using the
-`env.staging` bindings. It does not create a second Worker automatically.
+command above and publishes a version-preview alias of the same Worker, using the
+`env.staging` bindings. Workers Builds supplies the connected-Worker context for that job;
+the explicit `--name` remains required for local Wrangler runs and for any build context
+that does not provide the same target anchor.
 
 ### Add the staging environment to `wrangler.json` manually
 
@@ -215,6 +249,9 @@ values from the bucket, Access application, and Turnstile widget:
 
 Merge the `env` object into the existing JSON root; do not replace the production values.
 `TURNSTILE_SECRET` is a secret and does not belong in this file.
+The `name` inside `env.staging` may be `{project-name}-staging` for Wrangler's environment
+configuration, but the upload command must still pass `--name {worker-name}` so the
+version is attached to the top-level Worker rather than deployed as a second Worker.
 
 ## 6. Maintain an existing complete staging setup
 
@@ -231,11 +268,13 @@ resources, keep `enable_staging = true` and render the complete `env.staging` bl
 connected Worker publishes the staging version preview with those bindings. If the widget
 is manual, keep the generated preview hostname in its dashboard settings when required;
 until that hostname is listed, every staging form submission fails with
-`CHALLENGE_FAILED`. Set `TURNSTILE_SECRET` separately for staging with:
-
-```bash
-npx wrangler secret put TURNSTILE_SECRET --env staging
-```
+`CHALLENGE_FAILED`. The staging version uses the configured secret bindings on the same
+Worker; upload it with
+`npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging`.
+The `--env staging` flag selects the staging bindings, `--name {worker-name}` forces the
+top-level Worker, and `--preview-alias staging` creates its stable version-preview alias.
+Do not run `secret put --env staging` or target `{project-name}-staging`, which would
+address a different Worker.
 
 For a manually managed installation, retain the staging bucket, public `r2.dev` domain,
 and Access application described in [the resource inventory](#5-manual-resource-inventory-cold-bootstrap-unresolved).
@@ -278,9 +317,9 @@ restore failed — stop, do not push.
 git push origin staging
 ```
 
-Workers Builds runs `npx wrangler versions upload --env staging` for the non-production
-build and exposes the generated version-preview alias. Open that alias and click through
-the home page, an album, `/admin`, and the contact form. When you are satisfied:
+Workers Builds runs `npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging`
+for the non-production build and exposes the version-preview alias. Open that alias and
+click through the home page, an album, `/admin`, and the contact form. When you are satisfied:
 
 ```bash
 git checkout main && git merge --ff-only staging    # promote the same bytes you just tested
