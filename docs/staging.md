@@ -213,11 +213,14 @@ Worker; the generated configuration commonly names it `{project-name}-staging`.
 `--name {worker-name}` overrides that target and forces the upload onto the top-level
 Worker, while `--preview-alias staging` publishes the version under the stable `staging`
 preview alias. Omitting `--name` can create or update a separate Worker.
+A Workers Builds job may additionally anchor the upload to its connected Worker context;
+that hosted context does not change local Wrangler behavior, so keep `--name` explicit.
 
 The production branch runs the deploy command. A non-production build runs the version
 command above and publishes a version-preview alias of the same Worker, using the
-`env.staging` bindings. The explicit `--name` override is what prevents the non-production
-build from targeting a second Worker.
+`env.staging` bindings. Workers Builds supplies the connected-Worker context for that job;
+the explicit `--name` remains required for local Wrangler runs and for any build context
+that does not provide the same target anchor.
 
 ### Add the staging environment to `wrangler.json` manually
 
