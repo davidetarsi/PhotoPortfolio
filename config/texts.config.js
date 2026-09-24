@@ -25,6 +25,7 @@ export const texts = {
       messagePlaceholder: 'Messaggio',
       submitLabel: 'Invia',
       successMessage: 'Messaggio inviato. Ti risponderò presto.',
+      challengeErrorMessage: 'Verifica anti-spam non riuscita. Ricarica la pagina e riprova.',
       errorMessage: "Errore durante l'invio. Riprova più tardi.",
     },
   },

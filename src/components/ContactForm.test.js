@@ -11,6 +11,7 @@ const texts = {
       messagePlaceholder: 'Messaggio',
       submitLabel: 'Invia',
       successMessage: 'Messaggio inviato. Ti risponderò presto.',
+      challengeErrorMessage: 'Verifica anti-spam non riuscita. Ricarica la pagina e riprova.',
       errorMessage: "Errore durante l'invio. Riprova più tardi.",
     },
   },
@@ -151,6 +152,114 @@ describe('createContactForm', () => {
 
     expect(form.querySelector('.contact-form__feedback').textContent)
       .toBe(texts.about.form.errorMessage);
+  });
+
+  it('invia il token del widget Turnstile renderizzato', async () => {
+    const fetchSpy = vi.fn(async () => new Response(JSON.stringify({ ok: true })));
+    vi.stubGlobal('fetch', fetchSpy);
+    vi.stubGlobal('turnstile', {
+      render: vi.fn(() => 'widget-123'),
+      getResponse: vi.fn(widgetId => widgetId === 'widget-123' ? 'token-abc' : ''),
+      reset: vi.fn(),
+    });
+
+    const form = createContactForm({ turnstileSitekey: 'test-sitekey' }, texts);
+    document.body.appendChild(form);
+    await new Promise(r => setTimeout(r, 0));
+    form.querySelector('[name="name"]').value = 'Mario';
+    form.querySelector('[name="email"]').value = 'm@e.it';
+    form.querySelector('[name="message"]').value = 'Ciao';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(r => setTimeout(r, 0));
+
+    const payload = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(payload['cf-turnstile-response']).toBe('token-abc');
+  });
+
+  it('non invia senza token Turnstile e mostra un errore specifico', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    vi.stubGlobal('turnstile', {
+      render: vi.fn(() => 'widget-123'),
+      getResponse: vi.fn(() => ''),
+      reset: vi.fn(),
+    });
+
+    const form = createContactForm({ turnstileSitekey: 'test-sitekey' }, texts);
+    document.body.appendChild(form);
+    await new Promise(r => setTimeout(r, 0));
+    form.querySelector('[name="name"]').value = 'Mario';
+    form.querySelector('[name="email"]').value = 'm@e.it';
+    form.querySelector('[name="message"]').value = 'Ciao';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(r => setTimeout(r, 0));
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(form.querySelector('.contact-form__feedback').textContent)
+      .toBe(texts.about.form.challengeErrorMessage);
+  });
+
+  it('mostra un errore specifico quando il Worker rifiuta la challenge', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(
+      JSON.stringify({ error: 'CHALLENGE_FAILED' }),
+      { status: 403 },
+    )));
+    vi.stubGlobal('turnstile', {
+      render: vi.fn(() => 'widget-123'),
+      getResponse: vi.fn(() => 'token-abc'),
+      reset: vi.fn(),
+    });
+
+    const form = createContactForm({ turnstileSitekey: 'test-sitekey' }, texts);
+    document.body.appendChild(form);
+    await new Promise(r => setTimeout(r, 0));
+    form.querySelector('[name="name"]').value = 'Mario';
+    form.querySelector('[name="email"]').value = 'm@e.it';
+    form.querySelector('[name="message"]').value = 'Ciao';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(r => setTimeout(r, 0));
+
+    expect(form.querySelector('.contact-form__feedback').textContent)
+      .toBe(texts.about.form.challengeErrorMessage);
+  });
+
+  it('reimposta lo stesso widget Turnstile dopo un invio riuscito', async () => {
+    const reset = vi.fn();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ ok: true }))));
+    vi.stubGlobal('turnstile', {
+      render: vi.fn(() => 'widget-123'),
+      getResponse: vi.fn(() => 'token-abc'),
+      reset,
+    });
+
+    const form = createContactForm({ turnstileSitekey: 'test-sitekey' }, texts);
+    document.body.appendChild(form);
+    await new Promise(r => setTimeout(r, 0));
+    form.querySelector('[name="name"]').value = 'Mario';
+    form.querySelector('[name="email"]').value = 'm@e.it';
+    form.querySelector('[name="message"]').value = 'Ciao';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(r => setTimeout(r, 0));
+
+    expect(reset).toHaveBeenCalledWith('widget-123');
+  });
+
+  it('mostra un errore specifico quando Turnstile segnala un errore client', async () => {
+    vi.stubGlobal('turnstile', {
+      render: vi.fn((_element, options) => {
+        options['error-callback']('110200');
+        return 'widget-123';
+      }),
+      getResponse: vi.fn(() => ''),
+      reset: vi.fn(),
+    });
+
+    const form = createContactForm({ turnstileSitekey: 'test-sitekey' }, texts);
+    document.body.appendChild(form);
+    await new Promise(r => setTimeout(r, 0));
+
+    expect(form.querySelector('.contact-form__feedback').textContent)
+      .toBe(texts.about.form.challengeErrorMessage);
   });
 
   it('inputs have aria-label attributes matching placeholders', () => {
