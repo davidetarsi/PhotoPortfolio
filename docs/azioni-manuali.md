@@ -263,10 +263,13 @@ Turnstile del tuo sito non esiste. Finché non fai la 7B, crealo a mano — è l
 Per il sito esistente di Davide non blocca nulla: il workflow con `env.staging` completo
 è stato verificato. Resta però da progettare e provare il primo setup per un nuovo
 adopter. La preview generata deve esistere prima di poter creare l'applicazione Access,
-mentre il comando `npx wrangler versions upload --env staging` richiede già un blocco
-`env.staging` completo, incluso `ACCESS_AUD` ricavato da Access. Finché questa dipendenza
-non ha una sequenza verificata, non si può descrivere staging come un'opzione turnkey
-per chi parte da zero.
+mentre il comando completo `npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging`
+richiede già un blocco `env.staging` completo, incluso `ACCESS_AUD` ricavato da Access.
+`--env staging` seleziona quei binding, ma senza `--name {worker-name}` Wrangler può
+targettare il Worker separato indicato da `env.staging.name`. `--preview-alias staging`
+pubblica l'URL alias della versione sul Worker top-level. Finché questa dipendenza non ha
+una sequenza verificata, non si può descrivere staging come un'opzione turnkey per chi
+parte da zero.
 
 ---
 
@@ -297,6 +300,9 @@ come secret e non come `vars`**:
 npx wrangler versions secret put TURNSTILE_SECRET      # dal pannello Turnstile
 npx wrangler versions secret put CONTACT_NOTIFY_URL    # dove vuoi ricevere le notifiche
 ```
+
+Questi comandi devono restare senza `--env staging`: i secret sono configurati sul Worker
+top-level e non su un Worker separato nominato dall'ambiente Wrangler.
 
 > **Il widget Turnstile del tuo sito non esiste ancora.** Lo smoke test della voce 7 ha
 > creato le otto risorse e poi le ha distrutte, widget compreso. Finché non decidi la
@@ -333,10 +339,18 @@ della tabella, una configurazione legittima in cui il form funziona e l'honeypot
 a fermare i bot più ingenui.
 
 Produzione e l'URL della versione staging appartengono allo stesso Worker. Configura i
-secret su quel Worker e carica la versione con i binding `env.staging`; non usare
-`{project-name}-staging`, che indicherebbe un Worker diverso invece della version preview
-verificata. Un Worker Wrangler deliberatamente separato deve gestire i propri secret ed è
-fuori dal workflow verificato.
+secret su quel Worker con i comandi sopra e carica la versione con:
+
+```bash
+npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging
+```
+
+Qui `--env staging` seleziona i binding di staging, `--name {worker-name}` forza il
+Worker top-level anche se `env.staging.name` contiene `{project-name}-staging`, e
+`--preview-alias staging` crea l'alias URL della version preview. Non omettere `--name` e
+non usare `{project-name}-staging` come target: indicherebbe un Worker diverso. Un Worker
+Wrangler deliberatamente separato deve gestire i propri secret ed è fuori dal workflow
+verificato.
 
 > ⚠️ **Non metterli in `wrangler.json`**, che è versionato: un URL Telegram contiene il
 > token del bot, e finirebbe su GitHub.
