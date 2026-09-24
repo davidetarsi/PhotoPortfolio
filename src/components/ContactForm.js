@@ -58,6 +58,8 @@ export function createContactForm(siteConfig, texts) {
   const feedbackEl = form.querySelector('.contact-form__feedback');
   const challengeErrorMessage = texts.about.form.challengeErrorMessage
     ?? texts.about.form.errorMessage;
+  const challengeExpiredMessage = texts.about.form.challengeExpiredMessage
+    ?? challengeErrorMessage;
   let turnstileWidgetId = null;
 
   form.addEventListener('submit', async e => {
@@ -132,6 +134,12 @@ export function createContactForm(siteConfig, texts) {
           'error-callback': (code) => {
             console.error('[ContactForm] Turnstile error:', code);
             feedbackEl.textContent = challengeErrorMessage;
+          },
+          'expired-callback': () => {
+            feedbackEl.textContent = challengeExpiredMessage;
+            if (turnstileWidgetId !== null) {
+              window.turnstile.reset(turnstileWidgetId);
+            }
           },
         });
       }

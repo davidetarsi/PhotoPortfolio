@@ -26,6 +26,7 @@ export const texts = {
       submitLabel: 'Invia',
       successMessage: 'Messaggio inviato. Ti risponderò presto.',
       challengeErrorMessage: 'Verifica anti-spam non riuscita. Ricarica la pagina e riprova.',
+      challengeExpiredMessage: 'Verifica anti-spam scaduta. Attendi un istante e riprova.',
       errorMessage: "Errore durante l'invio. Riprova più tardi.",
     },
   },

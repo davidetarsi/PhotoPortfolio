@@ -12,6 +12,7 @@ const texts = {
       submitLabel: 'Invia',
       successMessage: 'Messaggio inviato. Ti risponderò presto.',
       challengeErrorMessage: 'Verifica anti-spam non riuscita. Ricarica la pagina e riprova.',
+      challengeExpiredMessage: 'Verifica anti-spam scaduta. Attendi un istante e riprova.',
       errorMessage: "Errore durante l'invio. Riprova più tardi.",
     },
   },
@@ -260,6 +261,28 @@ describe('createContactForm', () => {
 
     expect(form.querySelector('.contact-form__feedback').textContent)
       .toBe(texts.about.form.challengeErrorMessage);
+  });
+
+  it('rinnova lo stesso widget quando il token Turnstile scade', async () => {
+    let renderOptions;
+    const reset = vi.fn();
+    vi.stubGlobal('turnstile', {
+      render: vi.fn((_element, options) => {
+        renderOptions = options;
+        return 'widget-123';
+      }),
+      getResponse: vi.fn(() => ''),
+      reset,
+    });
+
+    const form = createContactForm({ turnstileSitekey: 'test-sitekey' }, texts);
+    document.body.appendChild(form);
+    await new Promise(r => setTimeout(r, 0));
+    renderOptions['expired-callback']();
+
+    expect(reset).toHaveBeenCalledWith('widget-123');
+    expect(form.querySelector('.contact-form__feedback').textContent)
+      .toBe(texts.about.form.challengeExpiredMessage);
   });
 
   it('inputs have aria-label attributes matching placeholders', () => {
