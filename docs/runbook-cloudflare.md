@@ -381,6 +381,9 @@ Without this, messages still arrive and are still readable in the dashboard — 
 npx wrangler versions secret put CONTACT_NOTIFY_URL
 ```
 
+Run the secret command on the top-level Worker without `--env staging`: secrets do not
+belong to a separate Worker created from the Wrangler environment name.
+
 The Worker sends a `POST` to that URL. Any service that accepts one works; here are three.
 
 **ntfy.sh — no account, nothing to sign up for**
@@ -414,8 +417,16 @@ Terraform creates it (`enable_turnstile = true`, the default); on the manual pat
 
 Take the secret from the Cloudflare dashboard, under Turnstile, on your widget's page.
 Production and the staging version URL belong to the same Worker. Configure the secret
-bindings on that Worker and upload the staging version with `env.staging` bindings. Do
-not target `{project-name}-staging`; that would configure a different Worker instead of
+bindings on that Worker without `--env staging`, then upload the staging version with:
+
+```bash
+npx wrangler versions upload --env staging --name {worker-name} --preview-alias staging
+```
+
+`--env staging` selects the `env.staging` bindings, while `--name {worker-name}` forces
+the top-level Worker even when `env.staging.name` contains `{project-name}-staging`.
+`--preview-alias staging` publishes the version-preview URL alias. Do not omit `--name`
+or target `{project-name}-staging`, which would configure a different Worker instead of
 the reviewed version preview.
 
 A deliberately separate Wrangler Worker must manage its own secrets; that setup is
