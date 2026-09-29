@@ -40,3 +40,6 @@ fuori da questo README e vanno gestiti secondo la procedura di sincronizzazione.
 - [Architettura Software + Photography](docs/superpowers/specs/2026-09-21-software-photography-portfolio-architecture-design.md)
 - [Punti di estensione del template](docs/superpowers/plans/2026-09-21-template-extension-points.md)
 - [Portfolio personale Software/Photography](docs/superpowers/plans/2026-09-21-personal-software-portfolio.md)
+- [Slot disponibili per la personalizzazione](docs/slots.md)
+- [Pagine personalizzate e collezioni](docs/pages.md)
+- [Aggiornare il sito derivato](docs/upgrading.md)

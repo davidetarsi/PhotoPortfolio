@@ -1,16 +1,5 @@
 import { resolveHeroUrl } from './resolveHeroUrl.js';
-
-const ESCAPE_MAP = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-};
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, ch => ESCAPE_MAP[ch]);
-}
+import { escapeHtml } from '../shared/html.js';
 
 /**
  * Injects site metadata placeholders into HTML templates.
@@ -35,5 +24,14 @@ export function injectSiteMeta(html, siteConfig, r2PublicUrl) {
     key in values ? escapeHtml(values[key]) : match,
   );
 
-  return replaced.replace(/[ \t]*<meta[^>]*content=""[^>]*>\n?/g, '');
+  return stripEmptyMeta(replaced);
+}
+
+/**
+ * Removes meta tags whose content ended up empty, with their indentation and newline.
+ * @param {string} html - HTML after placeholder replacement.
+ * @returns {string} HTML without empty meta tags.
+ */
+export function stripEmptyMeta(html) {
+  return html.replace(/[ \t]*<meta[^>]*content=""[^>]*>\n?/g, '');
 }

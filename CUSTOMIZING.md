@@ -38,6 +38,7 @@ Buckets, domains, Access applications: this configuration lives in `infra/variab
 | **Admin dashboard text** | `config/texts.config.js`, `admin` section | Same mechanism: dashboard is translatable just like the site |
 | **Date language** | `config/site.config.js`, `language` field | Used to format dates in the dashboard |
 | **Album card appearance** | `theme/card.css`: activate one of three `@import` | `cinematic` (default), `editorial`, `minimal`. See section below |
+| **Home page landing** (hero and album cards) | `custom/`: copy `custom.example/` and replace the `landing` slot | Your own component, no template file edited. See [Replacing a whole part](#replacing-a-whole-part-custom) and `docs/slots.md` |
 | **Admin dashboard background** | `config/admin.config.js`, `backgroundImageUrl` field | URL of a photo already uploaded to R2 |
 | **Who can access `/admin`** | `infra/variables.tf`, `admin_emails` field (Terraform) or dashboard Access for `/admin` and `/api/admin` paths (manual) | Requires Terraform apply or manual Access modification. See [runbook](docs/runbook-cloudflare.md). |
 | **Photo domain** | `infra/variables.tf`, `custom_photo_domain` (Terraform), or dashboard R2 (manual) | See [runbook section 8](docs/runbook-cloudflare.md#8-custom-domain-for-photos). Do once before production. |
@@ -76,7 +77,7 @@ Changing fonts requires **three coordinated changes** — skipping one causes si
 --font-heading: 'Playfair Display', serif;
 ```
 
-2. **In all four HTML files** (`index.html`, `album.html`, `contatti.html`, `admin.html`): replace the Google Fonts `<link>` tag.
+2. **In all four HTML files** (`index.html`, `album.html`, `about.html`, `admin.html`), and in your custom pages (`custom/pages/*.html`): replace the Google Fonts `<link>` tag.
    Forgetting `admin.html` is the easiest mistake: the site changes fonts and the dashboard lags behind.
 
 ```html
@@ -110,7 +111,7 @@ h1, h2, h3 {
 
 ### Behavior (`src/`)
 
-Files in `src/` are the application's behavior: modifying them creates conflicts on future template merges. Keep customizations in `config/` and `theme/`, the only designated extension points.
+Files in `src/` are the application's behavior: modifying them creates conflicts on future template merges. Keep customizations in `config/`, `theme/` and `custom/`, the designated extension points: to replace a whole part of the site, use `custom/` (see below) instead of editing `src/`.
 
 Exception: if you fix a bug or add a feature to the template itself, do it in `src/`, but contribute it back to the repository you forked from — so the next fork of your copy has it already.
 
@@ -129,6 +130,20 @@ The template ships it with placeholders; you fill in your values **and commit it
 The values it contains aren't secrets — bucket names, team domain, AUD, and public bucket URL are all already visible externally. Real credentials live in `.env`, which isn't versioned.
 
 Two practical consequences: it will conflict on every `git merge upstream/main` (resolve with `git checkout --ours wrangler.json`), and `npm run infra:sync` rewrites it from Terraform outputs, so any manual changes need to be redone or moved to `.tf`.
+
+---
+
+## Replacing a whole part: `custom/`
+
+When `config/` and `theme/` are not enough — a different landing, for example — create `custom/` from the example and declare there the parts you replace:
+
+```bash
+cp -r custom.example custom
+```
+
+The template never contains `custom/`, so `git merge upstream/main` never conflicts there. Commit it in your fork. The parts you can replace, their contracts, the public API your code may import and the errors you can meet are in [`docs/slots.md`](docs/slots.md).
+
+To add pages of your own — a single page or a collection with one page per entry — see [`docs/pages.md`](docs/pages.md).
 
 ---
 
@@ -191,12 +206,16 @@ It generates WebP at 1900px on the long side, quality 85 — the same settings t
 
 ## Social previews (Open Graph)
 
-Title, description, and preview image (WhatsApp, Instagram DM, LinkedIn, iMessage…) are injected into HTML **at build time** by `site.config.js`, with the image URL built from the photo domain declared in `wrangler.json`: no need to touch HTML files.
+Title, description, and preview image (WhatsApp, Instagram DM, LinkedIn, iMessage…) come from two places:
 
-Two limits to know:
+- **Album pages** (`/<album>`): the Worker writes the album's own title, description, cover and canonical URL into the page, read live from R2. A change made in the dashboard is used by the next share — social networks may still show their cached copy for a while. An album without a cover uses the site's hero photo, and an album without a description uses the site bio, both taken from the site profile in R2 (the one the dashboard edits). An address that is not an album answers 404.
+- **Home and about**: injected **at build time** from `site.config.js`, with the image URL built from the photo domain declared in `wrangler.json`. These pages are static files served before the Worker runs, so they keep the build-time values.
 
-- Any link on the site shared — including links to individual albums — always shows the generic site preview (title and hero image from `site.config.js`). Social crawlers don't run JavaScript, so they can't know the album's content. This is a limit of pure static hosting, accepted by design.
-- If `heroImage` is empty, the preview has no image.
+Limits to know:
+
+- Until R2 holds the album list — before `npm run migrate`, or before the first album is saved from the dashboard — album pages keep the build-time preview, and an address that is not an album answers 200 instead of 404.
+- If the site profile in R2 is missing or invalid, album pages use the album title alone, with no fallback to the bio or the hero photo.
+- If `heroImage` in `site.config.js` is empty, home and about have no preview image. An album with no cover has no preview image if the site profile has no hero photo.
 
 ---
 
