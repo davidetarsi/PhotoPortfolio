@@ -234,6 +234,8 @@ src/components/  ← componenti UI riusabili
 src/styles/      ← CSS strutturale (importa solo i token)
 src/utils/       ← funzioni pure e utilità
 src/worker.js    ← Cloudflare Worker
+src/core/        ← registro degli slot: le parti che un fork può sostituire
+custom.example/  ← esempio di custom/, dove un fork sostituisce parti del sito
 infra/           ← configurazione Terraform (facoltativa)
 scripts/         ← strumenti: migrate, upload, compress
 docs/            ← documentazione: runbook, specifiche
@@ -279,7 +281,7 @@ Se hai corretto qualcosa nel tuo fork, valuta di aprire una pull request: chi ar
 Dove andrà probabilmente. Sono intenzioni, non promesse:
 
 - **Anteprima prima di pubblicare.** Oggi caricare, riordinare ed eliminare foto ha effetto immediato. L'idea è farle restare in bozza, guardabili prima che vadano online — come già funziona per nome e bio.
-- **Anteprime social per singolo album.** Oggi ogni link condiviso mostra la stessa immagine di anteprima del sito, perché l'hosting statico non sa generarne una per album. Si può risolvere, ma serve che sia il Worker a comporre i meta tag.
+- **Anteprime social per home e about.** I link agli album mostrano già titolo e copertina propri. Home e about usano ancora i valori scritti al build; servirle attraverso il Worker permetterebbe anche a loro di seguire le modifiche fatte dalla dashboard, al costo di una chiamata al Worker a ogni visita della home.
 - **Un tema chiaro già pronto.** Ora che ogni colore vive in `theme/tokens.css`, aggiungere una seconda palette è soprattutto questione di scegliere buoni valori.
 - **Altre varianti di card**, se le tre incluse non coprono quello che serve.
 

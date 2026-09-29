@@ -9,20 +9,6 @@ const env = () => ({ ASSETS: makeFakeAssets(), BUCKET: makeFakeBucket() });
 const get = path => worker.fetch(new Request(`https://x.dev${path}`), env());
 
 describe('routing', () => {
-  it('/contatti reindirizza a /about, in modo permanente', async () => {
-    // Il sito è già online e quel link può essere stato condiviso: il
-    // rename non deve trasformarlo in un 404.
-    const res = await get('/contatti');
-    expect(res.status).toBe(301);
-    expect(res.headers.get('Location')).toBe('https://x.dev/about');
-  });
-
-  it('reindirizza anche /contatti con la barra finale', async () => {
-    const res = await get('/contatti/');
-    expect(res.status).toBe(301);
-    expect(res.headers.get('Location')).toBe('https://x.dev/about');
-  });
-
   it('/about serve la sua pagina, non un redirect', async () => {
     const res = await get('/about');
     expect(res.status).toBe(200);

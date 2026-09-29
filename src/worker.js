@@ -1,11 +1,8 @@
 import { handleDataRequest } from './worker/data-routes.js'
 import { handleAdminRequest } from './worker/admin-routes.js'
 import { handleContactRequest } from './worker/contact-routes.js'
-
-const STATIC_PAGES = {
-  '/about': '/about.html',
-  '/admin': '/admin.html',
-}
+import { serveAlbumPage } from './worker/album-page.js'
+import { TEMPLATE_ROUTES } from './shared/content-rules.js'
 
 const ALBUM_SLUG_RE = /^\/[a-z0-9][a-z0-9-]*$/
 
@@ -27,18 +24,13 @@ export default {
       return handleContactRequest(request, env)
     }
 
-    // The page was renamed from /contatti: existing shared links must not become 404s.
-    // 301 (permanent) not 302 (temporary) because the old address will not return.
-    if (pathname === '/contatti') {
-      return Response.redirect(new URL('/about', url).toString(), 301)
-    }
-
-    if (STATIC_PAGES[pathname]) {
-      return env.ASSETS.fetch(new URL(STATIC_PAGES[pathname], url))
+    const page = TEMPLATE_ROUTES.pages[pathname]
+    if (page) {
+      return env.ASSETS.fetch(new URL(page, url))
     }
 
     if (ALBUM_SLUG_RE.test(pathname)) {
-      return env.ASSETS.fetch(new URL('/album.html', url))
+      return serveAlbumPage(env, url, pathname.slice(1))
     }
 
     return env.ASSETS.fetch(request)

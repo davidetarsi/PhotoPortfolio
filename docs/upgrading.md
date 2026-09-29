@@ -69,6 +69,7 @@ does not have. From then on your branch is genuinely divergent, merges are real 
 | `wrangler.json` | replaced by the template's placeholders | **no** — restore it, as above |
 | `public/_headers` | deleted | yes: the CSP is generated at build time from `wrangler.json`. If you restore it, Vite copies it over the generated one and pins stale URLs in production |
 | `config/*.config.js` | back to the neutral seed | yes: at runtime the truth lives in R2, not in these files |
+| `custom/` | untouched — the template never ships it | yes. Slot changes are listed under "When an update changes behaviour" below |
 
 After the merge, **do not run `npm run migrate`**. It would push the empty seed over your
 real content.
@@ -137,6 +138,18 @@ Two kinds of change deserve a second look, because tests pass either way:
   case.
   See the [runbook](runbook-cloudflare.md#9-contact-form-notifications-and-spam-protection),
   which spells out which values must be set together and what breaks when only one is.
+
+### Slots and `custom/`
+
+An update that renames a slot, changes a contract method, changes a field of a slot's `ctx`, or removes, renames or changes what an export of `src/api/index.js` takes or returns is listed here. After merging, run `npm test` and `npm run build`. `npm test` catches a renamed slot or contract method in your `custom/slots.js`, but not a changed `ctx` field — check your components against `docs/slots.md`. A removed or renamed export of `src/api/index.js` fails `npm run build`; `npm test` catches it only where a test of yours calls it. No such change so far.
+
+The current slot contracts, handle ownership, page events, custom CSS ordering and explicit override errors are documented in [the extension guide](slots.md). `custom.example/` is the runnable reference; copy it to `custom/` in a disposable checkout before trying it.
+
+### F3 (2026-09-26): routes and reserved slugs
+
+- `/contatti` no longer redirects to `/about`. Old links to `/contatti` now reach the album page and answer "album not found", unless you have an album with that slug.
+- The dashboard refuses new albums named `album` or `index`, as it already did for `about`, `admin`, `api` and `assets`. Albums that already have one of these slugs are not touched: they stay in the list and in the dashboard, and on the public site the template page answers at that address.
+- The Worker no longer refuses reserved slugs when albums are saved or photos are uploaded. The dashboard is where new names are checked.
 
 ## If it goes wrong
 
